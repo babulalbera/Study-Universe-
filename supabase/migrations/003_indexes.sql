@@ -1,0 +1,20 @@
+-- Foreign keys aur bar-bar use hone wale columns par Indexes
+create index on public.profiles (role);
+create index on public.feature_cards (sort_order) where is_visible;
+create index on public.social_links (sort_order) where is_visible;
+create index on public.home_sections (sort_order);
+create index on public.announcements (is_active, starts_at, ends_at);
+create index on public.tasks (sort_order) where is_active;
+create index on public.task_completions (task_id);
+create index on public.books (category_id);
+create index on public.books (created_at desc) where is_published;
+create index on public.mock_tests (category_id);
+create index on public.mock_tests (created_at desc) where is_published;
+create index on public.questions (test_id, sort_order);
+create index on public.test_attempts (user_id, started_at desc);
+create index on public.test_attempts (test_id);
+create index on public.attempt_answers (question_id);
+create index on public.bookmarks (user_id);
+create index on public.notifications (user_id, created_at desc);
+create index on public.audit_logs (actor_id, created_at desc);
+create index on public.audit_logs (table_name, created_at desc);
