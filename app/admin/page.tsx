@@ -1,6 +1,6 @@
 import Link from "next/link";
 import AdminHeader from "@/components/admin/AdminHeader";
-import { ADMIN_LINKS } from "@/components/admin/AdminSidebar";
+import { ADMIN_LINKS } from "@/components/admin/links";
 
 export default function AdminDashboard() {
   return (
