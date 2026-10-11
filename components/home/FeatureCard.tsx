@@ -35,5 +35,5 @@ export default function FeatureCard({ card, index }: { card: FeatureCardData; in
   if (/^https?:/.test(card.href)) {
     return <a href={card.href} target="_blank" rel="noopener noreferrer" className="card" style={style} aria-label={card.title}>{inner}</a>;
   }
-  return <Link href={card.href} className="card" style={style} aria-label={card.title}>{inner}</Link>;
+  return <Link href={card.href} prefetch={false} className="card" style={style} aria-label={card.title}>{inner}</Link>;
 }

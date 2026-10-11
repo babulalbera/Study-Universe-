@@ -39,7 +39,7 @@ export default function Header() {
         </Link>
         <nav className="su-nav" aria-label="Main">
           {NAV_ITEMS.map((n) => (
-            <Link key={n.href} href={n.href} className={cn(isActive(path, n.href) && "on")}>{n.label}</Link>
+            <Link key={n.href} href={n.href} prefetch={false} className={cn(isActive(path, n.href) && "on")}>{n.label}</Link>
           ))}
         </nav>
         <Link href="/profile" className="me" aria-label="Profile">👤</Link>

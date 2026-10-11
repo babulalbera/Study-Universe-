@@ -9,7 +9,7 @@ export default function MobileNavigation() {
   return (
     <nav className="su-bottom" aria-label="Mobile navigation">
       {NAV_ITEMS.map((n) => (
-        <Link key={n.href} href={n.href} className={cn(isActive(path, n.href) && "on")}>
+        <Link key={n.href} href={n.href} prefetch={false} className={cn(isActive(path, n.href) && "on")}>
           <span aria-hidden="true">{n.icon}</span>
           <small>{n.label}</small>
         </Link>
