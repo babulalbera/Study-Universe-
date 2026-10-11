@@ -30,7 +30,7 @@ export default async function AdminTasksPage({ searchParams }: { searchParams: P
   const tasks = (data ?? []) as Task[];
   return (
     <>
-      <AdminHeader title="✅ Tasks" subtitle="Tasks जोड़ना, बदलना और हटाना" />
+      <AdminHeader title="✅ Tasks" subtitle="नोट: Public /tasks पेज अब हर User के अपने Tasks दिखाता है, ये सूची वहाँ नहीं दिखती" />
       <Flash ok={ok} error={error} />
       <details className="adm-d"><summary>➕ नया Task</summary><form action={saveTask}><Fields /></form></details>
       {tasks.length === 0 && <p className="su-muted">अभी कोई Task नहीं है।</p>}
