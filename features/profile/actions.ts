@@ -11,7 +11,7 @@ import type { FormState } from "./types";
 const NOT_CONFIGURED: FormState = { error: "Supabase abhi set nahi hai. .env.local mein Keys daalo." };
 const str = (f: FormData, k: string) => String(f.get(k) ?? "");
 // Sirf apni site ka raasta (open-redirect se bachav)
-const safeNext = (n: string) => (n.startsWith("/") && !n.startsWith("//") ? n : "/profile");
+const safeNext = (n: string) => (n.startsWith("/") && !n.startsWith("//") && !n.includes("\\") ? n : "/profile");
 
 export async function login(_prev: FormState, formData: FormData): Promise<FormState> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;

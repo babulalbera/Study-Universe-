@@ -1,6 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 
@@ -25,7 +25,7 @@ async function ctx() {
 async function audit(c: Awaited<ReturnType<typeof ctx>>, action: string, table: string, id: string | null, details: Record<string, unknown> = {}) {
   await c.supabase.from("audit_logs").insert({ actor_id: c.profile.id, action, table_name: table, record_id: id, details });
 }
-const done = (publicPaths: string[]) => publicPaths.forEach((p) => revalidatePath(p));
+const done = (publicPaths: string[]) => { publicPaths.forEach((p) => revalidatePath(p)); revalidateTag("home"); };
 
 // ================= Home Cards =================
 export async function saveCard(formData: FormData) {

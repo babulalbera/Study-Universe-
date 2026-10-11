@@ -31,3 +31,10 @@ Supabase Keys: Supabase Dashboard → Project Settings → API।
 ## Home के Links बदलना
 
 अभी `features/home/data.ts` में (Phase 3 के बाद Admin Panel से)।
+
+## Phase 5 — Security & Testing checklist
+- RLS har table par chalu; `questions` par student policy nahi (sahi uttar leak nahi hota).
+- Admin ki jaanch: layout + har Server Action (`requireAdmin`) + Database RLS.
+- Test scoring: `submit_attempt` database function.
+- PDF: private bucket, 120 sec signed link, 50MB + sirf PDF (migration 005).
+- Security headers: next.config.ts. Home data 60 sec cache (unstable_cache, tag "home").
