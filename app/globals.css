@@ -380,3 +380,8 @@ details.adm-d[open]>summary{margin-bottom:12px;color:var(--gold2)}
 .adm-chk input{width:18px;height:18px;accent-color:var(--gold)}
 .adm-tag{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid rgba(255,255,255,.2);color:var(--mute)}
 .adm-tag.off{color:#fca5a5;border-color:#7f1d1d}
+
+/* ===== Phase 4 ===== */
+.su-opt.good{border-color:#10B981;background:rgba(16,185,129,.15)}
+.su-opt.bad{border-color:#EF4444;background:rgba(239,68,68,.15)}
+a.su-item{color:inherit}

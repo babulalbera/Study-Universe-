@@ -23,8 +23,8 @@ Supabase Keys: Supabase Dashboard → Project Settings → API।
 
 - Phase 1 ✅ Home + सभी Pages का UI
 - Phase 2 ✅ Supabase Database + Authentication (SQL files: supabase/migrations)
-- Phase 3 ⏳ Admin Panel + Permissions
-- Phase 4 ⏳ Tasks, Books, Mock Tests, Results
+- Phase 3 ✅ Admin Panel (Home Cards, Social, Announcements, Tasks, Users, Settings) + server-side admin check
+- Phase 4 ✅ Tasks, Books (private PDF), Mock Tests (server scoring), Results
 - Phase 5 ⏳ Testing, Security, Performance
 - Phase 6 ⏳ Vercel Deployment
 
