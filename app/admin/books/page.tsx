@@ -5,7 +5,7 @@ export default function AdminBooksPage() {
   return (
     <>
       <AdminHeader title="📚 Books & PDF" subtitle="PDF Upload और Categories" />
-      <EmptyState icon="🛠️" title="यह Section Phase 3-4 में चालू होगा" text="Database (Phase 2) जुड़ने के बाद यहाँ जोड़ना, बदलना और हटाना चालू होगा।" />
+      <EmptyState icon="🛠️" title="यह Section Phase 4 में चालू होगा" text="Public Page के साथ यह Section Phase 4 में बनेगा।" />
     </>
   );
 }

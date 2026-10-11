@@ -370,3 +370,13 @@ padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:rgba(2,6,3,.9
 .sbtbl{width:100%;border-collapse:collapse;font-size:13.5px}
 .sbtbl th,.sbtbl td{padding:12px 14px;text-align:left;border-bottom:1px solid rgba(255,255,255,.07)}
 .sbtbl th{color:var(--gold2);font-weight:700;white-space:nowrap}
+
+/* ===== Phase 3: admin forms ===== */
+details.adm-d{border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(255,255,255,.04);padding:12px 14px}
+details.adm-d>summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:10px;align-items:center}
+details.adm-d>summary::-webkit-details-marker{display:none}
+details.adm-d[open]>summary{margin-bottom:12px;color:var(--gold2)}
+.adm-chk{display:flex;gap:8px;align-items:center;font-size:13.5px}
+.adm-chk input{width:18px;height:18px;accent-color:var(--gold)}
+.adm-tag{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid rgba(255,255,255,.2);color:var(--mute)}
+.adm-tag.off{color:#fca5a5;border-color:#7f1d1d}

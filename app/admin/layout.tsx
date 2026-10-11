@@ -1,13 +1,12 @@
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import { getUser, requireAdmin } from "@/lib/auth";
 
-/**
- * ⚠️ अस्थायी सुरक्षा (Phase 1): Admin अभी सिर्फ़ आपके कंप्यूटर (npm run dev) पर खुलता है।
- * Live Site पर 404 आएगा। Phase 3 में असली Admin-Role जाँच (Server पर) लगेगी
- * और तब यह लाइन हटेगी।
- */
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  if (process.env.NODE_ENV === "production") notFound();
+// Asli suraksha: Server par database ke role se jaanch. Admin nahi to 404.
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const user = await getUser();
+  if (!user) redirect("/login?next=/admin");
+  await requireAdmin();
   return (
     <div className="adm">
       <AdminSidebar />

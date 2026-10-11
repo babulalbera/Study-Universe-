@@ -4,16 +4,15 @@ import FeatureCard from "@/components/home/FeatureCard";
 import SocialLinks from "@/components/home/SocialLinks";
 import AnnouncementBanner from "@/components/home/AnnouncementBanner";
 import HomeEffects from "@/components/home/HomeEffects";
-import { DEFAULT_FEATURE_CARDS, DEFAULT_SOCIAL_LINKS } from "@/features/home/data";
+import { getActiveAnnouncements, getHomeCards, getHomeSocials } from "@/features/home/queries";
 
-export default function HomePage() {
-  const cards = DEFAULT_FEATURE_CARDS;
-  const socials = DEFAULT_SOCIAL_LINKS;
-  return (
+export default async function HomePage() {
+  const [cards, socials, notices] = await Promise.all([getHomeCards(), getHomeSocials(), getActiveAnnouncements()]);
+    return (
     <>
       <HomeEffects />
       <HeroSection />
-      <AnnouncementBanner items={[]} />
+      <AnnouncementBanner items={notices} />
       <section className="rv">
         <div className="sec"><h2>👑 Premium Study Tools</h2><i /></div>
         <div className="grid tools">

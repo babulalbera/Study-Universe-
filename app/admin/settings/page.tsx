@@ -1,11 +1,24 @@
 import AdminHeader from "@/components/admin/AdminHeader";
-import EmptyState from "@/components/ui/EmptyState";
+import Flash from "@/components/admin/Flash";
+import Field from "@/components/admin/Field";
+import { requireAdmin } from "@/lib/auth";
+import { getSiteSettings } from "@/features/home/queries";
+import { saveSettings } from "@/features/admin/actions";
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
+  await requireAdmin();
+  const { ok, error } = await searchParams;
+  const s = await getSiteSettings();
   return (
     <>
       <AdminHeader title="⚙️ Settings" subtitle="Website की ज़रूरी Settings" />
-      <EmptyState icon="🛠️" title="यह Section Phase 3-4 में चालू होगा" text="Database (Phase 2) जुड़ने के बाद यहाँ जोड़ना, बदलना और हटाना चालू होगा।" />
+      <Flash ok={ok} error={error} />
+      <form action={saveSettings} className="glass grid gap-3">
+        <Field label="Site का नाम" name="name" defaultValue={s.name ?? "Study Universe"} />
+        <Field label="Tagline" name="tagline" defaultValue={s.tagline ?? ""} />
+        <Field label="Contact Email (Contact Page पर दिखेगा)" name="contact_email" type="email" defaultValue={s.contact_email ?? ""} />
+        <button type="submit" className="pbtn pbtn-gold">Save करो</button>
+      </form>
     </>
   );
 }

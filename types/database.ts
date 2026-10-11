@@ -11,3 +11,7 @@ export type MockTest = { id: string; category_id: string | null; title: string; 
 export type Question = { id: string; test_id: string; question_text: string; options: string[]; correct_index: number; marks: number; negative_marks: number; explanation: string; sort_order: number };
 export type TestAttempt = { id: string; user_id: string; test_id: string; status: "in_progress" | "submitted"; score: number | null; started_at: string; submitted_at: string | null };
 export type Announcement = { id: string; title: string; body: string; is_active: boolean; starts_at: string | null; ends_at: string | null };
+
+export type FeatureCardRow = { id: string; key: string; title: string; description: string; href: string | null; color: string; bg1: string; bg2: string; icon_url: string | null; sort_order: number; is_visible: boolean };
+export type SocialLinkRow = { id: string; key: string; name: string; action_label: string; subtitle: string; href: string | null; color: string; glow: string; border: string; bg1: string; bg2: string; icon_url: string | null; sort_order: number; is_visible: boolean };
+export type SiteSettings = { name?: string; tagline?: string; contact_email?: string };
