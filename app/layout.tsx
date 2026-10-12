@@ -3,7 +3,8 @@ import { Outfit, Space_Grotesk, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import MobileNavigation from "@/components/layout/MobileNavigation";
+import BottomBar from "@/components/layout/BottomBar";
+import { getHomeCards, getHomeSocials } from "@/features/home/queries";
 import { ToastProvider } from "@/components/ui/Toast";
 
 const outfit = Outfit({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-outfit", display: "swap" });
@@ -17,7 +18,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#020603", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const [cards, socials] = await Promise.all([getHomeCards(), getHomeSocials()]);
+  const courseHref = cards.find((c) => c.key === "free")?.href ?? null;
   return (
     <html lang="hi" className={`${outfit.variable} ${space.variable} ${deva.variable}`}>
       <body>
@@ -28,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main>{children}</main>
             <Footer />
           </div>
-          <MobileNavigation />
+          <BottomBar courseHref={courseHref} socials={socials.map((x) => ({ key: x.key, name: x.name, href: x.href }))} />
         </ToastProvider>
       </body>
     </html>

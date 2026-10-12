@@ -1,5 +1,7 @@
 import { TASK_TEMPLATE } from "./task-template";
+import { bottomBarForTaskPage, type BarSocial } from "./bottom-bar";
 
+export type TaskPageCtx = { loggedIn: boolean; name: string; courseHref: string | null; socials: BarSocial[] };
 type Boot = { mode: "server" | "local"; data?: Record<string, string> };
 
 const NAV = [
@@ -29,15 +31,14 @@ const SITE_CSS = `
 .sx-gst{max-width:1280px;margin:10px auto 0;padding:10px 14px;border-radius:14px;font:600 13px/1.5 Outfit,system-ui,sans-serif;color:#a1a1aa;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);position:relative;z-index:5}
 .sx-gst a{color:#FFD700;font-weight:700}
 @media(min-width:900px){.sx-nav{display:flex}.sx-bn{display:none}}
-@media(max-width:899px){body{padding-bottom:calc(72px + env(safe-area-inset-bottom))!important}}
 `;
 
-function chrome(loggedIn: boolean): string {
+function chrome(ctx: TaskPageCtx): string {
+  const loggedIn = ctx.loggedIn;
   const links = NAV.map((n) => `<a href="${n.href}"${n.href === "/tasks" ? ' class="on" aria-current="page"' : ""}>${n.label}</a>`).join("");
-  const bottom = NAV.map((n) => `<a href="${n.href}"${n.href === "/tasks" ? ' class="on" aria-current="page"' : ""}><span aria-hidden="true">${n.icon}</span><small>${n.label}</small></a>`).join("");
   const guest = loggedIn ? "" : `<div class="sx-gst">⚠️ Login के बिना Tasks सिर्फ़ इसी फोन में रहेंगे। <a href="/login?next=/tasks">Login करो</a> ताकि हर जगह मिलें।</div>`;
   return `<style id="sx-css">${SITE_CSS}</style>
-<header class="sx-hd"><div class="sx-in"><a class="sx-brand" href="/" aria-label="Study Universe Home"><span class="sx-logo"><img src="/images/logo.webp" alt="Study Universe Logo" width="42" height="42"></span><span class="sx-ttl">Study Universe</span></a><nav class="sx-nav" aria-label="Main">${links}</nav><a class="sx-me" href="/profile" aria-label="Profile">👤</a></div></header>${guest}<nav class="sx-bn" aria-label="Mobile navigation">${bottom}</nav>`;
+<header class="sx-hd"><div class="sx-in"><a class="sx-brand" href="/" aria-label="Study Universe Home"><span class="sx-logo"><img src="/images/logo.webp" alt="Study Universe Logo" width="42" height="42"></span><span class="sx-ttl">Study Universe</span></a><nav class="sx-nav" aria-label="Main">${links}</nav><a class="sx-me" href="/profile" aria-label="Profile">👤</a></div></header>${guest}${bottomBarForTaskPage({ active: "task", name: ctx.name, loggedIn, courseHref: ctx.courseHref, socials: ctx.socials })}`;
 }
 
 // Page ke andar localStorage ki jagah ye lagta hai: data server par save hota hai (login) ya phone mein (guest).
@@ -83,10 +84,10 @@ const STORAGE_SHIM = `
     return s}};
 })();`;
 
-export function renderTaskPage(boot: Boot, loggedIn: boolean): string {
+export function renderTaskPage(boot: Boot, ctx: TaskPageCtx): string {
   const json = JSON.stringify(boot).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
   const boot_ = `<script>window.__SU_BOOT=${json};</script><script>${STORAGE_SHIM}</script>`;
   return TASK_TEMPLATE
     .replace("<!--SU_BOOT-->", () => boot_)
-    .replace("<!--SU_SITE-->", () => chrome(loggedIn));
+    .replace("<!--SU_SITE-->", () => chrome(ctx));
 }
