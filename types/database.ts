@@ -14,4 +14,4 @@ export type Announcement = { id: string; title: string; body: string; is_active:
 
 export type FeatureCardRow = { id: string; key: string; title: string; description: string; href: string | null; color: string; bg1: string; bg2: string; icon_url: string | null; sort_order: number; is_visible: boolean };
 export type SocialLinkRow = { id: string; key: string; name: string; action_label: string; subtitle: string; href: string | null; color: string; glow: string; border: string; bg1: string; bg2: string; icon_url: string | null; sort_order: number; is_visible: boolean };
-export type SiteSettings = { name?: string; tagline?: string; contact_email?: string };
+export type SiteSettings = { name?: string; tagline?: string; contact_email?: string; course_url?: string };

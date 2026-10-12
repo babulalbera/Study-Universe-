@@ -164,10 +164,12 @@ export async function saveSettings(formData: FormData) {
   const c = await ctx();
   const email = s(formData, "contact_email");
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) back(P, "error", "Sahi email likho");
-  const value = { name: s(formData, "name"), tagline: s(formData, "tagline"), contact_email: email };
+  const course = s(formData, "course_url");
+  if (!okHref(course)) back(P, "error", "Course Link / se ya https:// se shuru hona chahiye");
+  const value = { name: s(formData, "name"), tagline: s(formData, "tagline"), contact_email: email, course_url: course };
   const { error } = await c.supabase.from("site_settings").upsert({ key: "site", value });
   if (error) back(P, "error", `Save nahi hua: ${error.message}`);
   await audit(c, "update", "site_settings", "site", value);
-  done(["/contact", P]);
+  done(["/contact", "/", P]);
   back(P, "ok", "Settings save ho gayi ✓");
 }

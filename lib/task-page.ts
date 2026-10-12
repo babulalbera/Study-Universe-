@@ -1,7 +1,7 @@
 import { TASK_TEMPLATE } from "./task-template";
-import { bottomBarForTaskPage, type BarSocial } from "./bottom-bar";
+import { bottomBarForTaskPage } from "./bottom-bar";
 
-export type TaskPageCtx = { loggedIn: boolean; name: string; courseHref: string | null; socials: BarSocial[] };
+export type TaskPageCtx = { loggedIn: boolean; courseHref: string | null };
 type Boot = { mode: "server" | "local"; data?: Record<string, string> };
 
 const NAV = [
@@ -38,7 +38,7 @@ function chrome(ctx: TaskPageCtx): string {
   const links = NAV.map((n) => `<a href="${n.href}"${n.href === "/tasks" ? ' class="on" aria-current="page"' : ""}>${n.label}</a>`).join("");
   const guest = loggedIn ? "" : `<div class="sx-gst">⚠️ Login के बिना Tasks सिर्फ़ इसी फोन में रहेंगे। <a href="/login?next=/tasks">Login करो</a> ताकि हर जगह मिलें।</div>`;
   return `<style id="sx-css">${SITE_CSS}</style>
-<header class="sx-hd"><div class="sx-in"><a class="sx-brand" href="/" aria-label="Study Universe Home"><span class="sx-logo"><img src="/images/logo.webp" alt="Study Universe Logo" width="42" height="42"></span><span class="sx-ttl">Study Universe</span></a><nav class="sx-nav" aria-label="Main">${links}</nav><a class="sx-me" href="/profile" aria-label="Profile">👤</a></div></header>${guest}${bottomBarForTaskPage({ active: "task", name: ctx.name, loggedIn, courseHref: ctx.courseHref, socials: ctx.socials })}`;
+<header class="sx-hd"><div class="sx-in"><a class="sx-brand" href="/" aria-label="Study Universe Home"><span class="sx-logo"><img src="/images/logo.webp" alt="Study Universe Logo" width="42" height="42"></span><span class="sx-ttl">Study Universe</span></a><nav class="sx-nav" aria-label="Main">${links}</nav><a class="sx-me" href="/profile" aria-label="Profile">👤</a></div></header>${guest}${bottomBarForTaskPage({ active: "task", courseHref: ctx.courseHref })}`;
 }
 
 // Page ke andar localStorage ki jagah ye lagta hai: data server par save hota hai (login) ya phone mein (guest).

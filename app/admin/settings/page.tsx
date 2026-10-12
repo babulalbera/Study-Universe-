@@ -17,6 +17,8 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
         <Field label="Site का नाम" name="name" defaultValue={s.name ?? "Study Universe"} />
         <Field label="Tagline" name="tagline" defaultValue={s.tagline ?? ""} />
         <Field label="Contact Email (Contact Page पर दिखेगा)" name="contact_email" type="email" defaultValue={s.contact_email ?? ""} />
+        <Field label="Course Link (नीचे की Bar का Course बटन; Home के Free Course Card से अलग)" name="course_url" defaultValue={s.course_url ?? ""} placeholder="https://... या /courses" />
+        <Field label="Course का Link (नीचे Bottom Bar के Course बटन के लिए, Home के Free Course Card से अलग)" name="course_url" defaultValue={s.course_url ?? ""} placeholder="https://... या /course" />
         <button type="submit" className="pbtn pbtn-gold">Save करो</button>
       </form>
     </>
