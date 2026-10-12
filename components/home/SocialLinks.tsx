@@ -4,45 +4,49 @@ import type { CSSProperties } from "react";
 import type { SocialLinkData } from "@/features/home/data";
 import { useToast } from "@/components/ui/Toast";
 
-const SPARKS = [[8, 14], [22, 80], [38, 30], [55, 12], [68, 70], [80, 25], [91, 62], [47, 90]];
+const PERKS = ["📅 Daily Updates", "❓ Doubts", "📄 PDFs & Notes", "🎥 Free Lectures"];
 
 export default function SocialLinks({ links }: { links: SocialLinkData[] }) {
   const toast = useToast();
   return (
-    <section className="comm rv">
-      <div className="ch">
-        <h3>🌟 Study Universe Community</h3>
-        <span className="free">FREE</span>
+    <section className="cm rv" aria-label="Study Universe Community">
+      <div className="cm-top">
+        <div className="cm-logo"><Image src="/images/logo.webp" alt="Study Universe logo" width={52} height={52} /></div>
+        <div className="cm-ttl">
+          <h3>Study Universe Community</h3>
+          <p>Daily updates, doubts, PDFs aur free lectures — sab ek jagah jud jao.</p>
+        </div>
+        <span className="cm-free">FREE</span>
       </div>
-      <p>Daily updates, doubts, PDFs aur free lectures — sab ek jagah jud jao.</p>
-      <div className="grid social">
-        {links.map((x, i) => {
+
+      <div className="cm-perks">{PERKS.map((p) => <span key={p}>{p}</span>)}</div>
+
+      <div className="cm-grid">
+        {links.map((x) => {
           const style = {
-            "--i": i + 8, "--c": x.color, "--g": x.glow, "--gl": `${x.glow}4d`,
-            "--bdg": x.border, "--b1": x.bg1, "--b2": x.bg2,
+            "--c": x.color, "--g": x.glow, "--gl": `${x.glow}55`,
+            "--bd": x.border, "--b1": x.bg1, "--b2": x.bg2,
           } as CSSProperties;
           const body = (
             <>
-              <span className="face" />
-              <span className="ico"><Image src={x.icon} alt="" width={52} height={52} draggable={false} /></span>
-              <span className="tx"><span className="nm">{x.name}</span><span className="ds">{x.action}</span></span>
-              <span className="dv" />
-              <span className="go">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <span className="cm-ic"><Image src={x.icon} alt="" width={36} height={36} draggable={false} /></span>
+              <span className="cm-tx">
+                <span className="cm-nm">{x.name}</span>
+                <span className="cm-sub">{x.subtitle}</span>
+                <span className="cm-ac">{x.action} →</span>
               </span>
             </>
           );
           return x.href ? (
-            <a key={x.key} href={x.href} target="_blank" rel="noopener noreferrer" className="s3d" title={x.subtitle} style={style} aria-label={x.name}>{body}</a>
+            <a key={x.key} href={x.href} target="_blank" rel="noopener noreferrer" className="cm-tile" style={style} aria-label={`${x.name} - ${x.action}`}>{body}</a>
           ) : (
-            <a key={x.key} href="#" className="s3d" title={x.subtitle} style={style} aria-label={x.name}
+            <a key={x.key} href="#" className="cm-tile" style={style} aria-label={`${x.name} - ${x.action}`}
               onClick={(e) => { e.preventDefault(); toast(`${x.name} ka link abhi set nahi hai`); }}>{body}</a>
           );
         })}
       </div>
-      {SPARKS.map(([l, t], i) => (
-        <i key={i} className="sp" style={{ left: `${l}%`, top: `${t}%`, animationDelay: `${(i % 4) * 0.8}s` }} />
-      ))}
+
+      <p className="cm-foot">✨ Join karo aur apni preparation ko next level le jao</p>
     </section>
   );
 }

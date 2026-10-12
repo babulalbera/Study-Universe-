@@ -2,18 +2,23 @@ import { TASK_TEMPLATE } from "./task-template";
 import { bottomBarForTaskPage } from "./bottom-bar";
 
 export type TaskPageCtx = { loggedIn: boolean; courseHref: string | null };
-type Boot = { mode: "server" | "local"; data?: Record<string, string> };
-
-const NAV = [
-  { href: "/", label: "Home", icon: "🏠" },
-  { href: "/tasks", label: "Tasks", icon: "✅" },
-  { href: "/books", label: "Books", icon: "📚" },
-  { href: "/mock-tests", label: "Tests", icon: "📝" },
-  { href: "/profile", label: "Profile", icon: "👤" },
-];
+type Boot = { mode: "server" | "local"; uid?: string; data?: Record<string, string> };
 
 // Website ka Header + Bottom navigation (Task page ke andar, taaki ye poori website ka hissa lage)
 const SITE_CSS = `
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:
+radial-gradient(circle at 10% 0%,rgba(16,185,129,.2),transparent 45%),
+radial-gradient(circle at 95% 100%,rgba(255,107,0,.15),transparent 45%),
+radial-gradient(circle at 50% 45%,rgba(212,175,55,.1),transparent 50%),
+linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px) 0 0/32px 32px,
+linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px) 0 0/32px 32px}
+.bg:before,.bg:after{content:"";position:absolute;width:55vmax;height:55vmax;border-radius:50%}
+.bg:before{top:-22vmax;left:-16vmax;background:radial-gradient(circle,rgba(16,185,129,.32),transparent 65%)}
+.bg:after{bottom:-26vmax;right:-16vmax;background:radial-gradient(circle,rgba(212,175,55,.26),transparent 65%)}
+.bg:before{animation:drift 18s ease-in-out infinite alternate}.bg:after{animation:drift 22s ease-in-out infinite alternate-reverse}
+@keyframes drift{to{transform:translate(8vmax,6vmax) scale(1.15)}}
+#root>div{background:transparent!important}
+#root>div>div.fixed.inset-0.z-0{display:none!important}
 .sx-hd{position:sticky;top:0;z-index:60;padding:calc(8px + env(safe-area-inset-top)) 0 8px;background:rgba(2,6,3,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(212,175,55,.25);font-family:Outfit,system-ui,sans-serif}
 .sx-in{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1280px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left)) 0 max(16px,env(safe-area-inset-right))}
 .sx-brand{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none}
@@ -35,10 +40,10 @@ const SITE_CSS = `
 
 function chrome(ctx: TaskPageCtx): string {
   const loggedIn = ctx.loggedIn;
-  const links = NAV.map((n) => `<a href="${n.href}"${n.href === "/tasks" ? ' class="on" aria-current="page"' : ""}>${n.label}</a>`).join("");
   const guest = loggedIn ? "" : `<div class="sx-gst">⚠️ Login के बिना Tasks सिर्फ़ इसी फोन में रहेंगे। <a href="/login?next=/tasks">Login करो</a> ताकि हर जगह मिलें।</div>`;
   return `<style id="sx-css">${SITE_CSS}</style>
-<header class="sx-hd"><div class="sx-in"><a class="sx-brand" href="/" aria-label="Study Universe Home"><span class="sx-logo"><img src="/images/logo.webp" alt="Study Universe Logo" width="42" height="42"></span><span class="sx-ttl">Study Universe</span></a><nav class="sx-nav" aria-label="Main">${links}</nav><a class="sx-me" href="/profile" aria-label="Profile">👤</a></div></header>${guest}${bottomBarForTaskPage({ active: "task", courseHref: ctx.courseHref })}`;
+<div class="bg" aria-hidden="true"></div>
+<header class="sx-hd"><div class="sx-in"><a class="sx-brand" href="/" aria-label="Study Universe Home"><span class="sx-logo"><img src="/images/logo.webp" alt="Study Universe Logo" width="42" height="42"></span><span class="sx-ttl">Study Universe</span></a><a class="sx-me" href="/profile" aria-label="Profile">👤</a></div></header>${guest}${bottomBarForTaskPage({ active: "task", courseHref: ctx.courseHref })}`;
 }
 
 // Page ke andar localStorage ki jagah ye lagta hai: data server par save hota hai (login) ya phone mein (guest).
@@ -47,9 +52,24 @@ const STORAGE_SHIM = `
 (function(){
   var B=window.__SU_BOOT||{mode:"local"},PFX="studyUniverse.",HK="studyUniverse.hist.v1",MAX=1800000;
   var real=null;try{real=window.localStorage}catch(e){}
+  var TK="studyUniverse.tasks.v1",IMGK="suPhotos:"+(B.uid||"guest"),imgs={};
+  try{imgs=JSON.parse(real.getItem(IMGK)||"{}")||{}}catch(e){imgs={}}
   var mem={},timer=null,dirty=false,k,i;
   if(B.mode==="server"){var d=B.data||{};for(k in d){if(k.indexOf(PFX)===0&&typeof d[k]==="string")mem[k]=d[k]}}
   else if(real){try{for(i=0;i<real.length;i++){k=real.key(i);if(k&&k.indexOf(PFX)===0)mem[k]=real.getItem(k)}}catch(e){}}
+  // Cover photo (task.photo) server par nahi jati: is phone ki local storage mein alag rakhi jati hai.
+  function saveImgs(){if(real)real.setItem(IMGK,JSON.stringify(imgs))}
+  function strip(json){
+    try{var a=JSON.parse(json);if(!Array.isArray(a))return json;var seen={},i2,t2,id;
+      for(i2=0;i2<a.length;i2++){t2=a[i2];if(!t2||typeof t2!=="object")continue;id=String(t2.id);seen[id]=1;
+        if(typeof t2.photo==="string"&&t2.photo){imgs[id]=t2.photo;t2.photo=""}}
+      for(id in imgs){if(!seen[id])delete imgs[id]}
+      return JSON.stringify(a)}catch(e){return json}}
+  function withPhotos(json){
+    try{var a=JSON.parse(json);if(!Array.isArray(a))return json;var i2,t2;
+      for(i2=0;i2<a.length;i2++){t2=a[i2];if(t2&&!t2.photo&&imgs[String(t2.id)])t2.photo=imgs[String(t2.id)]}
+      return JSON.stringify(a)}catch(e){return json}}
+  if(mem[TK]){var s0=strip(mem[TK]);if(s0!==mem[TK]){mem[TK]=s0;try{saveImgs()}catch(e){}if(B.mode==="server"){dirty=true}else local(TK,s0)}}
   function size(){var n=0,x;for(x in mem)n+=x.length+mem[x].length;return n}
   function local(k,v){if(!real)return;if(v===null)real.removeItem(k);else real.setItem(k,v)}
   function flush(unload){
@@ -62,11 +82,13 @@ const STORAGE_SHIM = `
   function ymd(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
   function hist(v){try{var o=JSON.parse(v);if(o&&o.date&&Array.isArray(o.ids)){var h=JSON.parse(mem[HK]||"{}"),ks;h[o.date]=o.ids.length;ks=Object.keys(h).sort();while(ks.length>400)delete h[ks.shift()];mem[HK]=JSON.stringify(h);if(B.mode!=="server")local(HK,mem[HK])}}catch(e){}}
   var shim={
-    getItem:function(k){k=String(k);if(k.indexOf(PFX)!==0)return real?real.getItem(k):null;return Object.prototype.hasOwnProperty.call(mem,k)?mem[k]:null},
+    getItem:function(k){k=String(k);if(k.indexOf(PFX)!==0)return real?real.getItem(k):null;if(!Object.prototype.hasOwnProperty.call(mem,k))return null;return k===TK?withPhotos(mem[k]):mem[k]},
     setItem:function(k,v){k=String(k);v=String(v);
       if(k.indexOf(PFX)!==0){if(real)real.setItem(k,v);return}
+      var oldImgs=null;
+      if(k===TK){oldImgs=JSON.stringify(imgs);v=strip(v);try{saveImgs()}catch(e){imgs=JSON.parse(oldImgs);throw new Error("QuotaExceededError")}}
       var old=mem[k];mem[k]=v;
-      if(size()>MAX){if(old===undefined)delete mem[k];else mem[k]=old;throw new Error("QuotaExceededError")}
+      if(size()>MAX){if(old===undefined)delete mem[k];else mem[k]=old;if(oldImgs!==null){imgs=JSON.parse(oldImgs);try{saveImgs()}catch(e){}}throw new Error("QuotaExceededError")}
       if(k==="studyUniverse.done.v1")hist(v);
       if(B.mode==="server")sched();else local(k,v)},
     removeItem:function(k){k=String(k);if(k.indexOf(PFX)!==0){if(real)real.removeItem(k);return}delete mem[k];if(B.mode==="server")sched();else local(k,null)},
@@ -74,6 +96,7 @@ const STORAGE_SHIM = `
   };
   Object.defineProperty(shim,"length",{get:function(){return 0}});
   try{Object.defineProperty(window,"localStorage",{configurable:true,get:function(){return shim}})}catch(e){}
+  if(dirty)sched();
   window.addEventListener("pagehide",function(){flush(true)});
   document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")flush(true)});
   window.__SUX={streakFor:function(set){

@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import BottomBar from "@/components/layout/BottomBar";
+import KrishnaFrame from "@/components/layout/KrishnaFrame";
 import { getSiteSettings } from "@/features/home/queries";
 import { ToastProvider } from "@/components/ui/Toast";
 
@@ -28,7 +29,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="bg" aria-hidden="true" />
           <Header />
           <div className="wrap">
-            <main>{children}</main>
+            <main><KrishnaFrame>{children}</KrishnaFrame></main>
             <Footer />
           </div>
           <BottomBar courseHref={courseHref} />

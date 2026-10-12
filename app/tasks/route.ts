@@ -8,11 +8,11 @@ export const dynamic = "force-dynamic";
 // /tasks = poora apna Page. Login user ka apna data (har user ka alag); login nahi to phone ki memory.
 export async function GET() {
   const user = await getUser();
-  let boot: { mode: "server" | "local"; data?: Record<string, string> } = { mode: "local" };
+  let boot: { mode: "server" | "local"; uid?: string; data?: Record<string, string> } = { mode: "local" };
   if (user) {
     const supabase = await createClient();
     const { data } = await supabase.from("user_task_data").select("data").eq("user_id", user.id).maybeSingle();
-    boot = { mode: "server", data: ((data as { data: Record<string, string> } | null)?.data) ?? {} };
+    boot = { mode: "server", uid: user.id, data: ((data as { data: Record<string, string> } | null)?.data) ?? {} };
   }
   const settings = await getSiteSettings();
   const ctx = { loggedIn: Boolean(user), courseHref: settings.course_url || null };
