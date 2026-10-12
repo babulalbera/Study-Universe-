@@ -459,3 +459,6 @@ transform:perspective(700px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));tra
 .cm-ac{align-self:flex-start;margin-top:4px;padding:4px 12px;white-space:nowrap;border-radius:99px;font:800 11px var(--sans);color:#06130b;background:var(--c);box-shadow:0 0 14px var(--gl)}
 .cm-foot{margin-top:14px;text-align:center;font:600 12px var(--sans);color:#a7f3d0}
 @media(prefers-reduced-motion:reduce){.cm,.cm-free:after,.cm-tile:after{animation:none}}
+
+/* About: Disclaimer box */
+.about-note{border:1px solid rgba(255,215,0,.35);background:rgba(255,215,0,.05)}
