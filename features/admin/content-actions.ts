@@ -1,5 +1,6 @@
 "use server";
 import { audit, back, ctx, dec, num, on, refresh, s } from "./helpers";
+const okUrl = (u: string) => u === "" || /^https?:\/\//.test(u) || (u.startsWith("/") && !u.startsWith("//"));
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -39,6 +40,7 @@ export async function createBook(input: { title: string; author: string; categor
   });
   if (error) return { error: `Save nahi hua: ${error.message}` };
   await audit(c, "create", "books", null, { title });
+  await c.supabase.from("notifications").insert({ title: "Nayi Book aayi hai", body: title, kind: "book" });
   refresh(["/admin/books", "/books"]);
   return {};
 }
@@ -97,9 +99,11 @@ export async function saveTest(formData: FormData) {
     category_id: UUID.test(cat) ? cat : null, is_published: on(formData, "is_published"),
   };
   if (id) {
+    const { data: prev } = await c.supabase.from("mock_tests").select("is_published").eq("id", id).maybeSingle();
     const { error } = await c.supabase.from("mock_tests").update(row).eq("id", id);
     if (error) back(P, "error", `Save nahi hua: ${error.message}`);
     await audit(c, "update", "mock_tests", id, { title });
+    if (row.is_published && !(prev as { is_published: boolean } | null)?.is_published) await c.supabase.from("notifications").insert({ title: "Naya Mock Test aaya hai", body: title, kind: "test" });
     refresh([P, "/mock-tests"]);
     back(`${P}/${id}`, "ok", "Test save ho gaya ✓");
   }
@@ -107,6 +111,7 @@ export async function saveTest(formData: FormData) {
   if (error || !data) back(P, "error", `Save nahi hua: ${error?.message ?? ""}`);
   const newId = (data as { id: string }).id;
   await audit(c, "create", "mock_tests", newId, { title });
+  if (row.is_published) await c.supabase.from("notifications").insert({ title: "Naya Mock Test aaya hai", body: title, kind: "test" });
   refresh([P, "/mock-tests"]);
   back(`${P}/${newId}`, "ok", "Test ban gaya. Ab Sawal jodo ✓");
 }
@@ -140,6 +145,7 @@ export async function saveQuestion(formData: FormData) {
   const row = {
     question_text: text, options, correct_index: correct, marks, negative_marks: neg,
     explanation: s(formData, "explanation"), sort_order: num(formData, "sort_order"),
+    subject: s(formData, "subject").slice(0, 30) || null,
   };
   const { error } = id
     ? await c.supabase.from("questions").update(row).eq("id", id).eq("test_id", testId)
@@ -159,4 +165,48 @@ export async function deleteQuestion(formData: FormData) {
   await audit(c, "delete", "questions", id, { testId });
   refresh([P, "/admin/tests"]);
   back(P, "ok", "Sawal hata diya ✓");
+}
+
+// ================= Support reports =================
+export async function deleteReport(formData: FormData) {
+  const P = "/admin/reports";
+  const c = await ctx();
+  const id = s(formData, "id");
+  const { error } = await c.supabase.from("support_reports").delete().eq("id", id);
+  if (error) back(P, "error", "Hata nahi paya");
+  await audit(c, "delete", "support_reports", id);
+  refresh([P]);
+  back(P, "ok", "Report hata di ✓");
+}
+
+// ================= Courses =================
+export async function saveCourse(formData: FormData) {
+  const P = "/admin/courses";
+  const c = await ctx();
+  const id = s(formData, "id");
+  const title = s(formData, "title");
+  const url = s(formData, "url");
+  if (title.length < 2) back(P, "error", "Course ka naam likho");
+  if (!okUrl(url)) back(P, "error", "Link https:// se ya / se shuru hona chahiye");
+  const row = {
+    title: title.slice(0, 120), description: s(formData, "description").slice(0, 500), category: s(formData, "category").slice(0, 40),
+    url: url || null, sort_order: num(formData, "sort_order"), is_published: on(formData, "is_published"),
+  };
+  const { error } = id
+    ? await c.supabase.from("courses").update(row).eq("id", id)
+    : await c.supabase.from("courses").insert({ ...row, created_by: c.profile.id });
+  if (error) back(P, "error", `Save nahi hua: ${error.message}`);
+  await audit(c, id ? "update" : "create", "courses", id || null, { title });
+  refresh([P, "/courses"]);
+  back(P, "ok", "Course save ho gaya ✓");
+}
+export async function deleteCourse(formData: FormData) {
+  const P = "/admin/courses";
+  const c = await ctx();
+  const id = s(formData, "id");
+  const { error } = await c.supabase.from("courses").delete().eq("id", id);
+  if (error) back(P, "error", "Hata nahi paya");
+  await audit(c, "delete", "courses", id);
+  refresh([P, "/courses"]);
+  back(P, "ok", "Course hata diya ✓");
 }

@@ -80,7 +80,18 @@ const STORAGE_SHIM = `
   }
   function sched(){if(B.mode!=="server")return;dirty=true;clearTimeout(timer);timer=setTimeout(function(){flush(false)},1200)}
   function ymd(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-  function hist(v){try{var o=JSON.parse(v);if(o&&o.date&&Array.isArray(o.ids)){var h=JSON.parse(mem[HK]||"{}"),ks;h[o.date]=o.ids.length;ks=Object.keys(h).sort();while(ks.length>400)delete h[ks.shift()];mem[HK]=JSON.stringify(h);if(B.mode!=="server")local(HK,mem[HK])}}catch(e){}}
+  var LK="studyUniverse.log.v1";
+  // Roz ka log: kitne task, kitne minute (study/revision), subject-wise. Dashboard isi se bante hain.
+  function subj(t2){var x;if(t2.subject&&String(t2.subject).trim())return String(t2.subject).trim().slice(0,30);x=String(t2.title||"").toUpperCase();
+    if(/MATH|GANIT/.test(x))return "Maths";if(/ENGLISH/.test(x))return "English";if(/HINDI/.test(x))return "Hindi";if(/REASON/.test(x))return "Reasoning";
+    if(/(^|[^A-Z])GS([^A-Z]|$)|CURRENT|(^|[^A-Z])GK([^A-Z]|$)|POLITY|HISTORY|GEOGRAPHY/.test(x))return "GS";if(/SCIENCE/.test(x))return "Science";if(/FITNESS|EXERCISE/.test(x))return "Fitness";return "Other"}
+  function logDay(o){try{var ts=JSON.parse(mem[TK]||"[]"),L=JSON.parse(mem[LK]||"{}"),ids={},n=0,m=0,s={},i3,t3,d3,ks3;
+    for(i3=0;i3<o.ids.length;i3++)ids[String(o.ids[i3])]=1;
+    for(i3=0;i3<ts.length;i3++){t3=ts[i3];if(!ids[String(t3.id)])continue;n++;
+      if(t3.type==="study"||t3.type==="revision"){d3=t3.end-t3.start;if(d3<=0)d3+=1440;m+=d3;s[subj(t3)]=(s[subj(t3)]||0)+d3}}
+    L[o.date]={n:n,m:m,s:s};ks3=Object.keys(L).sort();while(ks3.length>400)delete L[ks3.shift()];
+    mem[LK]=JSON.stringify(L);if(B.mode!=="server")local(LK,mem[LK])}catch(e){}}
+  function hist(v){try{var o=JSON.parse(v);if(o&&o.date&&Array.isArray(o.ids)){var h=JSON.parse(mem[HK]||"{}"),ks;h[o.date]=o.ids.length;logDay(o);ks=Object.keys(h).sort();while(ks.length>400)delete h[ks.shift()];mem[HK]=JSON.stringify(h);if(B.mode!=="server")local(HK,mem[HK])}}catch(e){}}
   var shim={
     getItem:function(k){k=String(k);if(k.indexOf(PFX)!==0)return real?real.getItem(k):null;if(!Object.prototype.hasOwnProperty.call(mem,k))return null;return k===TK?withPhotos(mem[k]):mem[k]},
     setItem:function(k,v){k=String(k);v=String(v);

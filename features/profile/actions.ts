@@ -1,10 +1,8 @@
 "use server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { requireUser } from "@/lib/auth";
 import { validateLogin, validateSignup } from "@/lib/validations";
 import type { FormState } from "./types";
 
@@ -49,13 +47,3 @@ export async function logout() {
   redirect("/");
 }
 
-export async function updateProfile(_prev: FormState, formData: FormData): Promise<FormState> {
-  const user = await requireUser();
-  const name = str(formData, "name").trim();
-  if (name.length < 2 || name.length > 60) return { fieldErrors: { name: "Naam 2 se 60 akshar ka ho" } };
-  const supabase = await createClient();
-  const { error } = await supabase.from("profiles").update({ full_name: name }).eq("id", user.id);
-  if (error) return { error: "Naam save nahi ho paya." };
-  revalidatePath("/profile");
-  return { message: "Naam save ho gaya ✓" };
-}

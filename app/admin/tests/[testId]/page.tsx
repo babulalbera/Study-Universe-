@@ -22,6 +22,7 @@ function QuestionFields({ testId, q, next }: { testId: string; q?: Question; nex
       <Field label="Option 2" name="opt2" defaultValue={o[1]} required />
       <Field label="Option 3 (ज़रूरी नहीं)" name="opt3" defaultValue={o[2]} />
       <Field label="Option 4 (ज़रूरी नहीं)" name="opt4" defaultValue={o[3]} />
+      <Field label="विषय (Subject) — Profile के विषय-वार Result के लिए" name="subject" defaultValue={q?.subject ?? ""} placeholder="Maths / English / GS..." />
       <Field label="सही उत्तर" name="correct" defaultValue={String((q?.correct_index ?? 0) + 1)} options={CORRECT} />
       <Field label="सही पर अंक" name="marks" type="number" defaultValue={q?.marks ?? 1} />
       <Field label="गलत पर कटेंगे (Negative)" name="negative_marks" type="number" defaultValue={q?.negative_marks ?? 0} />

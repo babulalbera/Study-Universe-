@@ -5,8 +5,8 @@ import HeroSection from "@/components/home/HeroSection";
 import KrishnaStrip from "@/components/home/KrishnaStrip";
 
 // Upar wala aur neeche wala Krishna box: Home, Books, Profile, Results... sab pages par.
-// Ye pages isse bahar hain: Admin, Login/Signup, aur Test dene ka page (dhyan na bante).
-const HIDE = ["/admin", "/login", "/signup", "/auth", "/mock-tests/"];
+// Ye pages isse bahar hain: Admin, Login/Signup, Test dene ka page, aur Profile (uska apna design hai).
+const HIDE = ["/admin", "/login", "/signup", "/auth", "/mock-tests/", "/profile"];
 
 export default function KrishnaFrame({ children }: { children: ReactNode }) {
   const path = usePathname();

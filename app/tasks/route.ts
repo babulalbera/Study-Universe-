@@ -15,7 +15,7 @@ export async function GET() {
     boot = { mode: "server", uid: user.id, data: ((data as { data: Record<string, string> } | null)?.data) ?? {} };
   }
   const settings = await getSiteSettings();
-  const ctx = { loggedIn: Boolean(user), courseHref: settings.course_url || null };
+  const ctx = { loggedIn: Boolean(user), courseHref: settings.course_url || "/courses" };
   return new Response(renderTaskPage(boot, ctx), {
     headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store" },
   });

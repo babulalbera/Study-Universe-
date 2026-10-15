@@ -21,7 +21,7 @@ export const viewport: Viewport = { themeColor: "#020603", width: "device-width"
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const settings = await getSiteSettings();
-  const courseHref = settings.course_url || null;
+  const courseHref = settings.course_url || "/courses"; // Admin ne bahari Link diya ho to wahi, warna apna /courses page
   return (
     <html lang="hi" className={`${outfit.variable} ${space.variable} ${deva.variable}`}>
       <body>

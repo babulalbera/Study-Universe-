@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 const ALLOWED = new Set([
   "studyUniverse.tasks.v1", "studyUniverse.done.v1", "studyUniverse.todos.v1",
-  "studyUniverse.dayNotes.v1", "studyUniverse.todoTheme.v1", "studyUniverse.hist.v1",
+  "studyUniverse.dayNotes.v1", "studyUniverse.todoTheme.v1", "studyUniverse.hist.v1", "studyUniverse.log.v1",
 ]);
 const MAX_CHARS = 2_000_000;
 

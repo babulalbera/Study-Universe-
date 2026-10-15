@@ -13,7 +13,7 @@ export default function BottomBar({ courseHref }: { courseHref: string | null })
   const navRef = useRef<HTMLElement>(null);
   const pillRef = useRef<HTMLSpanElement>(null);
 
-  const active = path === "/" ? "home" : path.startsWith("/tasks") ? "task" : path.startsWith("/books") ? "books" : path.startsWith("/profile") ? "prof" : null;
+  const active = path === "/" ? "home" : path.startsWith("/tasks") ? "task" : path.startsWith("/books") ? "books" : path.startsWith("/profile") ? "prof" : path.startsWith("/courses") ? "course" : null;
 
   const place = useCallback(() => {
     const nav = navRef.current, pill = pillRef.current;
@@ -39,7 +39,7 @@ export default function BottomBar({ courseHref }: { courseHref: string | null })
 
   function openCourse() {
     vib();
-    if (!courseHref) { toast("Course ka link abhi set nahi hai"); return; }
+    if (!courseHref) { toast("Courses ka link abhi set nahi hai"); return; }
     if (/^https?:/.test(courseHref)) window.open(courseHref, "_blank", "noopener,noreferrer");
     else window.location.assign(courseHref);
   }
@@ -53,14 +53,20 @@ export default function BottomBar({ courseHref }: { courseHref: string | null })
           <span className="pl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" /></svg></span>Home
         </Link>
         <a href="/tasks" className={cls("task")} data-k="task" aria-current={cur("task")} onClick={vib}>
-          <span className="pl"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m8 12.5 3 3 5-6" /></svg></span>Task
+          <span className="pl"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m8 12.5 3 3 5-6" /></svg></span>Tasks
         </a>
         <Link href="/books" className={cls("books")} data-k="books" aria-current={cur("books")} onClick={vib}>
           <span className="pl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v13H6.5A1.5 1.5 0 0 0 5 18.5z" /><path d="M5 18.5A1.5 1.5 0 0 0 6.5 20H19v-3M9 8h6" /></svg></span>Books
         </Link>
-        <button type="button" className={cls("course")} data-k="course" onClick={openCourse}>
-          <span className="pl"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m10.5 8.8 4.5 3.2-4.5 3.2z" /></svg></span>Course
-        </button>
+        {courseHref && courseHref.startsWith("/") ? (
+          <Link href={courseHref} className={cls("course")} data-k="course" aria-current={cur("course")} onClick={vib}>
+            <span className="pl"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m10.5 8.8 4.5 3.2-4.5 3.2z" /></svg></span>Courses
+          </Link>
+        ) : (
+          <button type="button" className={cls("course")} data-k="course" onClick={openCourse}>
+            <span className="pl"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m10.5 8.8 4.5 3.2-4.5 3.2z" /></svg></span>Courses
+          </button>
+        )}
         <Link href="/profile" className={cls("prof")} data-k="prof" aria-current={cur("prof")} onClick={vib}>
           <span className="pl"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.7" /><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" /></svg></span>Profile
         </Link>

@@ -56,7 +56,7 @@ export const BAR_ICONS: Record<string, string> = {
   course: '<circle cx="12" cy="12" r="9"/><path d="m10.5 8.8 4.5 3.2-4.5 3.2z"/>',
   prof: '<circle cx="12" cy="8.5" r="3.7"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/>',
 };
-const ITEMS: [string, string][] = [["home", "Home"], ["task", "Task"], ["books", "Books"], ["course", "Course"], ["prof", "Profile"]];
+const ITEMS: [string, string][] = [["home", "Home"], ["task", "Tasks"], ["books", "Books"], ["course", "Courses"], ["prof", "Profile"]];
 
 // Task page mein bar (HTML + CSS + chhota script)
 export function bottomBarForTaskPage(cfg: BarConfig): string {
