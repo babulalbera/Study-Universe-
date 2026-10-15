@@ -577,3 +577,22 @@ background:linear-gradient(180deg,rgba(14,26,18,.82),rgba(5,11,8,.9));box-shadow
 .pd-navt{flex:none;align-self:center;font-size:12px;color:var(--mute);padding-right:4px}
 @media(max-width:520px){.ov-av{width:76px;height:76px}.ov-who h1{font-size:20px}.ov-edit{width:100%;justify-content:center}.ov-head h2{font-size:18px}}
 .ov-stat .ov-bar{flex:none;width:100%;height:8px}
+
+/* ===== Premium glass polish: profile page ===== */
+.pd{gap:16px;padding:10px 0 26px;isolation:isolate}
+.pd:before{content:"";position:fixed;z-index:-1;pointer-events:none;width:360px;height:360px;right:-140px;top:24%;border-radius:50%;background:rgba(212,175,55,.09);filter:blur(85px)}
+.pd:after{content:"";position:fixed;z-index:-1;pointer-events:none;width:300px;height:300px;left:-150px;top:35%;border-radius:50%;background:rgba(16,185,129,.08);filter:blur(80px)}
+.pd .ov-sec{background:linear-gradient(135deg,rgba(10,28,19,.76),rgba(5,10,8,.72));-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(230,190,65,.22);box-shadow:0 16px 42px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.045);transition:border-color .2s,box-shadow .2s}
+.pd .ov-sec:hover{border-color:rgba(230,190,65,.34);box-shadow:0 18px 44px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.06)}
+.pd .ov-hero{background:linear-gradient(120deg,rgba(12,39,26,.84),rgba(5,13,9,.74));border-color:rgba(230,190,65,.3)}
+.pd .ov-stat,.pd .ov-tile,.pd .ov-lc{background:rgba(3,10,7,.34);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+.pd .ov-stat{transition:transform .2s,border-color .2s,background .2s}
+.pd .ov-stat:hover{transform:translateY(-2px);border-color:rgba(230,190,65,.45);background:rgba(230,180,34,.055)}
+.pd .ov-edit,.pd .pbtn{min-height:42px;transition:transform .18s,background .18s,box-shadow .18s}
+.pd .ov-edit:hover,.pd .pbtn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.pd .ov-av{box-shadow:0 0 0 4px rgba(230,180,34,.09),0 0 26px rgba(230,180,34,.24)}
+.pd .ov-panel{border-top-color:rgba(255,255,255,.1)}
+.pd .ov-stat p,.pd .ov-ttx small,.pd .ov-lbody small{line-height:1.45}
+.pd .ov-stat b{letter-spacing:-.03em}
+@media(max-width:520px){.pd{gap:12px;padding:6px 0 20px}.pd .ov-sec{padding:15px;border-radius:19px}.pd .ov-hrow{gap:12px}.pd .ov-edit{width:auto;min-height:38px;padding:8px 12px;margin-left:auto;font-size:12px}.pd .ov-stat{padding:12px 10px;border-radius:15px}.pd .ov-ic{width:42px;height:42px}.pd .ov-stat b{font-size:23px}}
+@media(prefers-reduced-motion:reduce){.pd .ov-sec,.pd .ov-stat,.pd .ov-edit,.pd .pbtn{transition:none}}
