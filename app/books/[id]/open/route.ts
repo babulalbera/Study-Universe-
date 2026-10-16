@@ -14,7 +14,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const path = (data as { storage_path: string | null } | null)?.storage_path;
   if (!path) return NextResponse.redirect(`${origin}/books`);
 
-  await supabase.from("user_book_activity").upsert({ user_id: user.id, book_id: id, last_opened_at: new Date().toISOString() });
   const signed = await supabase.storage.from("books").createSignedUrl(path, 120);
   if (signed.error || !signed.data) return NextResponse.redirect(`${origin}/books`);
   return NextResponse.redirect(signed.data.signedUrl);

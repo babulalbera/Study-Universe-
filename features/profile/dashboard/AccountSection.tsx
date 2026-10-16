@@ -21,8 +21,7 @@ export default function AccountSection({ p }: { p: FullProfile }) {
   const last = p.lastSignIn ? new Date(p.lastSignIn).toLocaleString("hi-IN") : "—";
 
   return (
-    <section id="account" className="pd-card">
-      <h2 className="pd-h">⚙️ Account Settings</h2>
+    <div className="pd-plain">
       <div className="pd-kv">
         <span>Email</span><b>{p.email} {p.emailVerified ? <em className="pd-ok">✓ Verified</em> : <em className="pd-warn">Verify nahi hua</em>}</b>
         <span>Login ka tareeka</span><b>{p.provider}</b>
@@ -68,6 +67,6 @@ export default function AccountSection({ p }: { p: FullProfile }) {
         )}
       </details>
       <p className="pd-dim">Privacy: tumhara data sirf tumhe dikhta hai (doosre Users ko nahi). Alag se Privacy toggles abhi nahi hain, kyunki website mein koi public profile ya leaderboard nahi hai.</p>
-    </section>
+    </div>
   );
 }

@@ -23,7 +23,7 @@ export default function StudyOverview({ input, mockCount }: { input: StudyInput;
     <section id="overview" className="ov-sec">
       <div className="ov-head">
         <h2><Icon name="bars" size={24} /> Study Overview</h2>
-        <a href="#study" className="ov-more">See Details <Icon name="chevron" size={15} /></a>
+        <a href="/tasks" className="ov-more">See Details <Icon name="chevron" size={15} /></a>
       </div>
       <div className="ov-cards">
         <div className="ov-stat">

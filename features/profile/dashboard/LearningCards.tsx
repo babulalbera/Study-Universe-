@@ -16,7 +16,7 @@ export default function LearningCards({ input }: { input: StudyInput }) {
     <section id="mylearning" className="ov-sec">
       <div className="ov-head">
         <h2><Icon name="book" size={26} /> My Learning</h2>
-        <a href="#learning" className="ov-more">View All <Icon name="chevron" size={15} /></a>
+        <a href="/tasks" className="ov-more">View All <Icon name="chevron" size={15} /></a>
       </div>
       {subs.length === 0 ? (
         <p className="pd-dim">Abhi vishay-wise padhai ka record nahi hai. Study/revision Tasks complete karte hi yahan tumhare top vishay dikhenge (pichhle 30 din).</p>
