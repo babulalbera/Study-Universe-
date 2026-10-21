@@ -66,3 +66,49 @@ border:1px solid var(--qb);background:linear-gradient(160deg,var(--q1),var(--q2)
 .pr-more>summary::-webkit-details-marker{display:none}
 .pr-more[open]>summary{margin-bottom:12px}
 @media(max-width:360px){.pr-qt{padding:10px}.pr-qt b{font-size:12px}}
+
+/* ===== Profile redesign (Step 4): Study Overview + Continue Learning ===== */
+.pr-os-wrap,.pr-cl-wrap{display:block}
+.pr-seemore{font:500 12.5px var(--sans);color:#d4d4d8;white-space:nowrap}
+.pr-seemore:hover{color:#E6B422}
+.pr-os{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.pr-oc{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:18px;border:1px solid rgba(212,175,55,.28);background:linear-gradient(160deg,rgba(20,34,24,.9),rgba(8,15,10,.95))}
+.pr-oc-top{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px}
+.pr-oc-ic{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#E6B422;background:rgba(230,180,34,.12);border:1px solid rgba(230,180,34,.35);flex:none}
+.pr-oc-ic svg{width:19px;height:19px}
+.pr-chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font:700 10.5px var(--sans);color:#6ee7b7;background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.35);white-space:nowrap}
+.pr-chip.neg{color:#fca5a5;background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35)}
+.pr-chip-link{color:#7dd3fc;background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.35)}
+.pr-oc p{font:500 13px var(--sans);color:#d4d4d8}
+.pr-oc b{font:800 26px/1.1 var(--sans);color:#fff}
+.pr-oc b small{font-size:15px;font-weight:600;color:#a1a1aa}
+.pr-oc em{font-style:normal;font-size:11.5px;color:#a1a1aa;min-height:1.2em}
+
+.pr-cl{margin-top:10px;padding:14px;border-radius:20px;border:1px solid rgba(212,175,55,.35);background:linear-gradient(160deg,rgba(20,34,24,.92),rgba(8,15,10,.96))}
+.pr-cl-row{display:flex;gap:12px;align-items:center}
+.pr-cl-cover{flex:none;width:58px;height:74px;border-radius:12px;display:grid;place-items:center;color:#E6B422;background:linear-gradient(160deg,rgba(212,175,55,.28),rgba(16,185,129,.18));border:1px solid rgba(230,180,34,.45)}
+.pr-cl-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.pr-cl-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pr-cl-pill{padding:2px 8px;border-radius:6px;font:800 9.5px var(--sans);letter-spacing:.08em;color:#6ee7b7;background:rgba(16,185,129,.16);border:1px solid rgba(16,185,129,.4)}
+.pr-cl-pill.done{color:#FFE082;background:rgba(230,180,34,.16);border-color:rgba(230,180,34,.5)}
+.pr-cl-ago{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#a1a1aa}
+.pr-cl-title{font:700 16px/1.25 var(--sans);color:#fff;overflow-wrap:anywhere}
+.pr-cl-sub{font-size:12px;color:#a1a1aa}
+.pr-cl-prog{display:flex;align-items:center;gap:10px;margin-top:6px}
+.pr-cl-prog span{font:700 12.5px var(--sans);color:#E6B422;min-width:36px;text-align:right}
+.pr-cl-btns{display:flex;gap:10px;margin-top:14px}
+.pr-cl-resume,.pr-cl-upd{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;height:42px;padding:0 12px;border-radius:99px;font:700 13.5px var(--sans);cursor:pointer;white-space:nowrap}
+.pr-cl-resume{color:#1a1300;background:linear-gradient(90deg,#FFE082,#E6B422);border:0}
+.pr-cl-upd{color:#E6B422;background:rgba(230,180,34,.06);border:1.5px solid rgba(230,180,34,.6)}
+.pr-cl-form{display:flex;flex-direction:column;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)}
+.pr-cl-form label{display:flex;flex-direction:column;gap:6px;font:600 13px var(--sans);color:#e4e4e7}
+.pr-cl-form label small{font-weight:400;color:#a1a1aa}
+.pr-cl-form input{height:44px;padding:0 14px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.45);color:#fff;font:inherit;outline:none}
+.pr-cl-form input:focus{border-color:#E6B422}
+.pr-cl-save{height:42px;border-radius:99px;border:0;cursor:pointer;font:700 14px var(--sans);color:#1a1300;background:linear-gradient(90deg,#FFE082,#E6B422)}
+.pr-cl-save:disabled{opacity:.6;cursor:wait}
+.pr-cl-empty{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.pr-cl-empty .pr-cl-resume{flex:1 1 100%}
+.pr-cl-empty .pr-cl-body b{font:700 15px var(--sans);color:#fff}
+.pr-cl-empty .pr-cl-body small{font-size:12.5px;color:#a1a1aa}
+@media(max-width:360px){.pr-oc b{font-size:22px}.pr-cl-btns{flex-direction:column}}

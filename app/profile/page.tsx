@@ -9,6 +9,8 @@ import CommunityRow from "@/features/profile/dashboard/CommunityRow";
 import { getFullProfile, getStudyData, getTestsOverview } from "@/features/profile/dashboard/queries";
 import { getProfileExtras } from "@/features/profile/dashboard/redesign-queries";
 import { getFavorites } from "@/features/bookmarks/queries";
+import ContinueLearning from "@/features/profile/dashboard/ContinueLearning";
+import { getContinueBook } from "@/features/profile/dashboard/continue-queries";
 import { getHomeSocials, getSiteSettings } from "@/features/home/queries";
 import "@/features/profile/dashboard/profile-redesign.css";
 
@@ -34,16 +36,17 @@ export default async function ProfilePage() {
     );
   }
 
-  const [socials, settings, study, tests, extras, favs] = await Promise.all([
-    getHomeSocials(), getSiteSettings(), getStudyData(p.id), getTestsOverview(), getProfileExtras(p.id), getFavorites(),
+  const [socials, settings, study, tests, extras, favs, cont] = await Promise.all([
+    getHomeSocials(), getSiteSettings(), getStudyData(p.id), getTestsOverview(), getProfileExtras(p.id), getFavorites(), getContinueBook(),
   ]);
 
   return (
     <div className="pd">
       <KrishnaBanner quote={extras.quote} />
       <ProfileHeader p={p} bio={extras.bio} input={study} points={extras.pr.points} level={extras.pr.level} rank={extras.pr.rank} />
-      <StudyOverview input={study} mockCount={tests.submitted.length} />
       <QuickAccess courseHref={settings.course_url || null} isAdmin={p.role === "admin"} favCount={favs.books.length + favs.tests.length} bookCount={favs.books.length} />
+      <StudyOverview input={study} mockCount={tests.submitted.length} />
+      <ContinueLearning book={cont} />
       <LearningCards input={study} />
       <CommunityRow socials={socials.map((s) => ({ key: s.key, name: s.name, href: s.href, icon: s.icon }))} />
     </div>
