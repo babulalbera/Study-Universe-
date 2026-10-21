@@ -1,0 +1,7 @@
+.pr-act{display:flex;align-items:center;gap:8px;flex:none}
+.pr-fav{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#d4d4d8;
+border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.35);transition:transform .15s,color .2s,border-color .2s,background .2s}
+.pr-fav:active{transform:scale(.9)}
+.pr-fav.on{color:#fb7185;border-color:rgba(251,113,133,.6);background:rgba(251,113,133,.12)}
+.pr-fav.on svg{fill:currentColor}
+.pr-fav:disabled{opacity:.6;cursor:wait}

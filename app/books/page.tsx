@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
+import BookmarkButton from "@/features/bookmarks/BookmarkButton";
+import { getBookmarkedBookIds } from "@/features/bookmarks/queries";
 import { BOOKS_PER_PAGE, getBookCategories, getBooks } from "@/features/books/queries";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +14,7 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
   const page = Math.max(1, Number(sp.page) || 1);
   const cats = await getBookCategories();
   const cat = cats.find((c) => c.id === sp.cat)?.id ?? null;
-  const { books, total } = await getBooks(cat, page);
+  const [{ books, total }, savedIds] = await Promise.all([getBooks(cat, page), getBookmarkedBookIds()]);
   const pages = Math.max(1, Math.ceil(total / BOOKS_PER_PAGE));
   const href = (c: string | null, p: number) => `/books?${[c && `cat=${c}`, p > 1 && `page=${p}`].filter(Boolean).join("&")}`;
   const catName = new Map(cats.map((c) => [c.id, c.name]));
@@ -36,7 +38,10 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
                 <h3>{b.title}</h3>
                 <p>{[catName.get(b.category_id ?? ""), b.author].filter(Boolean).join(" • ") || "PDF"}</p>
               </div>
-              <a className="su-btn su-btn-primary" href={`/books/${b.id}/open`} target="_blank" rel="noopener noreferrer">📖 खोलो</a>
+              <div className="pr-act">
+                <BookmarkButton type="book" id={b.id} initialSaved={savedIds.has(b.id)} />
+                <a className="su-btn su-btn-primary" href={`/books/${b.id}/open`} target="_blank" rel="noopener noreferrer">📖 खोलो</a>
+              </div>
             </div>
           ))}
         </div>
