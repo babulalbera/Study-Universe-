@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import KrishnaBanner from "@/features/profile/dashboard/KrishnaBanner";
 import ProfileHeader from "@/features/profile/dashboard/ProfileHeader";
 import StudyOverview from "@/features/profile/dashboard/StudyOverview";
 import QuickAccess from "@/features/profile/dashboard/QuickAccess";
@@ -42,7 +41,6 @@ export default async function ProfilePage() {
 
   return (
     <div className="pd">
-      <KrishnaBanner quote={extras.quote} />
       <ProfileHeader p={p} bio={extras.bio} input={study} points={extras.pr.points} level={extras.pr.level} rank={extras.pr.rank} />
       <QuickAccess courseHref={settings.course_url || null} isAdmin={p.role === "admin"} favCount={favs.books.length + favs.tests.length} bookCount={favs.books.length} />
       <StudyOverview input={study} mockCount={tests.submitted.length} />
