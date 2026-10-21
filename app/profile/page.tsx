@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import KrishnaBanner from "@/features/profile/dashboard/KrishnaBanner";
 import ProfileHeader from "@/features/profile/dashboard/ProfileHeader";
 import StudyOverview from "@/features/profile/dashboard/StudyOverview";
 import QuickAccess from "@/features/profile/dashboard/QuickAccess";
 import LearningCards from "@/features/profile/dashboard/LearningCards";
 import CommunityRow from "@/features/profile/dashboard/CommunityRow";
 import { getFullProfile, getStudyData, getTestsOverview } from "@/features/profile/dashboard/queries";
+import { getProfileExtras } from "@/features/profile/dashboard/redesign-queries";
 import { getHomeSocials, getSiteSettings } from "@/features/home/queries";
+import "@/features/profile/dashboard/profile-redesign.css";
 
 export const metadata: Metadata = { title: "Meri Profile" };
 
-// Simple Profile: Profile card, Study Overview, Quick Access, My Learning, Community.
-// Zaroori settings sab ⚙️ Settings icon (/profile/settings) ke andar hain.
+// Profile: Krishna banner, Profile card (Points/Rank), Study Overview, Quick Access, My Learning, Community.
+// Zaroori settings sab Edit Profile / Settings (/profile/settings) ke andar hain.
 export default async function ProfilePage() {
   const p = await getFullProfile();
 
@@ -30,11 +33,14 @@ export default async function ProfilePage() {
     );
   }
 
-  const [socials, settings, study, tests] = await Promise.all([getHomeSocials(), getSiteSettings(), getStudyData(p.id), getTestsOverview()]);
+  const [socials, settings, study, tests, extras] = await Promise.all([
+    getHomeSocials(), getSiteSettings(), getStudyData(p.id), getTestsOverview(), getProfileExtras(p.id),
+  ]);
 
   return (
     <div className="pd">
-      <ProfileHeader p={p} />
+      <KrishnaBanner quote={extras.quote} />
+      <ProfileHeader p={p} bio={extras.bio} input={study} points={extras.pr.points} level={extras.pr.level} rank={extras.pr.rank} />
       <StudyOverview input={study} mockCount={tests.submitted.length} />
       <QuickAccess courseHref={settings.course_url || null} isAdmin={p.role === "admin"} />
       <LearningCards input={study} />

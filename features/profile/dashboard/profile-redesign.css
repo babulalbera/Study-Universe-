@@ -1,0 +1,46 @@
+/* ===== Profile redesign (Step 2): Krishna banner + profile card ===== */
+.pr-banner{position:relative;padding:14px;border-radius:22px;border:1.5px solid rgba(212,175,55,.55);
+background:linear-gradient(145deg,rgba(18,52,34,.95),rgba(6,22,14,.97));box-shadow:0 14px 34px rgba(0,0,0,.45),0 0 28px rgba(16,185,129,.1)}
+.pr-b-top{display:flex;align-items:center;gap:12px}
+.pr-b-img{flex:none;width:58px;height:58px;border-radius:50%;object-fit:cover;object-position:center 22%;border:2px solid #E6B422;box-shadow:0 0 16px rgba(230,180,34,.35)}
+.pr-b-tx{flex:1;min-width:0}
+.pr-b-k{font:700 10px/1.3 var(--head);letter-spacing:.14em;color:#E6B422}
+.pr-b-t{margin-top:3px;font:700 17px/1.3 var(--dev);color:#fff}
+.pr-b-sub{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:11.5px;line-height:1.35;color:#6ee7b7}
+.pr-b-sub:before{content:"";width:6px;height:6px;border-radius:50%;background:#34d399;flex:none}
+.pr-heart{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#d4d4d8;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25)}
+.pr-b-q{margin:12px 0 0;padding:14px 12px;text-align:center;border-radius:14px;background:rgba(0,0,0,.4);border:1px solid rgba(230,180,34,.35)}
+.pr-b-s{font:italic 600 15px/1.6 var(--dev);color:#FFEAA7}
+.pr-b-m{margin-top:4px;font:500 12.5px/1.55 var(--dev);color:#a7f3d0}
+.pr-b-q small{display:block;margin-top:4px;font-size:11px;color:var(--mute)}
+
+.pr-card{padding:16px;border-radius:22px;border:1px solid rgba(212,175,55,.35);scroll-margin-top:72px;
+background:linear-gradient(180deg,rgba(14,26,18,.9),rgba(5,11,8,.95));box-shadow:0 14px 34px rgba(0,0,0,.4)}
+.pr-top{display:flex;align-items:center;gap:14px}
+.pr-avbox{position:relative;flex:none}
+.pr-av{width:68px;height:68px;border-radius:50%;object-fit:cover;border:2.5px solid #E6B422;box-shadow:0 0 18px rgba(230,180,34,.35);display:block}
+.pr-av-ph{display:grid;place-items:center;font:800 28px var(--sans);color:#241a00;background:radial-gradient(circle at 30% 25%,#FFF1B0,#FFD700 50%,#C99A1C)}
+.pr-ver{position:absolute;right:-2px;bottom:0;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:800 12px var(--sans);color:#052e1b;background:#34d399;border:2px solid #0b140d}
+.pr-who{flex:1;min-width:0}
+.pr-who h1{font:700 22px/1.15 var(--sans);color:#E6B422;overflow-wrap:anywhere}
+.pr-pills{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:7px}
+.pr-pill,.pr-streak{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font:600 12px var(--sans)}
+.pr-pill{color:#E6B422;background:rgba(230,180,34,.1);border:1px solid rgba(230,180,34,.35)}
+.pr-streak{color:#fdba74;background:transparent;padding-left:0}
+.pr-pill svg,.pr-streak svg{width:14px;height:14px}
+.pr-bio{margin-top:7px;font-size:13px;line-height:1.5;font-style:italic;color:#d4d4d8;overflow-wrap:anywhere}
+
+.pr-editrow{display:flex;align-items:center;gap:10px;margin-top:14px}
+.pr-edit{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;border-radius:99px;border:1.5px solid rgba(230,180,34,.7);background:rgba(230,180,34,.06);color:#E6B422;font:600 14px var(--sans);transition:background .2s}
+.pr-edit:hover,.pr-edit:active{background:rgba(230,180,34,.16)}
+.pr-edit svg{width:16px;height:16px}
+.pr-lvl{flex:none;display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 14px;border-radius:99px;border:1px solid rgba(230,180,34,.4);background:rgba(0,0,0,.3);color:#E6B422;font:700 12px var(--sans);letter-spacing:.06em}
+.pr-lvl i{width:7px;height:7px;border-radius:50%;background:#34d399;box-shadow:0 0 8px #34d399}
+
+.pr-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
+.pr-stat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;border-radius:14px;border:1px solid rgba(212,175,55,.22);background:rgba(0,0,0,.28)}
+.pr-sic{color:#a1a1aa;line-height:0}
+.pr-sic svg{width:13px;height:13px}
+.pr-stat b{font:800 20px/1.1 var(--sans);color:#fff}
+.pr-stat small{font:600 9.5px var(--sans);letter-spacing:.1em;color:#71717a}
+@media(max-width:360px){.pr-who h1{font-size:19px}.pr-stat b{font-size:17px}.pr-lvl{padding:0 10px}}
