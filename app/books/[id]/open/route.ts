@@ -16,5 +16,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const signed = await supabase.storage.from("books").createSignedUrl(path, 120);
   if (signed.error || !signed.data) return NextResponse.redirect(`${origin}/books`);
+
+  // Haal hi kholi gayi book yaad rakho (Profile ke "Continue Learning" ke liye). Progress ko nahi chhedta.
+  await supabase.from("user_book_activity").upsert(
+    { user_id: user.id, book_id: id, last_opened_at: new Date().toISOString() },
+    { onConflict: "user_id,book_id" },
+  );
+
   return NextResponse.redirect(signed.data.signedUrl);
 }
