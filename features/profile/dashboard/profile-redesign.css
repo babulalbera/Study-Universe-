@@ -124,3 +124,9 @@ button.pr-row:hover,a.pr-row:hover{background:rgba(255,255,255,.04)}
 .pr-foot{margin:16px auto 4px;max-width:420px;text-align:center;padding:10px 18px;border-radius:22px;border:1px solid rgba(230,180,34,.4);background:rgba(0,0,0,.35)}
 .pr-foot b{display:block;font:700 13px/1.4 var(--sans);color:#E6B422}
 .pr-foot small{display:block;margin-top:2px;font-size:11px;color:#71717a}
+
+/* ===== Profile redesign (Step 6): Hindi me letter-spacing nahi (akshar toot jate hain) ===== */
+.pd[data-lang="hi"] .pr-sechd span,
+.pd[data-lang="hi"] .pr-stat small,
+.pd[data-lang="hi"] .pr-lvl,
+.pd[data-lang="hi"] .pr-cl-pill{letter-spacing:0}

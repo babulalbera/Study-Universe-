@@ -2,15 +2,12 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth";
 
-export type ContinueBook = { id: string; title: string; author: string; pages: number | null; lastPage: number; pct: number; ago: string };
+export type ContinueBook = { id: string; title: string; author: string; pages: number | null; lastPage: number; pct: number; agoDays: number | null };
 
-function agoText(iso: string): string {
+function daysSince(iso: string): number | null {
   const t = new Date(iso).getTime();
-  if (!Number.isFinite(t)) return "";
-  const days = Math.floor((Date.now() - t) / 86400000);
-  if (days <= 0) return "Aaj";
-  if (days === 1) return "Kal";
-  return `${days} din pehle`;
+  if (!Number.isFinite(t)) return null;
+  return Math.max(0, Math.floor((Date.now() - t) / 86400000));
 }
 
 // Sabse haal hi kholi gayi published book (sirf apni, RLS se)
@@ -38,6 +35,6 @@ export async function getContinueBook(): Promise<ContinueBook | null> {
     pages: row.books.pages ?? null,
     lastPage: row.last_page ?? 0,
     pct: Math.max(0, Math.min(100, Number(row.progress_pct ?? 0))),
-    ago: agoText(row.last_opened_at),
+    agoDays: daysSince(row.last_opened_at),
   };
 }
