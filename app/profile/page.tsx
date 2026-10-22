@@ -17,8 +17,8 @@ import "@/features/profile/dashboard/profile-redesign.css";
 
 export const metadata: Metadata = { title: "Meri Profile" };
 
-// Profile: Krishna banner, Profile card (Points/Rank), Study Overview, Quick Access, My Learning, Community.
-// Zaroori settings sab Edit Profile / Settings (/profile/settings) ke andar hain.
+// Profile: Profile card (Points/Rank), Quick Access, Study Overview, Continue Learning, Settings & More, My Learning, Community.
+// Sab kuch ek bhasha (English / हिन्दी) me, jo user ne Settings & More > Language me chuni hai.
 export default async function ProfilePage() {
   const p = await getFullProfile();
 
@@ -40,19 +40,21 @@ export default async function ProfilePage() {
   const [socials, settings, study, tests, extras, favs, cont] = await Promise.all([
     getHomeSocials(), getSiteSettings(), getStudyData(p.id), getTestsOverview(), getProfileExtras(p.id), getFavorites(), getContinueBook(),
   ]);
+  const lang = extras.lang;
+  const favCount = favs.books.length + favs.tests.length;
 
   return (
-    <div className="pd">
-      <ProfileHeader p={p} bio={extras.bio} input={study} points={extras.pr.points} level={extras.pr.level} rank={extras.pr.rank} />
-      <QuickAccess courseHref={settings.course_url || null} isAdmin={p.role === "admin"} favCount={favs.books.length + favs.tests.length} bookCount={favs.books.length} />
-      <StudyOverview input={study} mockCount={tests.submitted.length} />
-      <ContinueLearning book={cont} />
-      <SettingsMore lang={extras.lang} favCount={favs.books.length + favs.tests.length} notifyOn={extras.notifyOn} />
-      <LearningCards input={study} />
-      <CommunityRow socials={socials.map((s) => ({ key: s.key, name: s.name, href: s.href, icon: s.icon }))} />
+    <div className="pd" data-lang={lang}>
+      <ProfileHeader p={p} bio={extras.bio} input={study} points={extras.pr.points} level={extras.pr.level} rank={extras.pr.rank} lang={lang} />
+      <QuickAccess courseHref={settings.course_url || null} isAdmin={p.role === "admin"} favCount={favCount} bookCount={favs.books.length} lang={lang} />
+      <StudyOverview input={study} mockCount={tests.submitted.length} lang={lang} />
+      <ContinueLearning book={cont} lang={lang} />
+      <SettingsMore lang={lang} favCount={favCount} notifyOn={extras.notifyOn} />
+      <LearningCards input={study} lang={lang} />
+      <CommunityRow socials={socials.map((s) => ({ key: s.key, name: s.name, href: s.href, icon: s.icon }))} lang={lang} />
       <div className="pr-foot">
-        <b>{T[extras.lang].footer}</b>
-        <small>{T[extras.lang].footerSub}</small>
+        <b>{T[lang].footer}</b>
+        <small>{T[lang].footerSub}</small>
       </div>
     </div>
   );

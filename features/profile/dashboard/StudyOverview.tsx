@@ -2,9 +2,11 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { addDays, dayStats, rangeStats, streaks, type StudyInput } from "@/lib/study-stats";
+import { P, type Lang } from "@/lib/i18n";
 import { Icon } from "./icons";
 
-export default function StudyOverview({ input, mockCount }: { input: StudyInput; mockCount: number }) {
+export default function StudyOverview({ input, mockCount, lang }: { input: StudyInput; mockCount: number; lang: Lang }) {
+  const t = P[lang].ov;
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => setNow(new Date()), []);
 
@@ -23,54 +25,54 @@ export default function StudyOverview({ input, mockCount }: { input: StudyInput;
     };
   }, [now, input]);
 
-  const streakSub = !v ? "" : v.streak === 0 ? "Aaj shuru karo" : v.streak < 7 ? "Keep going 🔥" : "Zabardast! 🔥";
-  const overallSub = !v ? "" : v.overall === 0 ? "Shuru karo" : v.overall < 25 ? "Just started" : v.overall < 60 ? "Keep going" : "Great pace";
+  const streakSub = !v ? "" : v.streak === 0 ? t.streak0 : v.streak < 7 ? t.streak1 : t.streak2;
+  const overallSub = !v ? "" : v.overall === 0 ? t.o0 : v.overall < 25 ? t.o1 : v.overall < 60 ? t.o2 : t.o3;
 
   return (
     <section id="overview" className="pr-os-wrap">
-      <div className="pr-sechd"><span>STUDY OVERVIEW</span><i /><Link href="/tasks" className="pr-seemore">See Details ›</Link></div>
+      <div className="pr-sechd"><span>{t.title}</span><i /><Link href="/tasks" className="pr-seemore">{t.details}</Link></div>
       <div className="pr-os">
         <div className="pr-oc">
           <div className="pr-oc-top">
             <span className="pr-oc-ic"><Icon name="check" /></span>
-            {v && v.done > 0 ? <span className="pr-chip">+{v.done} today</span> : null}
+            {v && v.done > 0 ? <span className="pr-chip">{t.chipToday(v.done)}</span> : null}
           </div>
-          <p>Today&apos;s Tasks</p>
+          <p>{t.today}</p>
           <b>{v ? v.done : "—"}<small>/{v ? v.total : "—"}</small></b>
-          <em>{v ? `${v.todayPct}% done` : ""}</em>
+          <em>{v ? t.done(v.todayPct) : ""}</em>
         </div>
 
         <div className="pr-oc">
           <div className="pr-oc-top">
             <span className="pr-oc-ic"><Icon name="flame" /></span>
-            {v && v.done > 0 ? <span className="pr-chip">+1 today</span> : null}
+            {v && v.done > 0 ? <span className="pr-chip">{t.chipStreak}</span> : null}
           </div>
-          <p>Study Streak</p>
-          <b>{v ? v.streak : "—"}<small> days</small></b>
+          <p>{t.streak}</p>
+          <b>{v ? v.streak : "—"}<small>{t.days}</small></b>
           <em>{streakSub}</em>
         </div>
 
         <div className="pr-oc">
           <div className="pr-oc-top">
             <span className="pr-oc-ic"><Icon name="bars" /></span>
-            {mockCount === 0 ? <Link href="/mock-tests" className="pr-chip pr-chip-link">Start now</Link> : null}
+            {mockCount === 0 ? <Link href="/mock-tests" className="pr-chip pr-chip-link">{t.startNow}</Link> : null}
           </div>
-          <p>Mock Tests</p>
+          <p>{t.mock}</p>
           <b>{mockCount}</b>
-          <em>{mockCount === 0 ? "Not started" : `${mockCount} attempted`}</em>
+          <em>{mockCount === 0 ? t.notStarted : t.attempted(mockCount)}</em>
         </div>
 
         <div className="pr-oc">
           <div className="pr-oc-top">
             <span className="pr-oc-ic"><Icon name="target" /></span>
-            {v && v.delta !== 0 ? <span className={`pr-chip${v.delta < 0 ? " neg" : ""}`}>{v.delta > 0 ? "+" : ""}{v.delta}% week</span> : null}
+            {v && v.delta !== 0 ? <span className={`pr-chip${v.delta < 0 ? " neg" : ""}`}>{t.chipWeek(v.delta)}</span> : null}
           </div>
-          <p>Overall</p>
+          <p>{t.overall}</p>
           <b>{v ? `${v.overall}%` : "—"}</b>
           <em>{overallSub}</em>
         </div>
       </div>
-      <p className="pd-dim">Overall = pichhle 7 din me pure kiye Tasks, un dinon ke kul Tasks me se. &quot;week&quot; badge pichhle hafte se tulna dikhata hai. {v && v.total === 0 ? "Abhi Task page ka data nahi mila, /tasks kholo." : ""}</p>
+      <p className="pd-dim">{t.note} {v && v.total === 0 ? t.noData : ""}</p>
     </section>
   );
 }

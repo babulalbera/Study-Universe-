@@ -2,9 +2,10 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { streaks, totalDone, type StudyInput } from "@/lib/study-stats";
+import { P, type Lang } from "@/lib/i18n";
 import type { FullProfile } from "./queries";
 
-type Props = { p: FullProfile; bio: string; input: StudyInput; points: number; level: number; rank: number | null };
+type Props = { p: FullProfile; bio: string; input: StudyInput; points: number; level: number; rank: number | null; lang: Lang };
 
 const svg = { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
 const IcCheck = () => <svg {...svg}><circle cx="12" cy="12" r="9" /><path d="m8 12.5 2.8 2.8L16 9.5" /></svg>;
@@ -14,18 +15,20 @@ const IcCap = () => <svg {...svg}><path d="m2 9 10-5 10 5-10 5L2 9Z" /><path d="
 const IcPencil = () => <svg {...svg}><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3Z" /></svg>;
 const IcUser = () => <svg {...svg}><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>;
 
-export default function ProfileHeader({ p, bio, input, points, level, rank }: Props) {
+export default function ProfileHeader({ p, bio, input, points, level, rank, lang }: Props) {
+  const t = P[lang].hdr;
   // Streak aur Tasks user ke apne "aaj" ke hisaab se (browser me) nikalte hain
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => setNow(new Date()), []);
   const s = useMemo(() => (now ? { streak: streaks(input, now).current, done: totalDone(input, now) } : null), [now, input]);
 
-  const initial = (p.fullName || "S").charAt(0).toUpperCase();
+  const name = p.fullName || t.defaultName;
+  const initial = name.charAt(0).toUpperCase();
   const stats = [
-    { key: "tasks", label: "TASKS", value: s ? String(s.done) : "—", icon: <IcCheck /> },
-    { key: "streak", label: "STREAK", value: s ? `${s.streak}d` : "—", icon: <IcFlame /> },
-    { key: "rank", label: "RANK", value: rank ? `#${rank}` : "—", icon: <IcBars /> },
-    { key: "points", label: "POINTS", value: String(points), icon: <IcCap /> },
+    { key: "tasks", label: t.tasks, value: s ? String(s.done) : "—", icon: <IcCheck /> },
+    { key: "streak", label: t.streak, value: s ? `${s.streak}${lang === "hi" ? " दिन" : "d"}` : "—", icon: <IcFlame /> },
+    { key: "rank", label: t.rank, value: rank ? `#${rank}` : "—", icon: <IcBars /> },
+    { key: "points", label: t.points, value: String(points), icon: <IcCap /> },
   ];
 
   return (
@@ -34,23 +37,23 @@ export default function ProfileHeader({ p, bio, input, points, level, rank }: Pr
         <div className="pr-avbox">
           {p.avatarUrl
             // eslint-disable-next-line @next/next/no-img-element
-            ? <img className="pr-av" src={p.avatarUrl} alt="Meri profile photo" />
+            ? <img className="pr-av" src={p.avatarUrl} alt={t.photoAlt} />
             : <div className="pr-av pr-av-ph" aria-hidden="true">{initial}</div>}
-          {p.emailVerified ? <span className="pr-ver" title="Email verified" aria-label="Email verified">✓</span> : null}
+          {p.emailVerified ? <span className="pr-ver" title={t.verified} aria-label={t.verified}>✓</span> : null}
         </div>
         <div className="pr-who">
-          <h1>{p.fullName || "Student"}</h1>
+          <h1>{name}</h1>
           <div className="pr-pills">
-            <span className="pr-pill"><IcUser /> {p.role === "admin" ? "Admin" : "Student"}</span>
-            <span className="pr-streak"><IcFlame /> {s ? s.streak : "—"} day streak</span>
+            <span className="pr-pill"><IcUser /> {p.role === "admin" ? t.admin : t.student}</span>
+            <span className="pr-streak"><IcFlame /> {t.streakPill(s ? s.streak : "—")}</span>
           </div>
-          <p className="pr-bio">“{bio || "Big dreams need daily efforts."}”</p>
+          <p className="pr-bio">“{bio || t.defaultBio}”</p>
         </div>
       </div>
 
       <div className="pr-editrow">
-        <Link href="/profile/settings" className="pr-edit"><IcPencil /> Edit Profile</Link>
-        <span className="pr-lvl"><i aria-hidden="true" /> LVL {level}</span>
+        <Link href="/profile/settings" className="pr-edit"><IcPencil /> {t.edit}</Link>
+        <span className="pr-lvl"><i aria-hidden="true" /> {t.lvl(level)}</span>
       </div>
 
       <div className="pr-stats">
