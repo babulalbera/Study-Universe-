@@ -1,104 +1,135 @@
 "use client";
 import Link from "next/link";
-import { useState, useTransition, type ReactNode } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
-import { logout } from "@/features/profile/actions";
-import { setLanguage, setNewContentNotif } from "./prefs-actions";
-import { t, type Lang } from "./profile-i18n";
+import { logout } from "../actions";
+import { setLanguage, setNotifications } from "./settings-actions";
+import { T, type Lang } from "@/lib/i18n";
 
-const Ic = ({ children }: { children: ReactNode }) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>
-);
-const Chev = () => <svg className="pr-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>;
+const APP_VERSION = "1.0.0";
+const sv = { width: 19, height: 19, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
+const IcHeart = () => <svg {...sv}><path d="M12 21s-7-4.6-9.2-9.1C1.2 8.6 3 5 6.5 5c2 0 3.5 1.1 5.5 3.2C14 6.1 15.5 5 17.5 5 21 5 22.8 8.6 21.2 11.9 19 16.4 12 21 12 21Z" /></svg>;
+const IcPalette = () => <svg {...sv}><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 1.6-2.1-.4-1.1.2-2.4 1.6-2.4H17a4 4 0 0 0 4-4c0-5-4-9.5-9-9.5Z" /><circle cx="7.5" cy="11" r="1" /><circle cx="10" cy="7" r="1" /><circle cx="15" cy="7.5" r="1" /></svg>;
+const IcBell = () => <svg {...sv}><path d="M6 9a6 6 0 1 1 12 0c0 6 2 7 2 7H4s2-1 2-7Z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>;
+const IcGlobe = () => <svg {...sv}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" /></svg>;
+const IcShield = () => <svg {...sv}><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></svg>;
+const IcHelp = () => <svg {...sv}><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01" /></svg>;
+const IcInfo = () => <svg {...sv}><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>;
+const IcOut = () => <svg {...sv}><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 8l4 4-4 4M20 12H9" /></svg>;
+const Chev = () => <svg {...sv} width={17} height={17}><path d="m9 6 6 6-6 6" /></svg>;
 
-type Props = { lang: Lang; favCount: number; notifOn: boolean };
+type Props = { lang: Lang; favCount: number; notifyOn: boolean };
 
-export default function SettingsMore({ lang: initialLang, favCount, notifOn }: Props) {
+export default function SettingsMore({ lang: initialLang, favCount, notifyOn: initialNotify }: Props) {
+  const router = useRouter();
   const toast = useToast();
+  const [, start] = useTransition();
   const [lang, setLang] = useState<Lang>(initialLang);
-  const [notif, setNotif] = useState(notifOn);
+  const [notify, setNotify] = useState(initialNotify);
   const [langOpen, setLangOpen] = useState(false);
-  const [pending, start] = useTransition();
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const t = T[lang];
 
-  function toggleNotif() {
-    const next = !notif;
-    setNotif(next);
-    start(async () => {
-      const r = await setNewContentNotif(next);
-      if (!r.ok) { setNotif(!next); toast(r.error ?? t(lang, "err")); }
-    });
-  }
-
-  function pickLang(l: Lang) {
-    if (l === lang) { setLangOpen(false); return; }
+  function pickLang(next: Lang) {
+    if (next === lang) { setLangOpen(false); return; }
     const prev = lang;
-    setLang(l);
+    setLang(next);
     start(async () => {
-      const r = await setLanguage(l);
-      if (!r.ok) { setLang(prev); toast(r.error ?? t(prev, "err")); return; }
-      toast(t(l, "langSaved"));
+      const r = await setLanguage(next);
+      if (!r.ok) { setLang(prev); toast(r.error ?? "Kuch gadbad hui"); return; }
+      toast(T[next].langSaved);
       setLangOpen(false);
+      router.refresh();
     });
   }
 
-  const body = (icon: ReactNode, title: string, sub: string, right: ReactNode) => (
-    <>
-      <span className="pr-sic2">{icon}</span>
-      <span className="pr-stx"><b>{title}</b><small>{sub}</small></span>
-      {right}
-    </>
-  );
+  function toggleNotify() {
+    const next = !notify;
+    setNotify(next);
+    start(async () => {
+      const r = await setNotifications(next);
+      if (!r.ok) { setNotify(!next); toast(t.notifErr); }
+    });
+  }
 
   return (
-    <section id="settings-more" className="pr-set-wrap">
-      <div className="pr-sechd"><span>{t(lang, "title")}</span><i /></div>
-      <div className="pr-set">
-        <Link href="/profile/favorites" className="pr-srow">
-          {body(<Ic><path d="M12 21s-7-4.6-9.2-9.1C1.2 8.6 3 5 6.5 5c2 0 3.5 1.1 5.5 3.2C14 6.1 15.5 5 17.5 5 21 5 22.8 8.6 21.2 11.9 19 16.4 12 21 12 21Z" /></Ic>, t(lang, "fav"), t(lang, "favSub", { n: favCount }), <Chev />)}
-        </Link>
-
-        <button type="button" className="pr-srow" onClick={() => toast(t(lang, "lookToast"))}>
-          {body(<Ic><path d="M12 3a9 9 0 1 0 0 18c1.3 0 2-.9 2-1.9 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8Z" /><circle cx="7.5" cy="11" r="1" /><circle cx="10" cy="7" r="1" /><circle cx="15" cy="7.5" r="1" /></Ic>, t(lang, "look"), t(lang, "lookSub"), <Chev />)}
-        </button>
-
-        <div className="pr-srow pr-srow-static">
-          {body(<Ic><path d="M18 16v-5a6 6 0 1 0-12 0v5l-2 2h16l-2-2ZM10 21h4" /></Ic>, t(lang, "notif"), t(lang, notif ? "notifOn" : "notifOff"),
-            <button type="button" role="switch" aria-checked={notif} aria-label={t(lang, "notif")} className={`pr-switch${notif ? " on" : ""}`} onClick={toggleNotif} disabled={pending}><i /></button>)}
+    <section id="settings-more" className="pr-sm">
+      <div className="pr-sechd"><span>{t.title}</span><i /></div>
+      <div className="pr-list">
+        <div className="pr-item">
+          <Link href="/profile/favorites" className="pr-row">
+            <span className="pr-ric" style={{ ["--c" as string]: "#fb7185" }}><IcHeart /></span>
+            <span className="pr-rt"><b>{t.fav}</b><small>{t.favSub(favCount)}</small></span>
+            <span className="pr-rc"><Chev /></span>
+          </Link>
         </div>
 
-        <button type="button" className="pr-srow" onClick={() => setLangOpen((v) => !v)} aria-expanded={langOpen}>
-          {body(<Ic><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9S14.5 18.5 12 21c-2.5-2.5-3.5-5.5-3.5-9S9.5 5.5 12 3Z" /></Ic>, t(lang, "lang"), t(lang, "langSub"), <Chev />)}
-        </button>
-        {langOpen ? (
-          <div className="pr-langbox" role="group" aria-label={t(lang, "langPick")}>
-            <p>{t(lang, "langPick")}</p>
-            <div>
-              <button type="button" className={lang === "hi" ? "on" : ""} onClick={() => pickLang("hi")} disabled={pending}>हिन्दी</button>
-              <button type="button" className={lang === "en" ? "on" : ""} onClick={() => pickLang("en")} disabled={pending}>English</button>
-            </div>
-          </div>
-        ) : null}
-
-        <Link href="/profile/settings?open=account" className="pr-srow">
-          {body(<Ic><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></Ic>, t(lang, "priv"), t(lang, "privSub"), <Chev />)}
-        </Link>
-
-        <Link href="/profile/settings?open=support" className="pr-srow">
-          {body(<Ic><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01" /></Ic>, t(lang, "help"), t(lang, "helpSub"), <Chev />)}
-        </Link>
-
-        <Link href="/about" className="pr-srow">
-          {body(<Ic><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></Ic>, t(lang, "about"), t(lang, "aboutSub"), <Chev />)}
-        </Link>
-
-        <form action={logout}>
-          <button type="submit" className="pr-srow pr-out">
-            {body(<Ic><path d="M9 21H5V3h4M16 17l5-5-5-5M21 12H9" /></Ic>, t(lang, "out"), t(lang, "outSub"), <Chev />)}
+        <div className="pr-item">
+          <button type="button" className="pr-row" onClick={() => toast(t.appearanceNote)}>
+            <span className="pr-ric" style={{ ["--c" as string]: "#a78bfa" }}><IcPalette /></span>
+            <span className="pr-rt"><b>{t.appearance}</b><small>{t.appearanceSub}</small></span>
+            <span className="pr-rc"><Chev /></span>
           </button>
-        </form>
-      </div>
+        </div>
 
-      <div className="pr-foot"><b>{t(lang, "footA")}</b><small>{t(lang, "footB")}</small></div>
+        <div className="pr-item">
+          <div className="pr-row" role="group" aria-label={t.notif}>
+            <span className="pr-ric" style={{ ["--c" as string]: "#E6B422" }}><IcBell /></span>
+            <span className="pr-rt"><b>{t.notif}</b><small>{notify ? t.notifOn : t.notifOff}</small></span>
+            <button type="button" role="switch" aria-checked={notify} aria-label={t.notif} className={`pr-sw${notify ? " on" : ""}`} onClick={toggleNotify}><i /></button>
+          </div>
+        </div>
+
+        <div className="pr-item">
+          <button type="button" className="pr-row" onClick={() => setLangOpen((v) => !v)} aria-expanded={langOpen}>
+            <span className="pr-ric" style={{ ["--c" as string]: "#38bdf8" }}><IcGlobe /></span>
+            <span className="pr-rt"><b>{t.language}</b><small>{t.languageSub}</small></span>
+            <span className={`pr-rc${langOpen ? " open" : ""}`}><Chev /></span>
+          </button>
+          {langOpen ? (
+            <div className="pr-lang">
+              <button type="button" className={`pr-lchip${lang === "en" ? " on" : ""}`} onClick={() => pickLang("en")} aria-pressed={lang === "en"}>English</button>
+              <button type="button" className={`pr-lchip${lang === "hi" ? " on" : ""}`} onClick={() => pickLang("hi")} aria-pressed={lang === "hi"}>हिन्दी</button>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="pr-item">
+          <Link href="/profile/settings?open=account" className="pr-row">
+            <span className="pr-ric" style={{ ["--c" as string]: "#34d399" }}><IcShield /></span>
+            <span className="pr-rt"><b>{t.privacy}</b><small>{t.privacySub}</small></span>
+            <span className="pr-rc"><Chev /></span>
+          </Link>
+        </div>
+
+        <div className="pr-item">
+          <Link href="/profile/settings?open=help" className="pr-row">
+            <span className="pr-ric" style={{ ["--c" as string]: "#a1a1aa" }}><IcHelp /></span>
+            <span className="pr-rt"><b>{t.help}</b><small>{t.helpSub}</small></span>
+            <span className="pr-rc"><Chev /></span>
+          </Link>
+        </div>
+
+        <div className="pr-item">
+          <button type="button" className="pr-row" onClick={() => setAboutOpen((v) => !v)} aria-expanded={aboutOpen}>
+            <span className="pr-ric" style={{ ["--c" as string]: "#a1a1aa" }}><IcInfo /></span>
+            <span className="pr-rt"><b>{t.about}</b><small>{t.aboutSub} • v{APP_VERSION}</small></span>
+            <span className={`pr-rc${aboutOpen ? " open" : ""}`}><Chev /></span>
+          </button>
+          {aboutOpen ? <p className="pr-about">{t.aboutInfo}</p> : null}
+        </div>
+
+        <div className="pr-item">
+          <form action={logout}>
+            <button type="submit" className="pr-row danger">
+              <span className="pr-ric" style={{ ["--c" as string]: "#fb7185" }}><IcOut /></span>
+              <span className="pr-rt"><b>{t.logout}</b><small>{t.logoutSub}</small></span>
+              <span className="pr-rc"><Chev /></span>
+            </button>
+          </form>
+        </div>
+      </div>
     </section>
   );
 }

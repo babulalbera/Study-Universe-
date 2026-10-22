@@ -10,7 +10,8 @@ import { getFullProfile, getStudyData, getTestsOverview } from "@/features/profi
 import { getProfileExtras } from "@/features/profile/dashboard/redesign-queries";
 import { getFavorites } from "@/features/bookmarks/queries";
 import ContinueLearning from "@/features/profile/dashboard/ContinueLearning";
-import SettingsList from "@/features/profile/dashboard/SettingsList";
+import SettingsMore from "@/features/profile/dashboard/SettingsMore";
+import { T } from "@/lib/i18n";
 import { getContinueBook } from "@/features/profile/dashboard/continue-queries";
 import { getHomeSocials, getSiteSettings } from "@/features/home/queries";
 import "@/features/profile/dashboard/profile-redesign.css";
@@ -48,10 +49,13 @@ export default async function ProfilePage() {
       <QuickAccess courseHref={settings.course_url || null} isAdmin={p.role === "admin"} favCount={favs.books.length + favs.tests.length} bookCount={favs.books.length} />
       <StudyOverview input={study} mockCount={tests.submitted.length} />
       <ContinueLearning book={cont} />
-      <SettingsList favCount={favs.books.length + favs.tests.length} notifOn={extras.notifOn} />
+      <SettingsMore lang={extras.lang} favCount={favs.books.length + favs.tests.length} notifyOn={extras.notifyOn} />
       <LearningCards input={study} />
       <CommunityRow socials={socials.map((s) => ({ key: s.key, name: s.name, href: s.href, icon: s.icon }))} />
-      <footer className="pr-foot"><p>Roz padho, roz jeeto • Jai Shri Krishna 🙏</p><small>Study Universe • v1.0.0</small></footer>
+      <div className="pr-foot">
+        <b>{T[extras.lang].footer}</b>
+        <small>{T[extras.lang].footerSub}</small>
+      </div>
     </div>
   );
 }
