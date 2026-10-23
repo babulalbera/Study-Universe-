@@ -833,31 +833,3 @@ background:radial-gradient(260px circle at var(--mx,50%) var(--my,0%),color-mix(
  .lp-quote{grid-area:quote;margin-top:4px}
  .lp-hero{--os:clamp(76px,21vw,96px)}
 }
-
-/* ===== LP-GLOW (premium rotating border glow on home hero) ===== */
-@property --kg-a { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
-
-.lp-hero { isolation: isolate; }
-
-.lp-glow {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  padding: 2px;
-  border-radius: inherit;
-  pointer-events: none;
-  background:
-    conic-gradient(from var(--kg-a),
-      transparent 0 52%, #3b2bff 66%, #c026d3 79%, #fff 90%, transparent 97%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: kg-spin 6s linear infinite;
-}
-.lp-glow-blur { padding: 7px; filter: blur(10px); opacity: .85; }
-
-@keyframes kg-spin { to { --kg-a: 360deg; } }
-
-@media (prefers-reduced-motion: reduce) {
-  .lp-glow { animation: none; }
-}
