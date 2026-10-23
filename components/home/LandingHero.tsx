@@ -1,17 +1,12 @@
 import Image from "next/image";
-import Link from "next/link";
 import type { CSSProperties } from "react";
 
-// Home ka pehla premium screen: headline + 2 CTA + Gita line.
+// Home ka pehla premium screen: headline + Gita line (chota box).
 // Server component hai — koi JS nahi, isliye turant dikhta hai.
 export default function LandingHero() {
   return (
     <section className="lp-hero rv" aria-labelledby="lp-h1">
       <div className="lp-copy">
-        <p className="lp-eyebrow">
-          <span className="lp-dot" aria-hidden="true" />
-          SSC CGL &nbsp;•&nbsp; ARMY GD &nbsp;•&nbsp; GK
-        </p>
         <h1 id="lp-h1" className="lp-h1">
           <span className="w" style={{ "--d": 0 } as CSSProperties}>Preparation</span>{" "}
           <span className="w" style={{ "--d": 1 } as CSSProperties}>jo</span>
@@ -25,13 +20,6 @@ export default function LandingHero() {
           Free courses, best books, exam-pattern mock tests aur daily tasks — sab ek hi jagah. Seedha 0° se shuru karo,
           roz thoda aage badho.
         </p>
-        <div className="lp-cta">
-          <Link href="/mock-tests" className="lp-btn lp-btn-gold">
-            Mock Test shuru karo
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-          </Link>
-          <Link href="/courses" className="lp-btn lp-btn-ghost">Free Courses dekho</Link>
-        </div>
         <ul className="lp-trust" aria-label="Highlights">
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>100% Free</li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>Real exam pattern</li>
