@@ -1,5 +1,7 @@
 import { TASK_TEMPLATE } from "./task-template";
 import { bottomBarForTaskPage } from "./bottom-bar";
+import { themeify } from "./themeify";
+import { THEME_CSS, THEME_BODY_HTML, THEME_HEAD_JS, THEME_JS } from "./theme-assets";
 
 export type TaskPageCtx = { loggedIn: boolean; courseHref: string | null };
 type Boot = { mode: "server" | "local"; uid?: string; data?: Record<string, string> };
@@ -38,11 +40,15 @@ linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px) 0 0/32px 32px}
 @media(min-width:900px){.sx-nav{display:flex}.sx-bn{display:none}}
 `;
 
+// Theme ke rang: Header/Bottom bar/Task page sab ke pakke rang variables mein badal kar ek baar taiyar
+const THEMED_SITE_CSS = themeify(SITE_CSS);
+const THEMED_TEMPLATE = themeify(TASK_TEMPLATE);
+
 function chrome(ctx: TaskPageCtx): string {
   const loggedIn = ctx.loggedIn;
   const guest = loggedIn ? "" : `<div class="sx-gst">⚠️ Login के बिना Tasks सिर्फ़ इसी फोन में रहेंगे। <a href="/login?next=/tasks">Login करो</a> ताकि हर जगह मिलें।</div>`;
-  return `<style id="sx-css">${SITE_CSS}</style>
-<div class="bg" aria-hidden="true"></div>
+  return `<style id="sx-css">${THEMED_SITE_CSS}</style><style id="su-theme-css">${THEME_CSS}</style>
+<div class="bg" aria-hidden="true"></div>${THEME_BODY_HTML}
 <header class="sx-hd"><div class="sx-in"><a class="sx-brand" href="/" aria-label="Study Universe Home"><span class="sx-logo"><img src="/images/logo.webp" alt="Study Universe Logo" width="42" height="42"></span><span class="sx-ttl">Study Universe</span></a><a class="sx-me" href="/profile" aria-label="Profile">👤</a></div></header>${guest}${bottomBarForTaskPage({ active: "task", courseHref: ctx.courseHref })}`;
 }
 
@@ -120,8 +126,12 @@ const STORAGE_SHIM = `
 
 export function renderTaskPage(boot: Boot, ctx: TaskPageCtx): string {
   const json = JSON.stringify(boot).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
-  const boot_ = `<script>window.__SU_BOOT=${json};</script><script>${STORAGE_SHIM}</script>`;
-  return TASK_TEMPLATE
+  // THEME_HEAD_JS: page dikhne se pehle chuna hua rang laga deta hai (flash nahi hota)
+  const boot_ = `<script>${THEME_HEAD_JS}</script><script>window.__SU_BOOT=${json};</script><script>${STORAGE_SHIM}</script>`;
+  const html = THEMED_TEMPLATE
     .replace("<!--SU_BOOT-->", () => boot_)
     .replace("<!--SU_SITE-->", () => chrome(ctx));
+  const end = html.lastIndexOf("</body>");
+  const themeJs = `<script>${THEME_JS}</script>`;
+  return end < 0 ? html + themeJs : html.slice(0, end) + themeJs + html.slice(end);
 }
