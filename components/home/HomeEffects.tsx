@@ -10,7 +10,7 @@ export default function HomeEffects() {
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const cleanups: Array<() => void> = [];
-    document.querySelectorAll<HTMLElement>(".card,.s3d,.cm-tile").forEach((c) => {
+    document.querySelectorAll<HTMLElement>(".card,.s3d,.cm-tile,.lp-track").forEach((c) => {
       const move = (e: PointerEvent) => {
         const r = c.getBoundingClientRect();
         const x = e.clientX - r.left, y = e.clientY - r.top;

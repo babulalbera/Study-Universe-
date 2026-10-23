@@ -56,7 +56,7 @@ export default function BookUpload({ categories }: { categories: { id: string; n
       </label>
       <label className="su-field"><span>PDF फ़ाइल (अधिकतम {MAX_MB}MB)</span><input name="file" type="file" accept="application/pdf" required style={{ height: "auto", padding: 10 }} /></label>
       <button type="submit" className="pbtn pbtn-gold" disabled={busy}>{busy ? "Upload हो रहा है…" : "⬆️ Upload करो"}</button>
-      {msg && <p role={msg.ok ? "status" : "alert"} className="text-[13px]" style={{ color: msg.ok ? "#a7f3d0" : "#fca5a5" }}>{msg.text}</p>}
+      {msg && <p role={msg.ok ? "status" : "alert"} className="text-[13px]" style={{ color: msg.ok ? "var(--mint, #a7f3d0)" : "#fca5a5" }}>{msg.text}</p>}
     </form>
   );
 }

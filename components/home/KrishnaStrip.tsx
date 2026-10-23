@@ -10,7 +10,7 @@ export default function KrishnaStrip() {
       <div style={{ minWidth: 0 }}>
         <div className="st1">
           <span>Best banao, roz jeeto</span><span>•</span>
-          <span style={{ color: "#a7f3d0" }}>Premium Edit</span><span>•</span>
+          <span style={{ color: "var(--mint, #a7f3d0)" }}>Premium Edit</span><span>•</span>
           <span style={{ color: "var(--gold2)" }}>Jai Shri Krishna</span>
         </div>
         <div className="st2">Premium dark • Gold+Emerald aura • Focus mode • Reset Din</div>

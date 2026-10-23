@@ -8,7 +8,7 @@ function Msg({ st }: { st: FormState }) {
   return (
     <>
       {st.error && <p role="alert" className="text-[13px]" style={{ color: "#fca5a5" }}>{st.error}</p>}
-      {st.message && <p role="status" className="text-[13px]" style={{ color: "#a7f3d0" }}>{st.message}</p>}
+      {st.message && <p role="status" className="text-[13px]" style={{ color: "var(--mint, #a7f3d0)" }}>{st.message}</p>}
     </>
   );
 }
