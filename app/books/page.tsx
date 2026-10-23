@@ -43,7 +43,7 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
                 </div>
                 <div className="pr-act">
                   <BookmarkButton type="book" id={b.id} initialSaved={savedIds.has(b.id)} />
-                  <a className="su-btn su-btn-primary" href={`/books/${b.id}/open`} target="_blank" rel="noopener noreferrer">{b.external_url ? "🔗 खोलो" : "📖 खोलो"}</a>
+                  <a className="su-btn su-btn-primary" href={`/books/${b.id}/read`}>📖 पढ़ो</a>
                 </div>
               </div>
             );

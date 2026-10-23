@@ -35,3 +35,28 @@ export function parseBookLink(raw: string): { url: string; source: BookSource } 
   // u.toString() '#' wala hissa bhi rakhta hai (Mega ki key usi mein hoti hai)
   return { url: u.toString(), source };
 }
+
+// Link ko website ke andar (iframe mein) dikhane layak URL banao. Jo platform andar nahi khul sakta uske liye null.
+export function embedUrl(source: BookSource, url: string): string | null {
+  let u: URL;
+  try { u = new URL(url); } catch { return null; }
+  if (source === "drive") {
+    const id = u.pathname.match(/\/d\/([\w-]{10,})/)?.[1] ?? u.searchParams.get("id");
+    return id && !u.pathname.includes("/folders/") ? `https://drive.google.com/file/d/${id}/preview` : null;
+  }
+  if (source === "mega") {
+    const m = u.pathname.match(/^\/file\/([\w-]+)/);
+    if (m && u.hash.length > 1) return `https://mega.nz/embed/${m[1]}${u.hash}`;
+    const old = u.hash.match(/^#!([\w-]+)!([\w-]+)/); // purana format: mega.nz/#!ID!KEY
+    return old ? `https://mega.nz/embed/${old[1]}#${old[2]}` : null;
+  }
+  if (source === "dropbox") {
+    u.searchParams.delete("dl");
+    u.searchParams.set("raw", "1");
+    return u.toString();
+  }
+  if (source === "other" && u.pathname.toLowerCase().endsWith(".pdf")) {
+    return `https://docs.google.com/viewer?embedded=true&url=${encodeURIComponent(url)}`;
+  }
+  return null; // OneDrive, MediaFire, Telegram, folder links: andar nahi khulte
+}
