@@ -3,28 +3,28 @@
 const SANS = "Outfit,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif";
 
 export const BOTTOM_BAR_CSS = `
-.nb{--gold:#D4AF37;--gold2:#FFD700;--mute:#a1a1aa}
+.nb{--mute:#a1a1aa}
 .nb{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));z-index:55;
 width:min(calc(100% - 24px),460px);height:66px;display:grid;grid-template-columns:repeat(5,1fr);align-items:stretch;padding:0 6px;border-radius:26px;
 border:1px solid transparent;
-background:linear-gradient(180deg,rgba(20,28,22,.9),rgba(4,8,5,.95)) padding-box,
-linear-gradient(135deg,rgba(255,215,0,.85),rgba(212,175,55,.14) 38%,rgba(16,185,129,.16) 68%,rgba(16,185,129,.75)) border-box;
+background:linear-gradient(180deg,rgba(20,28,22,.9),color-mix(in srgb,var(--bg,var(--bg,#020603)) 95.0%,transparent)) padding-box,
+linear-gradient(135deg,color-mix(in srgb,var(--gold2,var(--gold2,#FFD700)) 85.0%,transparent),color-mix(in srgb,var(--gold,var(--gold,#D4AF37)) 14.0%,transparent) 38%,color-mix(in srgb,var(--em,var(--em,#10B981)) 16.0%,transparent) 68%,color-mix(in srgb,var(--em,var(--em,#10B981)) 75.0%,transparent)) border-box;
 -webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);
-box-shadow:0 18px 40px rgba(0,0,0,.7),0 0 26px rgba(212,175,55,.08),inset 0 1px 0 rgba(255,255,255,.07)}
+box-shadow:0 18px 40px rgba(0,0,0,.7),0 0 26px color-mix(in srgb,var(--gold,var(--gold,#D4AF37)) 8.0%,transparent),inset 0 1px 0 rgba(255,255,255,.07)}
 .nb:after{content:"";position:absolute;left:18%;right:18%;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,225,120,.9),transparent);pointer-events:none}
 .nb button{appearance:none;-webkit-appearance:none;background:none;border:0;margin:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .nb a{text-decoration:none;-webkit-tap-highlight-color:transparent}
 .nbp{position:absolute;left:0;top:8px;height:calc(100% - 16px);width:0;border-radius:18px;opacity:0;pointer-events:none;
-background:linear-gradient(180deg,rgba(255,215,0,.24),rgba(212,175,55,.07));
-box-shadow:inset 0 0 0 1px rgba(255,215,0,.38),0 0 22px rgba(255,215,0,.2),inset 0 1px 0 rgba(255,255,255,.12);
+background:linear-gradient(180deg,color-mix(in srgb,var(--gold2,var(--gold2,#FFD700)) 24.0%,transparent),color-mix(in srgb,var(--gold,var(--gold,#D4AF37)) 7.0%,transparent));
+box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--gold2,var(--gold2,#FFD700)) 38.0%,transparent),0 0 22px color-mix(in srgb,var(--gold2,var(--gold2,#FFD700)) 20.0%,transparent),inset 0 1px 0 rgba(255,255,255,.12);
 transition:transform .45s cubic-bezier(.2,.9,.3,1.15),width .3s,opacity .3s}
-.nbp:after{content:"";position:absolute;left:50%;bottom:-5px;width:16px;height:3px;margin-left:-8px;border-radius:3px;background:var(--gold2);box-shadow:0 0 10px 1px rgba(255,215,0,.9)}
+.nbp:after{content:"";position:absolute;left:50%;bottom:-5px;width:16px;height:3px;margin-left:-8px;border-radius:3px;background:var(--gold2);box-shadow:0 0 10px 1px color-mix(in srgb,var(--gold2,var(--gold2,#FFD700)) 90.0%,transparent)}
 .nbi{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--mute);font:600 11px/1 var(--sans);letter-spacing:.02em;transition:color .25s}
 .nbi .pl{display:grid;place-items:center;transition:transform .3s}
 .nbi svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .nbi.on{color:var(--gold2)}
 .nbi.on .pl{transform:translateY(-1px) scale(1.12)}
-.nbi.on svg{filter:drop-shadow(0 0 6px rgba(255,215,0,.7))}
+.nbi.on svg{filter:drop-shadow(0 0 6px color-mix(in srgb,var(--gold2,var(--gold2,#FFD700)) 70.0%,transparent))}
 .nbi:active .pl{transform:scale(.88)}
 .nbi.on:active .pl{transform:scale(1)}
 .nb button:focus-visible,.nb a:focus-visible{outline:2px solid var(--gold2);outline-offset:-3px;border-radius:18px}
@@ -41,7 +41,7 @@ transition:transform .45s cubic-bezier(.2,.9,.3,1.15),width .3s,opacity .3s}
 // Sirf Task page (Next ke bahar ka alag HTML) ke liye: font + apna chhota toast
 const STANDALONE_CSS = `
 .nb{--sans:${SANS}}
-#nbToast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;z-index:80;max-width:90vw;padding:10px 16px;border-radius:12px;background:#111c13;border:1px solid #D4AF37;color:#FFEAA7;font:13px ${SANS};transition:.3s;pointer-events:none;text-align:center}
+#nbToast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;z-index:80;max-width:90vw;padding:10px 16px;border-radius:12px;background:#111c13;border:1px solid var(--gold,#D4AF37);color:var(--gold3,#FFE082);font:13px ${SANS};transition:.3s;pointer-events:none;text-align:center}
 #nbToast.on{opacity:1;transform:translate(-50%,0)}
 body{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
 @media(min-width:700px){body{padding-bottom:calc(118px + env(safe-area-inset-bottom))!important}}

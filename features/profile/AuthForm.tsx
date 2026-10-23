@@ -20,7 +20,7 @@ export default function AuthForm({ mode, next = "/profile" }: { mode: "login" | 
         {pending ? "रुको…" : mode === "login" ? "Login" : "Account बनाओ"}
       </button>
       {state.error && <p role="alert" className="text-[13px]" style={{ color: "#fca5a5" }}>{state.error}</p>}
-      {state.message && <p role="status" className="text-[13px]" style={{ color: "#a7f3d0" }}>{state.message}</p>}
+      {state.message && <p role="status" className="text-[13px]" style={{ color: "var(--mint, #a7f3d0)" }}>{state.message}</p>}
     </form>
     {mode === "login" && state.needsConfirm && (
       <form action={rsAction} className="grid gap-2" style={{ marginTop: 12 }}>
@@ -31,7 +31,7 @@ export default function AuthForm({ mode, next = "/profile" }: { mode: "login" | 
         </button>
         {rs.error && <p role="alert" className="text-[13px]" style={{ color: "#fca5a5" }}>{rs.error}</p>}
         {rs.fieldErrors?.email && <p role="alert" className="text-[13px]" style={{ color: "#fca5a5" }}>{rs.fieldErrors.email}</p>}
-        {rs.message && <p role="status" className="text-[13px]" style={{ color: "#a7f3d0" }}>{rs.message}</p>}
+        {rs.message && <p role="status" className="text-[13px]" style={{ color: "var(--mint, #a7f3d0)" }}>{rs.message}</p>}
       </form>
     )}
     </>

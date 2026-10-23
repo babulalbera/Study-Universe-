@@ -28,7 +28,7 @@ export default function Header() {
     <header ref={headerRef}>
       <div className="hin">
         <Link href="/" className="brand" aria-label="Study Universe Home">
-          <div className="logo" style={{ padding: 0, overflow: "hidden", background: "transparent", border: "2px solid #D4AF37", boxShadow: "0 0 18px rgba(212,175,55,.5)" }}>
+          <div className="logo" style={{ padding: 0, overflow: "hidden", background: "transparent", border: "2px solid var(--gold)", boxShadow: "0 0 18px color-mix(in srgb, var(--gold) 50%, transparent)" }}>
             <Image src="/images/logo.webp" alt="Study Universe Logo" width={42} height={42} priority style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
           </div>
           <div><div className="title">Study Universe</div></div>

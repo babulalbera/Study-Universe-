@@ -13,7 +13,7 @@ export default function KrishnaFrame({ children }: { children: ReactNode }) {
   const show = !HIDE.some((h) => (h.endsWith("/") ? path.startsWith(h) : path === h || path.startsWith(`${h}/`)));
   return (
     <>
-      {show && <HeroSection />}
+      {show && path !== "/" && <HeroSection />}  {/* Home par apna bada hero hai */}
       {children}
       {show && <KrishnaStrip />}
     </>
