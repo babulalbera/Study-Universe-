@@ -6,6 +6,8 @@ import BookUpload from "@/components/admin/BookUpload";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { saveBookCategory, deleteBookCategory, saveBook, deleteBook } from "@/features/admin/content-actions";
+import { saveBookLink } from "@/features/admin/book-link-actions";
+import { SOURCE_LABEL, type BookSource } from "@/lib/book-links";
 import type { Book, BookCategory } from "@/types/database";
 
 export default async function AdminBooksPage({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
@@ -22,11 +24,11 @@ export default async function AdminBooksPage({ searchParams }: { searchParams: P
 
   return (
     <>
-      <AdminHeader title="📚 Books & PDF" subtitle="PDF Upload करना और Categories बनाना" />
+      <AdminHeader title="📚 Books & PDF" subtitle="PDF Upload या Link (Drive, Mega…) से Book जोड़ना" />
       <Flash ok={ok} error={error} />
 
       <details className="adm-d" open={books.length === 0}>
-        <summary>⬆️ नई PDF Upload करो</summary>
+        <summary>➕ नई Book जोड़ो (PDF या Link)</summary>
         <BookUpload categories={cats} />
       </details>
 
@@ -50,7 +52,11 @@ export default async function AdminBooksPage({ searchParams }: { searchParams: P
       {books.length === 0 && <p className="su-muted">अभी कोई Book नहीं है।</p>}
       {books.map((b) => (
         <details key={b.id} className="adm-d">
-          <summary><span>{b.title}</span><span className={`adm-tag ${b.is_published ? "" : "off"}`}>{b.is_published ? "दिख रही" : "छिपी"}</span></summary>
+          <summary>
+            <span>{b.title}</span>
+            <span className="adm-tag">{b.external_url ? SOURCE_LABEL[(b.link_source as BookSource) ?? "other"] ?? "Link" : "PDF"}</span>
+            <span className={`adm-tag ${b.is_published ? "" : "off"}`}>{b.is_published ? "दिख रही" : "छिपी"}</span>
+          </summary>
           <form action={saveBook} className="grid gap-3">
             <input type="hidden" name="id" value={b.id} />
             <Field label="Title" name="title" defaultValue={b.title} required />
@@ -59,7 +65,14 @@ export default async function AdminBooksPage({ searchParams }: { searchParams: P
             <label className="adm-chk"><input type="checkbox" name="is_published" defaultChecked={b.is_published} /> Students को दिखाओ</label>
             <button type="submit" className="pbtn pbtn-gold">Save करो</button>
           </form>
-          <form action={deleteBook} className="su-row"><input type="hidden" name="id" value={b.id} /><DeleteButton label="Book + PDF हटाओ" /></form>
+          {b.external_url && (
+            <form action={saveBookLink} className="grid gap-3" style={{ marginTop: 12 }}>
+              <input type="hidden" name="id" value={b.id} />
+              <Field label="Book का Link" name="url" defaultValue={b.external_url} required />
+              <button type="submit" className="pbtn pbtn-gold">Link बदलो</button>
+            </form>
+          )}
+          <form action={deleteBook} className="su-row"><input type="hidden" name="id" value={b.id} /><DeleteButton label={b.external_url ? "Book हटाओ" : "Book + PDF हटाओ"} /></form>
         </details>
       ))}
     </>

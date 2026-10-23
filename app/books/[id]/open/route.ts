@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth";
+import { parseBookLink } from "@/lib/book-links";
 
-// Private PDF: login zaroori. Kuch der chalne wala signed link banta hai, seedha file ka link kabhi nahi.
+// Login zaroori. PDF wali Book ka kuch der chalne wala signed link banta hai; link wali Book (Drive/Mega/...) seedha uske link par jaati hai.
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const origin = new URL(req.url).origin;
@@ -10,12 +11,20 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if (!user) return NextResponse.redirect(`${origin}/login?next=${encodeURIComponent(`/books/${id}/open`)}`);
 
   const supabase = await createClient();
-  const { data } = await supabase.from("books").select("storage_path").eq("id", id).eq("is_published", true).maybeSingle();
-  const path = (data as { storage_path: string | null } | null)?.storage_path;
-  if (!path) return NextResponse.redirect(`${origin}/books`);
+  const { data } = await supabase.from("books").select("storage_path, external_url").eq("id", id).eq("is_published", true).maybeSingle();
+  const row = data as { storage_path: string | null; external_url: string | null } | null;
+  const path = row?.storage_path;
+  const external = row?.external_url ? parseBookLink(row.external_url) : null; // dobara jaanch: sirf safe https link
+  if (!path && !external) return NextResponse.redirect(`${origin}/books`);
 
-  const signed = await supabase.storage.from("books").createSignedUrl(path, 120);
-  if (signed.error || !signed.data) return NextResponse.redirect(`${origin}/books`);
+  let target: string;
+  if (path) {
+    const signed = await supabase.storage.from("books").createSignedUrl(path, 120);
+    if (signed.error || !signed.data) return NextResponse.redirect(`${origin}/books`);
+    target = signed.data.signedUrl;
+  } else {
+    target = external!.url;
+  }
 
   // Haal hi kholi gayi book yaad rakho (Profile ke "Continue Learning" ke liye). Progress ko nahi chhedta.
   await supabase.from("user_book_activity").upsert(
@@ -23,5 +32,5 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     { onConflict: "user_id,book_id" },
   );
 
-  return NextResponse.redirect(signed.data.signedUrl);
+  return NextResponse.redirect(target);
 }

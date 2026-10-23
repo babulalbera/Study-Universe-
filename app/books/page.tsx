@@ -5,6 +5,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import BookmarkButton from "@/features/bookmarks/BookmarkButton";
 import { getBookmarkedBookIds } from "@/features/bookmarks/queries";
 import { BOOKS_PER_PAGE, getBookCategories, getBooks } from "@/features/books/queries";
+import { SOURCE_LABEL, type BookSource } from "@/lib/book-links";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Books & PDFs" };
@@ -29,21 +30,24 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
         </div>
       )}
       {books.length === 0 ? (
-        <EmptyState icon="📖" title="अभी कोई Book/PDF नहीं है" text="Admin Panel से PDF Upload होते ही Category के हिसाब से यहाँ दिखेंगी।" />
+        <EmptyState icon="📖" title="अभी कोई Book/PDF नहीं है" text="Admin Panel से PDF या Link जुड़ते ही Category के हिसाब से यहाँ दिखेंगी।" />
       ) : (
         <div className="su-grid2">
-          {books.map((b) => (
-            <div key={b.id} className="su-item">
-              <div style={{ minWidth: 0 }}>
-                <h3>{b.title}</h3>
-                <p>{[catName.get(b.category_id ?? ""), b.author].filter(Boolean).join(" • ") || "PDF"}</p>
+          {books.map((b) => {
+            const label = b.external_url ? SOURCE_LABEL[(b.link_source as BookSource) ?? "other"] ?? "Link" : "PDF";
+            return (
+              <div key={b.id} className="su-item">
+                <div style={{ minWidth: 0 }}>
+                  <h3>{b.title}</h3>
+                  <p>{[catName.get(b.category_id ?? ""), b.author, label].filter(Boolean).join(" • ")}</p>
+                </div>
+                <div className="pr-act">
+                  <BookmarkButton type="book" id={b.id} initialSaved={savedIds.has(b.id)} />
+                  <a className="su-btn su-btn-primary" href={`/books/${b.id}/open`} target="_blank" rel="noopener noreferrer">{b.external_url ? "🔗 खोलो" : "📖 खोलो"}</a>
+                </div>
               </div>
-              <div className="pr-act">
-                <BookmarkButton type="book" id={b.id} initialSaved={savedIds.has(b.id)} />
-                <a className="su-btn su-btn-primary" href={`/books/${b.id}/open`} target="_blank" rel="noopener noreferrer">📖 खोलो</a>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
       {pages > 1 && (
