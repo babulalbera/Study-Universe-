@@ -1,9 +1,10 @@
 import Image from "next/image";
+import "./KrishnaStrip.css";
 
 // Neeche wala Krishna box (Home se nikal kar sab pages ke liye)
 export default function KrishnaStrip() {
   return (
-    <section className="glass status rv">
+    <section className="glass status krishna-glow rv">
       <div className="avatar">
         <Image src="/images/status-krishna.webp" alt="" width={54} height={54} />
       </div>
