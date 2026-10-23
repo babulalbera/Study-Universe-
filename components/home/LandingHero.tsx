@@ -6,6 +6,10 @@ import type { CSSProperties } from "react";
 export default function LandingHero() {
   return (
     <section className="lp-hero rv" aria-labelledby="lp-h1">
+      {/* Premium rotating border glow (CSS: LP-GLOW, globals.css me) */}
+      <span className="lp-glow" aria-hidden="true" />
+      <span className="lp-glow lp-glow-blur" aria-hidden="true" />
+
       <div className="lp-copy">
         <h1 id="lp-h1" className="lp-h1">
           <span className="w" style={{ "--d": 0 } as CSSProperties}>Preparation</span>{" "}
