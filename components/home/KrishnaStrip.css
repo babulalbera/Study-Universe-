@@ -1,4 +1,4 @@
-/* Krishna box: border glow animation (white + blue/violet/magenta highlights) */
+/* Krishna box: sirf border par chalti hui chamakti line. Rang Theme (ThemeDock) ke saath badalte hain. */
 
 @property --kg-angle {
   syntax: "<angle>";
@@ -13,68 +13,48 @@
 }
 
 .glass.krishna-glow {
-  /* colours yahan se badal sakte ho */
-  --kg-white: #ffffff;
-  --kg-blue: #3b5bff;
-  --kg-violet: #8b3dff;
-  --kg-magenta: #e040fb;
-  overflow: visible; /* glow box ke bahar tak dikhe */
+  /* Theme ke rang (globals.css ke --gold, --em ...) se bante hain, isliye theme badalte hi ye bhi badalte hain */
+  --kg-a: var(--em);
+  --kg-b: var(--gold);
+  --kg-c: var(--gold4);
+  --kg-white: color-mix(in srgb, var(--gold3) 45%, #ffffff);
+  overflow: visible;
 }
 
-/* ::before = patli chamakti border, ::after = uska soft glow (blur) */
-.krishna-glow::before,
-.krishna-glow::after {
+/* ::before = patli chamakti border (box ke andar kuch nahi bharta) */
+.krishna-glow::before {
   content: "";
   position: absolute;
   inset: -1px;
   border-radius: inherit;
   pointer-events: none;
+  padding: 2px; /* border ki motai */
   background: conic-gradient(
     from var(--kg-angle),
     transparent 0deg,
-    var(--kg-blue) 16deg,
-    var(--kg-violet) 30deg,
+    var(--kg-a) 16deg,
+    var(--kg-b) 30deg,
     var(--kg-white) 42deg,
-    var(--kg-violet) 54deg,
-    var(--kg-blue) 68deg,
+    var(--kg-b) 54deg,
+    var(--kg-a) 68deg,
     transparent 86deg,
     transparent 180deg,
-    var(--kg-blue) 196deg,
-    var(--kg-magenta) 210deg,
+    var(--kg-a) 196deg,
+    var(--kg-c) 210deg,
     var(--kg-white) 222deg,
-    var(--kg-magenta) 234deg,
-    var(--kg-blue) 248deg,
+    var(--kg-c) 234deg,
+    var(--kg-a) 248deg,
     transparent 266deg,
     transparent 360deg
   );
-}
-
-.krishna-glow::before {
-  padding: 1.5px; /* border ki motai */
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
 }
 
-.krishna-glow::after {
-  inset: -2px;
-  z-index: -1;
-  filter: blur(14px);
-  opacity: 0.5;
-  transition: opacity 0.4s ease;
-}
-
-/* hover par glow aur tez */
-@media (hover: hover) and (pointer: fine) {
-  .krishna-glow:hover::after {
-    opacity: 0.9;
-  }
-}
-
 /* animation sirf tab jab user ne reduced-motion on nahi kiya */
 @media (prefers-reduced-motion: no-preference) {
-  .krishna-glow::before,
-  .krishna-glow::after {
+  .krishna-glow::before {
     animation: kg-spin 5s linear infinite;
   }
 }
