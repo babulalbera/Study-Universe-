@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import "./compact-premium.css";
 
 const STEPS = [
   { n: "1", title: "Padho", text: "Free courses aur chuni hui books se concept clear karo.", href: "/books", cta: "Books kholo" },
