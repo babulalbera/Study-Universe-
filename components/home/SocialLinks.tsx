@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { CSSProperties } from "react";
 import type { SocialLinkData } from "@/features/home/data";
 import { useToast } from "@/components/ui/Toast";
+import "./compact-premium.css";
 
 const PERKS = ["📅 Daily Updates", "❓ Doubts", "📄 PDFs & Notes", "🎥 Free Lectures"];
 

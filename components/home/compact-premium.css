@@ -1,0 +1,116 @@
+/* Home ke do section ka chhota + premium look:
+   1) Community box (.cm)       2) "Selection ka seedha raasta" ke 3 boxes (.lp-step)
+   globals.css ke upar override hai; rang theme ke (--gold, --em, --surf, --bg) se bante hain. */
+
+/* ================= 1) COMMUNITY BOX ================= */
+section.cm {
+  padding: 14px 14px 12px;
+  border-radius: 22px;
+  border-width: 1px;
+  /* andar gehra kaala, border par theme ke rang ki halki ghoomti line (cmSpin pehle se hai) */
+  background:
+    linear-gradient(165deg, rgba(16, 24, 19, 0.97), rgba(3, 7, 5, 0.99)) padding-box,
+    conic-gradient(
+      from var(--cma),
+      var(--gold2),
+      color-mix(in srgb, var(--gold) 22%, transparent) 22%,
+      color-mix(in srgb, var(--em) 55%, transparent) 46%,
+      color-mix(in srgb, var(--gold) 22%, transparent) 70%,
+      var(--gold2)
+    ) border-box;
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.55),
+    0 0 26px color-mix(in srgb, var(--gold) 9%, transparent);
+}
+section.cm:before,
+section.cm:after {
+  width: 170px;
+  height: 170px;
+}
+section.cm:before { top: -90px; left: -70px; }
+section.cm:after { bottom: -90px; right: -70px; }
+
+.cm .cm-top { gap: 10px; align-items: center; }
+.cm .cm-logo { width: 40px; height: 40px; padding: 2px; box-shadow: 0 0 16px color-mix(in srgb, var(--gold) 45%, transparent); }
+.cm .cm-ttl h3 { font-size: 16px; }
+.cm .cm-ttl p {
+  margin-top: 2px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cm .cm-free { padding: 3px 9px; font-size: 9.5px; align-self: center; }
+
+.cm .cm-perks { gap: 6px; margin: 12px 0; }
+.cm .cm-perks span { padding: 4px 9px; font-size: 10.5px; }
+
+/* 4 tiles: mobile par bhi 2 x 2 (pehle har ek poori line leta tha) */
+.cm .cm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (min-width: 900px) {
+  .cm .cm-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  section.cm { padding: 16px 18px 14px; }
+  .cm .cm-ttl h3 { font-size: 19px; }
+  .cm .cm-ttl p { font-size: 12.5px; }
+}
+
+.cm .cm-tile {
+  min-height: 0;
+  padding: 10px;
+  gap: 9px;
+  border-radius: 16px;
+  border-width: 1px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4), 0 0 14px var(--gl);
+}
+.cm .cm-tile:hover { box-shadow: 0 12px 26px rgba(0, 0, 0, 0.55), 0 0 26px var(--g); }
+.cm .cm-ic { width: 38px; height: 38px; border-radius: 12px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 14px var(--gl); }
+.cm .cm-ic img { width: 26px; height: 26px; }
+.cm .cm-tx { flex: 1; min-width: 0; gap: 2px; }
+.cm .cm-nm { font-size: 13.5px; }
+.cm .cm-sub { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cm .cm-ac { margin-top: 3px; padding: 3px 9px; font-size: 10px; box-shadow: 0 0 10px var(--gl); }
+.cm .cm-foot { margin-top: 10px; font-size: 11px; }
+
+/* ================= 2) "SELECTION KA SEEDHA RAASTA" BOXES ================= */
+.lp-steps { gap: 10px; }
+
+/* Mobile: chhota horizontal card (number left, text right) */
+.lp-steps .lp-step {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  column-gap: 12px;
+  row-gap: 2px;
+  align-items: start;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--gold) 26%, transparent);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--surf) 88%, transparent),
+    color-mix(in srgb, var(--bg) 94%, transparent)
+  );
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.lp-steps .lp-step-n {
+  grid-row: 1 / span 3;
+  width: 34px;
+  height: 34px;
+  font-size: 15px;
+  align-self: start;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--gold) 35%, transparent);
+}
+.lp-steps .lp-step-t { font-size: 21px; margin-top: 0; }
+.lp-steps .lp-step p { font-size: 13px; line-height: 1.5; }
+.lp-steps .lp-step-l { justify-self: start; min-height: 34px; padding-top: 2px; margin-top: 2px; font-size: 13px; }
+
+/* Tablet / desktop: 3 box ek line me, andar upar-neeche */
+@media (min-width: 768px) {
+  .lp-steps { gap: 14px; }
+  .lp-steps .lp-step { display: flex; flex-direction: column; gap: 6px; padding: 16px; }
+  .lp-steps .lp-step-n { grid-row: auto; }
+  .lp-steps .lp-step:not(:last-child):after { top: 33px; }
+}
