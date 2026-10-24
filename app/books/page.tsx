@@ -53,12 +53,12 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
                   {b.description && <p className="bk-clamp">{b.description}</p>}
                   {extra && <p>{extra}</p>}
                   <p className="bk-info">{info}</p>
-                  <div className="bk-actions">
-                    <a className="su-btn su-btn-primary bk-btn" href={`/books/${b.id}/read`}>📖 Read</a>
-                    <a className="su-btn su-btn-ghost bk-btn" href={`/books/${b.id}/open?dl=1`}>⬇ Download</a>
-                    <ShareButton id={b.id} title={b.title} />
-                    <BookmarkButton type="book" id={b.id} initialSaved={savedIds.has(b.id)} />
-                  </div>
+                </div>
+                <div className="bk-actions">
+                  <a className="su-btn su-btn-primary bk-btn" href={`/books/${b.id}/read`}>📖 Read</a>
+                  <a className="su-btn su-btn-ghost bk-btn" href={`/books/${b.id}/open?dl=1`}>⬇ Download</a>
+                  <ShareButton id={b.id} title={b.title} />
+                  <BookmarkButton type="book" id={b.id} initialSaved={savedIds.has(b.id)} />
                 </div>
               </div>
             );
