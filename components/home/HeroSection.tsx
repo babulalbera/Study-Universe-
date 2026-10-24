@@ -1,8 +1,10 @@
 import Image from "next/image";
+import "./KrishnaStrip.css"; // .krishna-glow animation
 
+// Baaki pages ka upar wala Krishna box. Neeche wale box jaisa chalta hua glow (class krishna-glow).
 export default function HeroSection() {
   return (
-    <section className="glass rv">
+    <section className="glass krishna-glow rv">
       <div className="hero">
         <div className="avatar">
           <Image src="/images/hero-krishna.webp" alt="Baby Krishna with peacock feather and flute" width={92} height={92} priority />
