@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import BookCover from "@/components/books/BookCover";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth";
 import { embedUrl, parseBookLink } from "@/lib/book-links";
+import { MEDIUM_LABEL, type BookMedium } from "@/lib/book-meta";
+import type { Book } from "@/types/database";
 
 export const metadata: Metadata = { title: "Book पढ़ो" };
 export const dynamic = "force-dynamic";
@@ -15,8 +18,9 @@ export default async function ReadBookPage({ params }: { params: Promise<{ id: s
   if (!user) redirect(`/login?next=${encodeURIComponent(`/books/${id}/read`)}`);
 
   const supabase = await createClient();
-  const { data } = await supabase.from("books").select("title, storage_path, external_url").eq("id", id).eq("is_published", true).maybeSingle();
-  const row = data as { title: string; storage_path: string | null; external_url: string | null } | null;
+  // select("*") taaki migration 012 se pehle bhi page na toote
+  const { data } = await supabase.from("books").select("*").eq("id", id).eq("is_published", true).maybeSingle();
+  const row = data as Book | null;
   if (!row) redirect("/books");
 
   let src: string | null = null;
@@ -34,13 +38,23 @@ export default async function ReadBookPage({ params }: { params: Promise<{ id: s
     { onConflict: "user_id,book_id" },
   );
 
+  const medium = row.medium && row.medium in MEDIUM_LABEL ? MEDIUM_LABEL[row.medium as BookMedium] : null;
+  const meta = [row.author, medium, row.exam, row.pages ? `${row.pages} पेज` : null, row.publisher, row.edition].filter(Boolean).join(" • ");
+
   return (
     <div style={{ display: "grid", gap: 12 }}>
       <div className="su-row" style={{ justifyContent: "space-between", alignItems: "center" }}>
         <Link className="su-btn su-btn-ghost" href="/books">← Books</Link>
         <a className="su-btn su-btn-ghost" href={`/books/${id}/open`} target="_blank" rel="noopener noreferrer">↗ नए Tab में खोलो</a>
       </div>
-      <h1 style={{ fontSize: 18, fontWeight: 700 }}>{row.title}</h1>
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <BookCover path={row.cover_path} title={row.title} width={64} />
+        <div style={{ minWidth: 0 }}>
+          <h1 style={{ fontSize: 18, fontWeight: 700 }}>{row.title}</h1>
+          {meta && <p className="su-muted" style={{ fontSize: 12.5, marginTop: 4 }}>{meta}</p>}
+        </div>
+      </div>
+      {row.description && <p className="su-muted" style={{ fontSize: 13 }}>{row.description}</p>}
       {src ? (
         <iframe
           src={src}

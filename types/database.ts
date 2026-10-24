@@ -9,7 +9,12 @@ export type Profile = {
 export type Task = { id: string; title: string; subject: string; note: string; due_date: string | null; sort_order: number; is_active: boolean };
 export type TaskCompletion = { user_id: string; task_id: string; completed_at: string };
 export type BookCategory = { id: string; name: string; sort_order: number };
-export type Book = { id: string; category_id: string | null; title: string; author: string; description: string; storage_path: string | null; external_url?: string | null; link_source?: string | null; pages: number | null; is_published: boolean };
+export type Book = {
+  id: string; category_id: string | null; title: string; author: string; description: string; storage_path: string | null;
+  external_url?: string | null; link_source?: string | null; pages: number | null; is_published: boolean;
+  // migration 012 se
+  cover_path?: string | null; medium?: string | null; publisher?: string | null; edition?: string | null; exam?: string | null;
+};
 export type MockTest = { id: string; category_id: string | null; title: string; description: string; duration_minutes: number; total_marks: number; is_published: boolean };
 // correct_index sirf server/admin ke liye; student wale code mein ye type kabhi mat bhejo.
 export type Question = { id: string; test_id: string; question_text: string; options: string[]; correct_index: number; marks: number; negative_marks: number; explanation: string; sort_order: number; subject?: string | null };
