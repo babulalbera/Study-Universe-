@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth";
 import { getSiteSettings } from "@/features/home/queries";
 import { renderTaskPage } from "@/lib/task-page";
+import { applyTaskShell } from "@/lib/task-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,8 @@ export async function GET() {
   }
   const settings = await getSiteSettings();
   const ctx = { loggedIn: Boolean(user), courseHref: settings.course_url || "/courses" };
-  return new Response(renderTaskPage(boot, ctx), {
+  // applyTaskShell: header me theme button + upar/neeche Krishna boxes (baaki website jaisa)
+  return new Response(applyTaskShell(renderTaskPage(boot, ctx)), {
     headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store" },
   });
 }
