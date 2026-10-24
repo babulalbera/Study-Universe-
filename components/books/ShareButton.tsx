@@ -21,7 +21,7 @@ export default function ShareButton({ id, title }: { id: string; title: string }
   }
 
   return (
-    <button type="button" className="su-btn su-btn-ghost" style={{ padding: "6px 12px", fontSize: 12.5 }} onClick={share}>
+    <button type="button" className="su-btn su-btn-ghost bk-btn" onClick={share}>
       ↗ Share
     </button>
   );

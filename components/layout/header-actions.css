@@ -1,0 +1,16 @@
+/* Header ke daayen taraf: Theme button + Profile icon. globals.css ke .td (floating) ko header ke andar laata hai. */
+.hactions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+/* Theme button ab floating nahi, header me profile icon ke paas */
+.hactions .td{position:relative;right:auto;bottom:auto;left:auto;z-index:90;display:block}
+.hactions .td-fab{width:42px;height:42px;box-shadow:0 4px 14px rgba(0,0,0,.45),0 0 14px color-mix(in srgb,var(--gold) 22%,transparent)}
+.hactions .td-fab svg{width:20px;height:20px}
+
+/* Rang chunne wala box button ke neeche dropdown ki tarah khulta hai */
+.hactions .td-pop{position:absolute;top:calc(100% + 12px);right:0;transform-origin:top right;max-width:calc(100vw - 24px)}
+.hactions .td:not(.open) .td-pop{transform:translateY(-8px) scale(.96)}
+
+@media (max-width:380px){
+  .hactions{gap:8px}
+  .hactions .td-fab{width:38px;height:38px}
+}

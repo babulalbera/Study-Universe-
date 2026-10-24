@@ -2,6 +2,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import ThemeDock from "./ThemeDock";
+import "./header-actions.css";
 
 export default function Header() {
   const headerRef = useRef<HTMLElement>(null);
@@ -33,7 +35,10 @@ export default function Header() {
           </div>
           <div><div className="title">Study Universe</div></div>
         </Link>
-        <Link href="/profile" className="me" aria-label="Profile">👤</Link>
+        <div className="hactions">
+          <ThemeDock />
+          <Link href="/profile" className="me" aria-label="Profile">👤</Link>
+        </div>
       </div>
       <div id="pg" ref={barRef} aria-hidden="true" />
     </header>

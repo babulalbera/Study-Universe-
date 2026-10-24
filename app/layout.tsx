@@ -4,7 +4,6 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import BottomBar from "@/components/layout/BottomBar";
-import ThemeDock from "@/components/layout/ThemeDock";
 import BackgroundFX from "@/components/layout/BackgroundFX";
 import KrishnaFrame from "@/components/layout/KrishnaFrame";
 import { getSiteSettings } from "@/features/home/queries";
@@ -35,13 +34,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ToastProvider>
           <div className="bg" aria-hidden="true" />
           <BackgroundFX />
+          {/* ThemeDock ab Header ke andar hai (profile icon ke paas) */}
           <Header />
           <div className="wrap">
             <main><KrishnaFrame>{children}</KrishnaFrame></main>
             <Footer />
           </div>
           <BottomBar courseHref={courseHref} />
-          <ThemeDock />
         </ToastProvider>
       </body>
     </html>

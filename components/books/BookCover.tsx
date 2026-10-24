@@ -1,13 +1,15 @@
 import type { CSSProperties } from "react";
 import { coverUrl } from "@/lib/book-meta";
 
-// Book ka cover (3:4). Cover na ho to sunehri-hari placeholder dikhta hai.
+// Book ka cover (3:4). Chaudai CSS variable --cover-w se badal sakti hai (responsive), warna `width` px.
+// Cover na ho to sunehri-hari placeholder dikhta hai.
 export default function BookCover({ path, title, width = 72 }: { path?: string | null; title: string; width?: number }) {
   const src = coverUrl(path);
   const height = Math.round((width * 4) / 3);
   const box: CSSProperties = {
-    width,
-    height,
+    width: `var(--cover-w, ${width}px)`,
+    height: "auto",
+    aspectRatio: "3 / 4",
     flexShrink: 0,
     borderRadius: 10,
     overflow: "hidden",
