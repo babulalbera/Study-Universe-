@@ -152,12 +152,12 @@ export default function ThemeDock() {
           <button type="button" className="td-auto" aria-pressed={auto} aria-label="Auto colour change" onClick={toggleAuto}>Auto</button>
         </div>
 
-        <div className="tdp-grid">{BASE.map(row)}</div>
+        <div className="tdp-grid">{BASE.map((t) => row(t))}</div>
 
         {customs.length > 0 && (
           <>
             <div className="tdp-sub">Meri colours</div>
-            <div className="tdp-grid">{customs.map(row)}</div>
+            <div className="tdp-grid">{all.filter((t) => t.custom).map((t) => row(t))}</div>
           </>
         )}
 
