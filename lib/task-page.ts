@@ -124,10 +124,50 @@ const STORAGE_SHIM = `
     return s}};
 })();`;
 
-export function renderTaskPage(boot: Boot, ctx: TaskPageCtx): string {
+// ---- EMBED: /tasks ab site ka normal page hai (Header, Krishna boxes, Bottom bar layout se). Task app uske andar chalta hai. ----
+const EMBED_CSS = `
+html,body{background:transparent!important;min-height:0!important;overflow-y:hidden}
+#su-bg,.bg,.aurora,#fx,.spot,.grain,.td,.sx-hd,.sx-gst,#nb,#nbToast,.nb{display:none!important}
+#root>div{background:transparent!important;min-height:0!important}
+#root main{padding-top:4px!important;padding-bottom:12px!important;padding-left:0!important;padding-right:0!important;max-width:none!important}
+/* modal / popup: poore (lambe) frame ki jagah user ko jo hissa dikh raha hai wahi use karo */
+.fixed.inset-0:not(.pointer-events-none),.su-ov,.td-ov,.td-sh,.td-p,.premium-blank-page{inset:auto!important;left:0!important;right:0!important;top:var(--vt,0px)!important;height:var(--vh,100vh)!important}
+.su-box,.max-h-\\[90vh\\],.max-h-\\[92vh\\]{max-height:calc(var(--vh,100vh) - 20px)!important}
+.su-t{bottom:auto!important;top:calc(var(--vt,0px) + var(--vh,100vh) - 64px)!important}
+`;
+
+const EMBED_JS = `(function(){
+var P=null;try{if(window.parent!==window){void window.parent.document;P=window.parent}}catch(e){P=null}
+var root=document.documentElement;
+function syncTheme(){try{var t=P.document.documentElement.dataset.theme;if(t)root.dataset.theme=t;else delete root.dataset.theme}catch(e){}}
+if(P){syncTheme();try{new MutationObserver(syncTheme).observe(P.document.documentElement,{attributes:true,attributeFilter:["data-theme"]})}catch(e){}}
+// Site ke Krishna boxes pehle se hain: app ke andar wale dohre boxes chhupa do
+function hide(){
+  var m=document.querySelector("#root main");if(!m)return;
+  var w=document.createTreeWalker(m,NodeFilter.SHOW_TEXT),n,hero=null;
+  while((n=w.nextNode())){if(/KRISHNA BLESSINGS/.test(n.nodeValue)){hero=n.parentElement&&n.parentElement.closest('[class*="rounded-[20px]"]');break}}
+  if(hero&&hero.style.display!=="none")hero.style.display="none";
+  var k=m.children,i,t;
+  for(i=k.length-1;i>=1;i--){t=k[i].textContent||"";
+    if(!/Today Task/.test(t)&&((/Best banao, roz jeeto/.test(t))||(/STUDY UNIVERSE\s*\u2022\s*PREMIUM/i.test(t)&&t.length<90))){if(k[i].style.display!=="none")k[i].style.display="none"}}
+}
+hide();
+new MutationObserver(hide).observe(document.body,{childList:true,subtree:true});
+})();`;
+
+export function renderTaskPage(boot: Boot, ctx: TaskPageCtx, opts: { embed?: boolean } = {}): string {
   const json = JSON.stringify(boot).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
   // THEME_HEAD_JS: page dikhne se pehle chuna hua rang laga deta hai (flash nahi hota)
   const boot_ = `<script>${THEME_HEAD_JS}</script><script>window.__SU_BOOT=${json};</script><script>${STORAGE_SHIM}</script>`;
+  if (opts.embed) {
+    const site = `<base target="_top"><style id="su-theme-css">${THEME_CSS}</style><style id="su-embed-css">${EMBED_CSS}</style>`;
+    const html = THEMED_TEMPLATE
+      .replace("<!--SU_BOOT-->", () => boot_ + site)
+      .replace("<!--SU_SITE-->", () => "");
+    const end = html.lastIndexOf("</body>");
+    const js = `<script>${EMBED_JS}</script>`;
+    return end < 0 ? html + js : html.slice(0, end) + js + html.slice(end);
+  }
   const html = THEMED_TEMPLATE
     .replace("<!--SU_BOOT-->", () => boot_)
     .replace("<!--SU_SITE-->", () => chrome(ctx));
