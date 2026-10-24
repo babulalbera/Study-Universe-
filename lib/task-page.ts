@@ -139,8 +139,11 @@ html,body{background:transparent!important;min-height:0!important;overflow-y:hid
 const EMBED_JS = `(function(){
 var P=null;try{if(window.parent!==window){void window.parent.document;P=window.parent}}catch(e){P=null}
 var root=document.documentElement;
-function syncTheme(){try{var t=P.document.documentElement.dataset.theme;if(t)root.dataset.theme=t;else delete root.dataset.theme}catch(e){}}
-if(P){syncTheme();try{new MutationObserver(syncTheme).observe(P.document.documentElement,{attributes:true,attributeFilter:["data-theme"]})}catch(e){}}
+var VK=["--gold","--gold2","--gold3","--gold4","--em","--mint","--bg","--surf"];
+function syncTheme(){try{var pr=P.document.documentElement,t=pr.dataset.theme,i,v;
+  if(t)root.dataset.theme=t;else delete root.dataset.theme;
+  for(i=0;i<VK.length;i++){v=pr.style.getPropertyValue(VK[i]);if(v)root.style.setProperty(VK[i],v);else root.style.removeProperty(VK[i])}}catch(e){}}
+if(P){syncTheme();try{new MutationObserver(syncTheme).observe(P.document.documentElement,{attributes:true,attributeFilter:["data-theme","style"]})}catch(e){}}
 // Site ke Krishna boxes pehle se hain: app ke andar wale dohre boxes chhupa do
 function hide(){
   var m=document.querySelector("#root main");if(!m)return;

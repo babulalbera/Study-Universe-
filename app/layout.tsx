@@ -28,7 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="hi" suppressHydrationWarning className={`${outfit.variable} ${space.variable} ${deva.variable} ${serif.variable}`}>
       <head>
         {/* Page dikhne se pehle chuna hua rang laga do — flash nahi hoga */}
-        <script dangerouslySetInnerHTML={{ __html: "try{var t=localStorage.getItem('su-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}" }} />
+        <script dangerouslySetInnerHTML={{ __html: "try{var d=document.documentElement,t=localStorage.getItem('su-theme');if(t)d.dataset.theme=t;var v=localStorage.getItem('su-vars');if(v){var o=JSON.parse(v);for(var k in o)if(k.slice(0,2)==='--')d.style.setProperty(k,o[k])}}catch(e){}" }} />
       </head>
       <body>
         <ToastProvider>
