@@ -57,6 +57,7 @@ export async function saveBook(formData: FormData) {
   const m = cleanMeta({
     description: s(formData, "description"), medium: s(formData, "medium"), publisher: s(formData, "publisher"),
     edition: s(formData, "edition"), exam: s(formData, "exam"), pages: s(formData, "pages"),
+    year: s(formData, "published_year"), sizeMb: s(formData, "file_size_mb"),
   });
   if (!m.ok) return back(P, "error", m.error);
   const { error } = await c.supabase.from("books").update({

@@ -75,6 +75,8 @@ export default async function AdminBooksPage({ searchParams }: { searchParams: P
             <Field label="Edition" name="edition" defaultValue={b.edition ?? ""} />
             <Field label="Exam (जैसे SSC CGL)" name="exam" defaultValue={b.exam ?? ""} />
             <Field label="Pages" name="pages" type="number" defaultValue={b.pages ?? ""} />
+            <Field label="Year (जैसे 2023)" name="published_year" type="number" defaultValue={b.published_year ?? ""} />
+            <Field label="File Size (MB)" name="file_size_mb" type="number" defaultValue={b.file_size_mb ?? ""} />
             <label className="adm-chk"><input type="checkbox" name="is_published" defaultChecked={b.is_published} /> Students को दिखाओ</label>
             <button type="submit" className="pbtn pbtn-gold">Save करो</button>
           </form>

@@ -27,6 +27,7 @@ export default function BookUpload({ categories }: { categories: { id: string; n
     const meta = {
       description: str("description"), medium: str("medium"), publisher: str("publisher"),
       edition: str("edition"), exam: str("exam"), pages: str("pages"),
+      year: str("published_year"), sizeMb: str("file_size_mb"),
     };
     const coverRaw = fd.get("cover");
     const cover = coverRaw instanceof File && coverRaw.size > 0 ? coverRaw : null;
@@ -62,6 +63,8 @@ export default function BookUpload({ categories }: { categories: { id: string; n
     if (file.type !== "application/pdf") return setMsg({ ok: false, text: "सिर्फ़ PDF चलेगी" });
     if (file.size > MAX_MB * 1024 * 1024) return setMsg({ ok: false, text: `फ़ाइल ${MAX_MB}MB से छोटी हो` });
 
+    // File size khali ho to PDF ka asli size apne aap bhar do
+    if (!meta.sizeMb.trim()) meta.sizeMb = String(Math.round((file.size / (1024 * 1024)) * 10) / 10);
     setBusy(true);
     setMsg(null);
     const cv = cover ? await uploadCover(cover) : null;
@@ -118,6 +121,8 @@ export default function BookUpload({ categories }: { categories: { id: string; n
       <label className="su-field"><span>Edition (जैसे 2024, 5th Edition)</span><input name="edition" maxLength={40} /></label>
       <label className="su-field"><span>Exam (जैसे SSC CGL, Army GD)</span><input name="exam" maxLength={60} /></label>
       <label className="su-field"><span>Pages</span><input name="pages" type="number" inputMode="numeric" min={1} max={10000} /></label>
+      <label className="su-field"><span>Year (जैसे 2023)</span><input name="published_year" type="number" inputMode="numeric" min={1900} max={2100} /></label>
+      <label className="su-field"><span>File Size MB (PDF Upload में खाली छोड़ो तो अपने आप भर जाएगा)</span><input name="file_size_mb" type="number" inputMode="decimal" step="0.1" min={0.1} /></label>
       {mode === "link" ? (
         <label className="su-field">
           <span>Book का Link (Google Drive, Mega, Dropbox, OneDrive, MediaFire, Telegram…)</span>

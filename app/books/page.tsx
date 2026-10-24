@@ -4,6 +4,7 @@ import Link from "next/link";
 import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
 import BookCover from "@/components/books/BookCover";
+import ShareButton from "@/components/books/ShareButton";
 import BookmarkButton from "@/features/bookmarks/BookmarkButton";
 import { getBookmarkedBookIds } from "@/features/bookmarks/queries";
 import { BOOKS_PER_PAGE, getBookCategories, getBooks } from "@/features/books/queries";
@@ -13,11 +14,8 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Books & PDFs" };
 
-const tagStyle: CSSProperties = {
-  fontSize: 11, padding: "2px 8px", borderRadius: 99, color: "#e4e4e7",
-  background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.12)",
-};
 const clamp2: CSSProperties = { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" };
+const smallBtn: CSSProperties = { padding: "6px 12px", fontSize: 12.5 };
 
 export default async function BooksPage({ searchParams }: { searchParams: Promise<{ cat?: string; page?: string }> }) {
   const sp = await searchParams;
@@ -45,22 +43,24 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
           {books.map((b) => {
             const label = b.external_url ? SOURCE_LABEL[(b.link_source as BookSource) ?? "other"] ?? "Link" : "PDF";
             const medium = b.medium && b.medium in MEDIUM_LABEL ? MEDIUM_LABEL[b.medium as BookMedium] : null;
-            const tags = [catName.get(b.category_id ?? ""), medium, b.exam, b.pages ? `${b.pages} पेज` : null, label].filter(Boolean) as string[];
-            const pub = [b.publisher, b.edition].filter(Boolean).join(" • ");
+            // "PDF · English · 2018 · 46.7 MB"
+            const info = [label, medium, b.published_year, b.file_size_mb ? `${b.file_size_mb} MB` : null].filter(Boolean).join(" · ");
+            // category, exam, pages, publisher: chhoti dusri line
+            const extra = [catName.get(b.category_id ?? ""), b.exam, b.pages ? `${b.pages} पेज` : null, b.publisher, b.edition].filter(Boolean).join(" • ");
             return (
               <div key={b.id} className="su-item" style={{ alignItems: "flex-start" }}>
                 <BookCover path={b.cover_path} title={b.title} width={72} />
-                <div style={{ minWidth: 0, flex: 1, display: "grid", gap: 6 }}>
-                  <h3>{b.title}</h3>
-                  {b.author && <p>✍️ {b.author}</p>}
-                  {pub && <p>{pub}</p>}
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {tags.map((t) => <span key={t} style={tagStyle}>{t}</span>)}
-                  </div>
-                  {b.description && <p style={clamp2}>{b.description}</p>}
-                  <div className="pr-act">
+                <div style={{ minWidth: 0, flex: 1, display: "grid", gap: 5 }}>
+                  <h3 style={{ lineHeight: 1.25 }}>{b.title}</h3>
+                  {b.author && <p style={{ marginTop: 0 }}>👤 {b.author}</p>}
+                  {b.description && <p style={{ ...clamp2, marginTop: 0 }}>{b.description}</p>}
+                  {extra && <p style={{ marginTop: 0 }}>{extra}</p>}
+                  <p style={{ marginTop: 0, fontWeight: 600, color: "#e4e4e7" }}>{info}</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginTop: 4 }}>
+                    <a className="su-btn su-btn-primary" style={smallBtn} href={`/books/${b.id}/read`}>📖 Read</a>
+                    <a className="su-btn su-btn-ghost" style={smallBtn} href={`/books/${b.id}/open?dl=1`}>⬇ Download</a>
+                    <ShareButton id={b.id} title={b.title} />
                     <BookmarkButton type="book" id={b.id} initialSaved={savedIds.has(b.id)} />
-                    <a className="su-btn su-btn-primary" href={`/books/${b.id}/read`}>📖 पढ़ो</a>
                   </div>
                 </div>
               </div>

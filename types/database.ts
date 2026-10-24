@@ -14,6 +14,8 @@ export type Book = {
   external_url?: string | null; link_source?: string | null; pages: number | null; is_published: boolean;
   // migration 012 se
   cover_path?: string | null; medium?: string | null; publisher?: string | null; edition?: string | null; exam?: string | null;
+  // migration 013 se
+  published_year?: number | null; file_size_mb?: number | null;
 };
 export type MockTest = { id: string; category_id: string | null; title: string; description: string; duration_minutes: number; total_marks: number; is_published: boolean };
 // correct_index sirf server/admin ke liye; student wale code mein ye type kabhi mat bhejo.
