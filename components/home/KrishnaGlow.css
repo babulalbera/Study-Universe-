@@ -1,0 +1,69 @@
+/* Wrapper wala glow: Home ke bade hero box ke liye (uska apna CSS overflow:hidden hai, isliye glow bahar wrapper par lagta hai).
+   Animation (@property --kg-angle aur @keyframes kg-spin) KrishnaStrip.css se aati hai; wahi rang, wahi speed. */
+.kg-box {
+  --kg-white: #ffffff;
+  --kg-blue: #3b5bff;
+  --kg-violet: #8b3dff;
+  --kg-magenta: #e040fb;
+  position: relative;
+  isolation: isolate;
+  border-radius: clamp(22px, 5vw, 34px); /* .lp-hero ke barabar */
+}
+
+.kg-box::before,
+.kg-box::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--kg-angle),
+    transparent 0deg,
+    var(--kg-blue) 16deg,
+    var(--kg-violet) 30deg,
+    var(--kg-white) 42deg,
+    var(--kg-violet) 54deg,
+    var(--kg-blue) 68deg,
+    transparent 86deg,
+    transparent 180deg,
+    var(--kg-blue) 196deg,
+    var(--kg-magenta) 210deg,
+    var(--kg-white) 222deg,
+    var(--kg-magenta) 234deg,
+    var(--kg-blue) 248deg,
+    transparent 266deg,
+    transparent 360deg
+  );
+}
+
+/* patli chamakti border: hero ke upar dikhe */
+.kg-box::before {
+  z-index: 2;
+  padding: 1.5px;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+/* soft glow: hero ke peeche */
+.kg-box::after {
+  inset: -2px;
+  z-index: -1;
+  filter: blur(14px);
+  opacity: 0.5;
+  transition: opacity 0.4s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kg-box:hover::after {
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kg-box::before,
+  .kg-box::after {
+    animation: kg-spin 5s linear infinite;
+  }
+}
