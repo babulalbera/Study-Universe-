@@ -1,0 +1,31 @@
+/* Books page: card + buttons, mobile / tablet / desktop teeno ke liye */
+.bk-grid{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.bk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.bk-card{--cover-w:84px;display:flex;gap:14px;align-items:flex-start;justify-content:flex-start;min-width:0}
+@media (min-width:640px){.bk-card{--cover-w:96px}}
+@media (min-width:1024px){.bk-card{--cover-w:104px}}
+
+.bk-body{min-width:0;flex:1;display:grid;gap:5px}
+.bk-body h3{line-height:1.25;overflow-wrap:anywhere}
+.bk-body p{margin-top:0;overflow-wrap:anywhere}
+.bk-clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bk-info{font-weight:600;color:#e4e4e7}
+
+/* Buttons: ek hi line me. Mobile par side me scroll hoti hai, bade screen par zaroorat ho to neeche wrap */
+.bk-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.bk-actions>*{flex:0 0 auto}
+.bk-actions .bk-btn{height:36px;padding:0 14px;font-size:13px;line-height:1;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.bk-actions .pr-fav{width:36px;height:36px}
+.bk-actions .pr-fav svg{width:18px;height:18px}
+
+@media (max-width:639px){
+  .bk-actions{
+    flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+    scroll-snap-type:x proximity;overscroll-behavior-x:contain;
+    padding-bottom:2px;
+  }
+  .bk-actions::-webkit-scrollbar{display:none}
+  .bk-actions>*{scroll-snap-align:start}
+}
