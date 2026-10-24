@@ -3,12 +3,17 @@ import Flash from "@/components/admin/Flash";
 import Field from "@/components/admin/Field";
 import DeleteButton from "@/components/admin/DeleteButton";
 import BookUpload from "@/components/admin/BookUpload";
+import BookCoverEditor from "@/components/admin/BookCoverEditor";
+import BookCover from "@/components/books/BookCover";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { saveBookCategory, deleteBookCategory, saveBook, deleteBook } from "@/features/admin/content-actions";
 import { saveBookLink } from "@/features/admin/book-link-actions";
 import { SOURCE_LABEL, type BookSource } from "@/lib/book-links";
+import { MEDIUMS, MEDIUM_LABEL } from "@/lib/book-meta";
 import type { Book, BookCategory } from "@/types/database";
+
+const mediumOptions = [{ value: "", label: "— चुनो —" }, ...MEDIUMS.map((m) => ({ value: m, label: MEDIUM_LABEL[m] }))];
 
 export default async function AdminBooksPage({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   await requireAdmin();
@@ -53,15 +58,23 @@ export default async function AdminBooksPage({ searchParams }: { searchParams: P
       {books.map((b) => (
         <details key={b.id} className="adm-d">
           <summary>
+            <BookCover path={b.cover_path} title={b.title} width={28} />
             <span>{b.title}</span>
             <span className="adm-tag">{b.external_url ? SOURCE_LABEL[(b.link_source as BookSource) ?? "other"] ?? "Link" : "PDF"}</span>
             <span className={`adm-tag ${b.is_published ? "" : "off"}`}>{b.is_published ? "दिख रही" : "छिपी"}</span>
           </summary>
+          <BookCoverEditor id={b.id} title={b.title} coverPath={b.cover_path ?? null} />
           <form action={saveBook} className="grid gap-3">
             <input type="hidden" name="id" value={b.id} />
             <Field label="Title" name="title" defaultValue={b.title} required />
             <Field label="Author" name="author" defaultValue={b.author} />
+            <Field label="Description (अधिकतम 500 अक्षर)" name="description" defaultValue={b.description ?? ""} rows={3} />
             <Field label="Category" name="category_id" defaultValue={b.category_id ?? ""} options={catOptions} />
+            <Field label="Medium" name="medium" defaultValue={b.medium ?? ""} options={mediumOptions} />
+            <Field label="Publisher" name="publisher" defaultValue={b.publisher ?? ""} />
+            <Field label="Edition" name="edition" defaultValue={b.edition ?? ""} />
+            <Field label="Exam (जैसे SSC CGL)" name="exam" defaultValue={b.exam ?? ""} />
+            <Field label="Pages" name="pages" type="number" defaultValue={b.pages ?? ""} />
             <label className="adm-chk"><input type="checkbox" name="is_published" defaultChecked={b.is_published} /> Students को दिखाओ</label>
             <button type="submit" className="pbtn pbtn-gold">Save करो</button>
           </form>

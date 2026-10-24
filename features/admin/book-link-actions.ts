@@ -1,20 +1,23 @@
 "use server";
 import { audit, back, ctx, refresh, s } from "./helpers";
 import { parseBookLink } from "@/lib/book-links";
+import { cleanMeta, type BookMetaInput } from "@/lib/book-meta";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const LINK_ERR = "Link sahi nahi hai. https:// se shuru hone wala Drive, Mega, Dropbox jaisa link daalo";
 
 // Book ko PDF upload ke bajay link se add karo (Google Drive, Mega, Dropbox, OneDrive, MediaFire, Telegram ya koi bhi https link).
-export async function createBookFromLink(input: { title: string; author: string; categoryId: string; url: string }): Promise<{ error?: string }> {
+export async function createBookFromLink(input: { title: string; author: string; categoryId: string; url: string; meta?: BookMetaInput }): Promise<{ error?: string }> {
   const c = await ctx();
   const title = input.title.trim();
   if (title.length < 2) return { error: "Title likho" };
   const link = parseBookLink(input.url);
   if (!link) return { error: LINK_ERR };
+  const m = cleanMeta(input.meta ?? {});
+  if (!m.ok) return { error: m.error };
   const { error } = await c.supabase.from("books").insert({
     title, author: input.author.trim(), category_id: UUID.test(input.categoryId) ? input.categoryId : null,
-    storage_path: null, external_url: link.url, link_source: link.source, created_by: c.profile.id,
+    storage_path: null, external_url: link.url, link_source: link.source, created_by: c.profile.id, ...m.row,
   });
   if (error) return { error: `Save nahi hua: ${error.message}` };
   await audit(c, "create", "books", null, { title, source: link.source });

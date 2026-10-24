@@ -1,14 +1,23 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
+import BookCover from "@/components/books/BookCover";
 import BookmarkButton from "@/features/bookmarks/BookmarkButton";
 import { getBookmarkedBookIds } from "@/features/bookmarks/queries";
 import { BOOKS_PER_PAGE, getBookCategories, getBooks } from "@/features/books/queries";
 import { SOURCE_LABEL, type BookSource } from "@/lib/book-links";
+import { MEDIUM_LABEL, type BookMedium } from "@/lib/book-meta";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Books & PDFs" };
+
+const tagStyle: CSSProperties = {
+  fontSize: 11, padding: "2px 8px", borderRadius: 99, color: "#e4e4e7",
+  background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.12)",
+};
+const clamp2: CSSProperties = { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" };
 
 export default async function BooksPage({ searchParams }: { searchParams: Promise<{ cat?: string; page?: string }> }) {
   const sp = await searchParams;
@@ -35,15 +44,24 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
         <div className="su-grid2">
           {books.map((b) => {
             const label = b.external_url ? SOURCE_LABEL[(b.link_source as BookSource) ?? "other"] ?? "Link" : "PDF";
+            const medium = b.medium && b.medium in MEDIUM_LABEL ? MEDIUM_LABEL[b.medium as BookMedium] : null;
+            const tags = [catName.get(b.category_id ?? ""), medium, b.exam, b.pages ? `${b.pages} पेज` : null, label].filter(Boolean) as string[];
+            const pub = [b.publisher, b.edition].filter(Boolean).join(" • ");
             return (
-              <div key={b.id} className="su-item">
-                <div style={{ minWidth: 0 }}>
+              <div key={b.id} className="su-item" style={{ alignItems: "flex-start" }}>
+                <BookCover path={b.cover_path} title={b.title} width={72} />
+                <div style={{ minWidth: 0, flex: 1, display: "grid", gap: 6 }}>
                   <h3>{b.title}</h3>
-                  <p>{[catName.get(b.category_id ?? ""), b.author, label].filter(Boolean).join(" • ")}</p>
-                </div>
-                <div className="pr-act">
-                  <BookmarkButton type="book" id={b.id} initialSaved={savedIds.has(b.id)} />
-                  <a className="su-btn su-btn-primary" href={`/books/${b.id}/read`}>📖 पढ़ो</a>
+                  {b.author && <p>✍️ {b.author}</p>}
+                  {pub && <p>{pub}</p>}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {tags.map((t) => <span key={t} style={tagStyle}>{t}</span>)}
+                  </div>
+                  {b.description && <p style={clamp2}>{b.description}</p>}
+                  <div className="pr-act">
+                    <BookmarkButton type="book" id={b.id} initialSaved={savedIds.has(b.id)} />
+                    <a className="su-btn su-btn-primary" href={`/books/${b.id}/read`}>📖 पढ़ो</a>
+                  </div>
                 </div>
               </div>
             );

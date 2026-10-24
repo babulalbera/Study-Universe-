@@ -1,5 +1,6 @@
 "use server";
 import { audit, back, ctx, dec, num, on, refresh, s } from "./helpers";
+import { COVER_BUCKET, cleanMeta, isCoverPath, type BookMetaInput } from "@/lib/book-meta";
 const okUrl = (u: string) => u === "" || /^https?:\/\//.test(u) || (u.startsWith("/") && !u.startsWith("//"));
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -29,14 +30,16 @@ export async function deleteBookCategory(formData: FormData) {
 
 // ================= Books =================
 // PDF browser se seedha Storage mein upload hoti hai (admin ke login se). Yahan sirf uski jaankari save hoti hai.
-export async function createBook(input: { title: string; author: string; categoryId: string; storagePath: string }): Promise<{ error?: string }> {
+export async function createBook(input: { title: string; author: string; categoryId: string; storagePath: string; meta?: BookMetaInput }): Promise<{ error?: string }> {
   const c = await ctx();
   const title = input.title.trim();
   if (title.length < 2) return { error: "Title likho" };
   if (!/^[0-9a-f-]{36}\.pdf$/i.test(input.storagePath)) return { error: "File ka path galat hai" };
+  const m = cleanMeta(input.meta ?? {});
+  if (!m.ok) return { error: m.error };
   const { error } = await c.supabase.from("books").insert({
     title, author: input.author.trim(), category_id: UUID.test(input.categoryId) ? input.categoryId : null,
-    storage_path: input.storagePath, created_by: c.profile.id,
+    storage_path: input.storagePath, created_by: c.profile.id, ...m.row,
   });
   if (error) return { error: `Save nahi hua: ${error.message}` };
   await audit(c, "create", "books", null, { title });
@@ -51,23 +54,44 @@ export async function saveBook(formData: FormData) {
   const title = s(formData, "title");
   if (title.length < 2) back(P, "error", "Title likho");
   const cat = s(formData, "category_id");
+  const m = cleanMeta({
+    description: s(formData, "description"), medium: s(formData, "medium"), publisher: s(formData, "publisher"),
+    edition: s(formData, "edition"), exam: s(formData, "exam"), pages: s(formData, "pages"),
+  });
+  if (!m.ok) return back(P, "error", m.error);
   const { error } = await c.supabase.from("books").update({
     title, author: s(formData, "author"), category_id: UUID.test(cat) ? cat : null, is_published: on(formData, "is_published"),
+    ...m.row,
   }).eq("id", id);
   if (error) back(P, "error", `Save nahi hua: ${error.message}`);
   await audit(c, "update", "books", id, { title });
   refresh([P, "/books"]);
   back(P, "ok", "Book save ho gayi ✓");
 }
+// Cover badalna (coverPath) ya hatana (null). Nayi file browser se pehle hi upload ho chuki hoti hai.
+export async function setBookCover(id: string, coverPath: string | null): Promise<{ error?: string }> {
+  const c = await ctx();
+  if (!UUID.test(id)) return { error: "Book nahi mili" };
+  if (coverPath !== null && !isCoverPath(coverPath)) return { error: "Cover ka path galat hai" };
+  const { data: prev } = await c.supabase.from("books").select("cover_path").eq("id", id).maybeSingle();
+  const old = (prev as { cover_path: string | null } | null)?.cover_path ?? null;
+  const { error } = await c.supabase.from("books").update({ cover_path: coverPath }).eq("id", id);
+  if (error) return { error: `Save nahi hua: ${error.message}` };
+  if (old && old !== coverPath) await c.supabase.storage.from(COVER_BUCKET).remove([old]);
+  await audit(c, "update", "books", id, { cover: coverPath ? "set" : "removed" });
+  refresh(["/admin/books", "/books"]);
+  return {};
+}
 export async function deleteBook(formData: FormData) {
   const P = "/admin/books";
   const c = await ctx();
   const id = s(formData, "id");
-  const { data } = await c.supabase.from("books").select("storage_path").eq("id", id).maybeSingle();
-  const path = (data as { storage_path: string | null } | null)?.storage_path;
+  const { data } = await c.supabase.from("books").select("storage_path, cover_path").eq("id", id).maybeSingle();
+  const row = data as { storage_path: string | null; cover_path: string | null } | null;
   const { error } = await c.supabase.from("books").delete().eq("id", id);
   if (error) back(P, "error", "Hata nahi paya");
-  if (path) await c.supabase.storage.from("books").remove([path]);
+  if (row?.storage_path) await c.supabase.storage.from("books").remove([row.storage_path]);
+  if (row?.cover_path) await c.supabase.storage.from(COVER_BUCKET).remove([row.cover_path]);
   await audit(c, "delete", "books", id);
   refresh([P, "/books"]);
   back(P, "ok", "Book aur PDF hata di ✓");
