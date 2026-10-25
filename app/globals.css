@@ -1175,3 +1175,36 @@ background:linear-gradient(95deg,var(--gold3),var(--gold2) 50%,var(--gold4));box
  .ac-wrap *{transition-duration:.01ms!important}
  .ac-btn::after{display:none}
 }
+
+/* ===== AUTH-CARD-SOCIAL (Continue with Google etc. — sirf frontend) ===== */
+.ac-nw{white-space:nowrap}
+.ac-story{padding-top:18px}
+.ac-or{display:flex;align-items:center;gap:12px;font:600 11.5px var(--ac-dev);letter-spacing:.1em;color:var(--mute,#a1a1aa);text-transform:uppercase}
+.ac-or::before,.ac-or::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent)}
+.ac-social{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ac-sbtn{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;height:50px;border-radius:99px;cursor:pointer;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:#fff;font:600 14px var(--ac-sans);-webkit-tap-highlight-color:transparent;transition:transform .25s var(--ac-ease),border-color .3s,background .3s,box-shadow .3s}
+.ac-sbtn .ac-lbl{gap:10px}
+.ac-sbtn svg{width:20px;height:20px;flex:none}
+.ac-sbtn.g{grid-column:1/-1;height:54px;background:#fff;border-color:#fff;color:#1f1f1f;font-weight:700;font-size:15px;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+.ac-sbtn.g::after{content:"";position:absolute;top:0;bottom:0;width:50%;left:-80%;background:linear-gradient(105deg,transparent,rgba(66,133,244,.22),transparent);transform:skewX(-20deg);pointer-events:none}
+.ac-sbtn.fb svg{fill:#1877F2}
+.ac-sbtn.ap svg{fill:#fff}
+.ac-sbtn:active{transform:scale(.97)}
+.ac-sbtn:focus-visible{outline:2px solid var(--gold2);outline-offset:3px}
+.ac-sbtn:disabled{cursor:progress}
+.ac-sbtn .ac-spin{position:absolute;width:22px;height:22px;border-radius:50%;border:3px solid rgba(255,255,255,.2);border-top-color:var(--gold2);opacity:0;animation:ac-rot .8s linear infinite paused}
+.ac-sbtn.g .ac-spin{border-color:rgba(0,0,0,.12);border-top-color:#4285F4}
+.ac-sbtn.loading .ac-lbl{opacity:0}
+.ac-sbtn.loading .ac-spin{opacity:1;animation-play-state:running}
+.ac-sbtn .ac-rip{background:rgba(255,255,255,.35)}
+.ac-sbtn.g .ac-rip{background:rgba(66,133,244,.25)}
+.ac-msg.info{color:var(--gold3);background:color-mix(in srgb,var(--gold) 10%,transparent);border:1px solid color-mix(in srgb,var(--gold) 32%,transparent)}
+@media (hover:hover) and (pointer:fine){
+ .ac-sbtn:hover{transform:translateY(-3px)}
+ .ac-sbtn.g:hover{box-shadow:0 16px 38px rgba(0,0,0,.5),0 0 30px rgba(66,133,244,.35)}
+ .ac-sbtn.fb:hover{border-color:#1877F2;background:rgba(24,119,242,.14);box-shadow:0 12px 30px rgba(24,119,242,.28)}
+ .ac-sbtn.ap:hover{border-color:#fff;background:rgba(255,255,255,.12);box-shadow:0 12px 30px rgba(255,255,255,.12)}
+}
+@media (prefers-reduced-motion:no-preference){
+ .ac-sbtn.g::after{animation:ac-shine 5s ease-in-out infinite}
+}
