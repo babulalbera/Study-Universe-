@@ -1,8 +1,8 @@
 "use client";
 import { useActionState, useCallback, useEffect, useRef, useState } from "react";
-import type { CSSProperties, FormEvent, KeyboardEvent, MouseEvent as RMouseEvent, PointerEvent as RPointerEvent, ReactNode } from "react";
+import type { ChangeEvent, CSSProperties, FormEvent, KeyboardEvent, MouseEvent as RMouseEvent, PointerEvent as RPointerEvent, ReactNode } from "react";
 import Link from "next/link";
-import { forgotPassword, login, oauthLogin, resendConfirmation, signup } from "@/features/profile/actions";
+import { forgotPassword, login, oauthLogin, resendSignupCode, signup, verifySignupOtp } from "@/features/profile/actions";
 import type { FormState } from "@/features/profile/types";
 import KrishnaBox from "./KrishnaBox";
 
@@ -194,7 +194,15 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
   const [ls, la, lp] = useActionState<FormState, FormData>(login, {});
   const [ss, sa, sp] = useActionState<FormState, FormData>(signup, {});
   const [fs, fa, fp] = useActionState<FormState, FormData>(forgotPassword, {});
-  const [rs, rsAction, rsPending] = useActionState<FormState, FormData>(resendConfirmation, {});
+  const [rs, rsAction, rsPending] = useActionState<FormState, FormData>(resendSignupCode, {});
+  // OTP (Email ka 6 ank ka code)
+  const [vs, vAction, vPending] = useActionState<FormState, FormData>(verifySignupOtp, {});
+  const [rc, rcAction, rcPending] = useActionState<FormState, FormData>(resendSignupCode, {});
+  const [otpClosed, setOtpClosed] = useState<FormState | null>(null);
+  const [code, setCode] = useState("");
+  const [cool, setCool] = useState(0);
+  const vFormRef = useRef<HTMLFormElement>(null);
+  const otpRef = useRef<HTMLInputElement>(null);
 
   const lv = useV({ email: "email", password: "password" });
   const sv = useV({ name: "name", email: "email", password: "newpw" });
@@ -312,9 +320,32 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
   useEffect(() => { if (fs.error || fs.fieldErrors) doShake(); }, [fs, doShake]);
 
   // success overlay (signup / forgot) — login par redirect ho jata hai
-  const cur = view === "signup" ? ss : view === "forgot" ? fs : null;
+  const cur = view === "forgot" ? fs : null;
   const showDone = !!cur && !!cur.message && !cur.error && cur !== seen;
   useEffect(() => { setBurst(showDone ? makeBurst() : []); }, [showDone]);
+
+  // OTP overlay: signup ke baad ya login par "Code bhejo" ke baad khulta hai
+  const otpSrc = view === "signup" ? ss : view === "login" ? rs : null;
+  const otpEmail = otpSrc?.otpEmail && otpSrc !== otpClosed ? otpSrc.otpEmail : "";
+  useEffect(() => {
+    if (!otpEmail) return;
+    setCode("");
+    setCool(30);
+    const t = setTimeout(() => otpRef.current?.focus(), 450);
+    return () => clearTimeout(t);
+  }, [otpEmail]);
+  useEffect(() => {
+    if (cool <= 0) return;
+    const t = setTimeout(() => setCool((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cool]);
+  useEffect(() => { if (rc.message && !rc.error) setCool(30); }, [rc]);
+  useEffect(() => { if (vs.error) { setCode(""); otpRef.current?.focus(); } }, [vs]);
+  const onCode = (e: ChangeEvent<HTMLInputElement>) => {
+    const v = e.currentTarget.value.replace(/\D/g, "").slice(0, 6);
+    setCode(v);
+    if (v.length === 6 && !vPending) setTimeout(() => vFormRef.current?.requestSubmit(), 200);
+  };
 
   const guard = (v: ReturnType<typeof useV>) => (e: FormEvent<HTMLFormElement>) => {
     const form = e.currentTarget;
@@ -352,8 +383,8 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
     if (el && src) el.value = src.value;
   };
 
-  const doneTitle = view === "signup" ? "Account ready! ✨" : "Link bhej diya 📩";
-  const doneBtn = view === "signup" ? "Login par jao" : "Login par wapas";
+  const doneTitle = "Link bhej diya 📩";
+  const doneBtn = "Login par wapas";
 
   return (
     <div className="ac-wrap">
@@ -422,11 +453,10 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
                   <form action={rsAction} className="ac-form" style={{ marginTop: 12 }}>
                     <input type="hidden" name="email" />
                     <button type="submit" className="ac-ghost" disabled={rsPending} onClick={resendClick}>
-                      {rsPending ? "रुको…" : "Confirm Email dobara bhejo"}
+                      {rsPending ? "रुको…" : "Code bhejo aur Email verify karo"}
                     </button>
                     {rs.error && <div className="ac-msg show err2" role="alert">{rs.error}</div>}
                     {rs.fieldErrors?.email && <div className="ac-msg show err2" role="alert">{rs.fieldErrors.email}</div>}
-                    {rs.message && <div className="ac-msg show ok" role="status">{rs.message}</div>}
                   </form>
                 )}
               </div>
@@ -474,7 +504,38 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
               </div>
             </div>
 
-            {/* success */}
+            {/* OTP: Email ka 6 ank ka code */}
+            <div className={`ac-done ac-otp${otpEmail ? " show" : ""}`} aria-hidden={!otpEmail}>
+              {otpEmail && (
+                <>
+                  <div className="ac-mailic" aria-hidden="true"><svg className="ac-i"><use href="#ac-mail" /></svg></div>
+                  <h3>Email verify karo</h3>
+                  <p>6 अंकों का code <b className="ac-em">{otpEmail}</b> par bheja hai. Spam folder bhi dekho.</p>
+                  <form ref={vFormRef} action={vAction} className="ac-form ac-otpform">
+                    <input type="hidden" name="email" value={otpEmail} />
+                    <input type="hidden" name="next" value={next ?? "/profile"} />
+                    <input ref={otpRef} className={`ac-otpin${vs.error ? " bad" : ""}`} name="code" value={code} onChange={onCode}
+                      inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="······" aria-label="6 ank ka code" />
+                    {vs.error && <div className="ac-msg show err2" role="alert">{vs.error}</div>}
+                    <button className={`ac-btn${vPending ? " loading" : ""}`} type="submit" disabled={vPending || code.length !== 6} aria-busy={vPending} onPointerDown={ripple}>
+                      <span className="ac-lbl">Verify karo<svg className="ac-i ac-arr" aria-hidden="true"><use href="#ac-arrow" /></svg></span>
+                      <span className="ac-spin" aria-hidden="true" />
+                    </button>
+                  </form>
+                  <form action={rcAction} className="ac-otpform ac-otpalt">
+                    <input type="hidden" name="email" value={otpEmail} />
+                    <button type="submit" className="ac-link" disabled={cool > 0 || rcPending}>
+                      {cool > 0 ? `Code dobara bhejo (${cool}s)` : rcPending ? "रुको…" : "Code dobara bhejo"}
+                    </button>
+                    {rc.error && <div className="ac-msg show err2" role="alert">{rc.error}</div>}
+                    {rc.message && !rc.error && <div className="ac-msg show ok" role="status">{rc.message}</div>}
+                  </form>
+                  <button type="button" className="ac-link" onClick={() => setOtpClosed(otpSrc)}>Email galat hai? Wapas jao</button>
+                </>
+              )}
+            </div>
+
+            {/* success (Password reset link) */}
             <div className={`ac-done${showDone ? " show" : ""}`} aria-live="polite" aria-hidden={!showDone}>
               <div className="ac-burst" aria-hidden="true">{burst.map((s, i) => <i key={i} style={s} />)}</div>
               <div className="ac-ck"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" /><path d="M30 52l14 14 27-30" /></svg></div>
