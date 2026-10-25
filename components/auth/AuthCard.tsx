@@ -2,7 +2,7 @@
 import { useActionState, useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties, FormEvent, KeyboardEvent, MouseEvent as RMouseEvent, PointerEvent as RPointerEvent, ReactNode } from "react";
 import Link from "next/link";
-import { forgotPassword, login, resendConfirmation, signup } from "@/features/profile/actions";
+import { forgotPassword, login, oauthLogin, resendConfirmation, signup } from "@/features/profile/actions";
 import type { FormState } from "@/features/profile/types";
 import KrishnaBox from "./KrishnaBox";
 
@@ -13,6 +13,9 @@ const COPY: Record<View, [string, string]> = {
   signup: ["Free Account बनाओ।", "Ek minute me ready — streak aaj se shuru."],
   forgot: ["Password भूल गए?", "Email do, reset link bhej denge."],
 };
+
+/* ---------- social login: jo providers Supabase me ON hain (Vercel env NEXT_PUBLIC_OAUTH_PROVIDERS, jaise "google") ---------- */
+const OAUTH_ON = (process.env.NEXT_PUBLIC_OAUTH_PROVIDERS ?? "").toLowerCase().split(",").map((x) => x.trim()).filter(Boolean);
 
 /* ---------- validation ---------- */
 const V: Record<string, (v: string) => string> = {
@@ -156,7 +159,7 @@ const APPLE = (
 );
 
 // Social login — abhi sirf FRONTEND. Backend baad me: yahan se server action / supabase.auth.signInWithOAuth({ provider }) chalega.
-function Social({ busy, msg, onPick }: { busy: string | null; msg: string; onPick: (p: "google" | "facebook" | "apple") => void }) {
+function Social({ busy, msg, err, onPick }: { busy: string | null; msg: string; err: boolean; onPick: (p: "google" | "facebook" | "apple") => void }) {
   const b = (p: "google" | "facebook" | "apple", cls: string, icon: ReactNode, label: string) => (
     <button type="button" className={`ac-sbtn ${cls}${busy === p ? " loading" : ""}`} disabled={!!busy} aria-busy={busy === p}
       onPointerDown={ripple} onClick={() => onPick(p)}>
@@ -171,7 +174,7 @@ function Social({ busy, msg, onPick }: { busy: string | null; msg: string; onPic
         {b("facebook", "fb", FACEBOOK, "Facebook")}
         {b("apple", "ap", APPLE, "Apple")}
       </div>
-      {msg && <div className="ac-msg show info" role="status">{msg}</div>}
+      {msg && <div className={`ac-msg show ${err ? "err2" : "info"}`} role={err ? "alert" : "status"}>{msg}</div>}
     </>
   );
 }
@@ -186,6 +189,7 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
   const [burst, setBurst] = useState<CSSProperties[]>([]);
   const [social, setSocial] = useState<string | null>(null);
   const [socialMsg, setSocialMsg] = useState("");
+  const [socialErr, setSocialErr] = useState(false);
 
   const [ls, la, lp] = useActionState<FormState, FormData>(login, {});
   const [ss, sa, sp] = useActionState<FormState, FormData>(signup, {});
@@ -216,6 +220,7 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
   const go = useCallback((v: View, focus = false) => {
     setView(v);
     setSocialMsg("");
+    setSocialErr(false);
     if (v !== "forgot") {
       const path = v === "signup" ? "/signup" : `/login${next ? `?next=${encodeURIComponent(next)}` : ""}`;
       try { window.history.replaceState(null, "", path); } catch { /* ignore */ }
@@ -225,16 +230,40 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
     }
   }, [next]);
 
-  // Social login: abhi sirf dikhawa (backend baad me). Asli login ka bharosa mat dilao.
-  const onSocial = (p: "google" | "facebook" | "apple") => {
+  // Social login: jo provider ON hai (OAUTH_ON) uske liye asli login, baaki par "jaldi shuru hoga".
+  const onSocial = async (p: "google" | "facebook" | "apple") => {
     if (social) return;
+    const label = p === "google" ? "Google" : p === "facebook" ? "Facebook" : "Apple";
     setSocial(p);
     setSocialMsg("");
-    setTimeout(() => {
+    setSocialErr(false);
+    if (!OAUTH_ON.includes(p)) {
+      setTimeout(() => {
+        setSocial(null);
+        setSocialMsg(`${label} login jaldi shuru hoga. Abhi Email se Login ya Signup karo.`);
+      }, 900);
+      return;
+    }
+    try {
+      const r = await oauthLogin(p, next ?? "/profile");
+      if (r.url) { window.location.assign(r.url); return; }
       setSocial(null);
-      setSocialMsg(`${p === "google" ? "Google" : p === "facebook" ? "Facebook" : "Apple"} login jaldi shuru hoga. Abhi Email se Login ya Signup karo.`);
-    }, 900);
+      setSocialErr(true);
+      setSocialMsg(r.error ?? `${label} login shuru nahi ho paya. Dobara koshish karo.`);
+      doShake();
+    } catch {
+      setSocial(null);
+      setSocialErr(true);
+      setSocialMsg("Net ya server me dikkat aayi. Dobara koshish karo.");
+    }
   };
+
+  // Google se "Back" dabane par loading wapas band
+  useEffect(() => {
+    const back = (e: PageTransitionEvent) => { if (e.persisted) setSocial(null); };
+    window.addEventListener("pageshow", back);
+    return () => window.removeEventListener("pageshow", back);
+  }, []);
 
   // panel ki unchai (height) animation
   useEffect(() => {
@@ -386,7 +415,7 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
                   {ls.error && <div className="ac-msg show err2" role="alert">{ls.error}</div>}
                   {ls.message && <div className="ac-msg show ok" role="status">{ls.message}</div>}
                   <Btn pending={lp}>Login</Btn>
-                  <Social busy={social} msg={view === "login" ? socialMsg : ""} onPick={onSocial} />
+                  <Social busy={social} msg={view === "login" ? socialMsg : ""} err={socialErr} onPick={onSocial} />
                   <p className="ac-alt">नया हो? <button type="button" className="ac-link" onClick={() => go("signup", true)}>Signup करो</button></p>
                 </form>
                 {ls.needsConfirm && (
@@ -426,7 +455,7 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
                   </div>
                   {ss.error && <div className="ac-msg show err2" role="alert">{ss.error}</div>}
                   <Btn pending={sp}>Account बनाओ</Btn>
-                  <Social busy={social} msg={view === "signup" ? socialMsg : ""} onPick={onSocial} />
+                  <Social busy={social} msg={view === "signup" ? socialMsg : ""} err={socialErr} onPick={onSocial} />
                   <p className="ac-alt">पहले से Account है? <button type="button" className="ac-link" onClick={() => go("login", true)}>Login करो</button></p>
                 </form>
               </div>

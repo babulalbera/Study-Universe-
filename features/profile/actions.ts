@@ -114,3 +114,25 @@ export async function setNewPassword(_prev: FormState, formData: FormData): Prom
   if (error) return { error: authMessage(error) };
   redirect("/profile");
 }
+
+// ===== OAUTH-LOGIN (Google / Facebook / Apple) =====
+// Jo providers Supabase me ON hain unki list Vercel env NEXT_PUBLIC_OAUTH_PROVIDERS me rakho (jaise "google" ya "google,facebook").
+// Ye server action sirf Supabase se login ka URL banata hai; browser use khol deta hai; wapas /auth/callback aata hai.
+export async function oauthLogin(provider: string, nextRaw: string): Promise<{ url?: string; error?: string }> {
+  if (!isSupabaseConfigured()) return { error: NOT_CONFIGURED.error };
+  const on = (process.env.NEXT_PUBLIC_OAUTH_PROVIDERS ?? "").toLowerCase().split(",").map((x) => x.trim()).filter(Boolean);
+  if (!["google", "facebook", "apple"].includes(provider) || !on.includes(provider)) return { error: "Ye login abhi chalu nahi hai. Email se Login karo." };
+  const h = await headers();
+  const origin = h.get("origin") ?? `https://${h.get("host")}`;
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: provider as "google" | "facebook" | "apple",
+    options: {
+      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(safeNext(nextRaw))}`,
+      skipBrowserRedirect: true,
+      queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
+    },
+  });
+  if (error || !data.url) return { error: error ? authMessage(error) : "Login shuru nahi ho paya. Dobara koshish karo." };
+  return { url: data.url };
+}
