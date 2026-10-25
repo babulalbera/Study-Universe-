@@ -1208,3 +1208,19 @@ background:linear-gradient(95deg,var(--gold3),var(--gold2) 50%,var(--gold4));box
 @media (prefers-reduced-motion:no-preference){
  .ac-sbtn.g::after{animation:ac-shine 5s ease-in-out infinite}
 }
+
+/* ===== AUTH-OTP (Email ka 6 ank ka code) ===== */
+.ac-otp{overflow-y:auto;justify-content:center;gap:10px}
+.ac-mailic{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;color:var(--gold2);background:color-mix(in srgb,var(--gold) 12%,transparent);border:2px solid color-mix(in srgb,var(--gold) 55%,transparent);box-shadow:0 0 34px color-mix(in srgb,var(--gold) 28%,transparent);margin-bottom:4px}
+.ac-mailic svg{width:34px;height:34px}
+.ac-em{color:var(--gold3);word-break:break-all;font-weight:700}
+.ac-otpform{width:100%;max-width:310px}
+.ac-otpalt{display:grid;gap:8px;justify-items:center}
+.ac-otpin{width:100%;height:66px;border-radius:18px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.5);color:#fff;text-align:center;font:700 30px var(--ac-head);letter-spacing:.5em;padding:0 0 0 .5em;outline:none;transition:border-color .25s,box-shadow .25s,background .25s}
+.ac-otpin::placeholder{color:rgba(255,255,255,.2)}
+.ac-otpin:focus{border-color:var(--gold);background:rgba(0,0,0,.65);box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 16%,transparent),0 0 26px color-mix(in srgb,var(--gold) 20%,transparent)}
+.ac-otpin.bad{border-color:var(--ac-danger);box-shadow:0 0 0 3px rgba(248,113,113,.15)}
+.ac-otp .ac-msg{width:100%;text-align:left}
+.ac-otp .ac-btn:disabled{opacity:.5;filter:saturate(.6);cursor:not-allowed;box-shadow:none}
+.ac-otp .ac-btn:disabled::after{display:none}
+.ac-link:disabled{opacity:.55;cursor:not-allowed;color:var(--mute,#a1a1aa)}

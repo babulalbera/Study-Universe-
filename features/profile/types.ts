@@ -1,1 +1,1 @@
-export type FormState = { error?: string; message?: string; fieldErrors?: Record<string, string>; needsConfirm?: boolean };
+export type FormState = { error?: string; message?: string; fieldErrors?: Record<string, string>; needsConfirm?: boolean; otpEmail?: string };
