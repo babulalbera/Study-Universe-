@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
-import AuthShell from "@/components/auth/AuthShell";
-import AuthForm from "@/features/profile/AuthForm";
+import AuthCard from "@/components/auth/AuthCard";
 
 export const metadata: Metadata = { title: "Signup" };
 
 export default function SignupPage() {
-  return (
-    <AuthShell mode="signup">
-      <AuthForm mode="signup" />
-    </AuthShell>
-  );
+  return <AuthCard initial="signup" />;
 }
