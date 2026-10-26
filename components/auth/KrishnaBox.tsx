@@ -53,6 +53,9 @@ export default function KrishnaBox() {
     return () => clearTimeout(t);
   }, []);
 
+  // aakhri shabd + caret + ” ek saath rahe, taaki ” alag line me na gire
+  const cut = typed.lastIndexOf(" ") + 1;
+
   return (
     <>
       <div className="ac-petals" ref={petalsRef} aria-hidden="true">
@@ -65,7 +68,7 @@ export default function KrishnaBox() {
           <span className="ac-av"><Image src="/images/hero-krishna.webp" alt="" width={120} height={120} /></span>
         </span>
         <div className="ac-ktx">
-          <p className="ac-kq" lang="sa" aria-label={KQ}>“<span>{typed}</span><span className="ac-nw"><b className="ac-caret" aria-hidden="true" />”</span></p>
+          <p className="ac-kq" lang="sa" aria-label={KQ}>“<span>{typed.slice(0, cut)}</span><span className="ac-nw">{typed.slice(cut)}<b className="ac-caret" aria-hidden="true" />”</span></p>
           <p className="ac-kmean">मेहनत तुम्हारी, सफलता निश्चित है — कान्हा तुम्हारे साथ है</p>
         </div>
       </div>
