@@ -171,3 +171,45 @@ export async function resendSignupCode(_prev: FormState, formData: FormData): Pr
   if (error) return { error: authMessage(error) };
   return { message: "Naya code bhej diya. Email (aur Spam folder) dekho.", otpEmail: email };
 }
+
+// ===== OTP-RESET (Signup + Password reset dono: Email par 6 ank ka code) =====
+// Supabase me "Confirm sign up" aur "Reset password" dono Email template me {{ .Token }} hona chahiye.
+export async function verifyEmailOtp(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const kind = str(formData, "kind") === "recovery" ? "recovery" : "signup";
+  const email = str(formData, "email").trim();
+  const code = str(formData, "code").replace(/\D/g, "");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Email galat hai. Wapas jaakar dobara try karo." };
+  if (code.length !== 6) return { error: "6 ank ka poora code likho." };
+  const supabase = await createClient();
+  let { error } = await supabase.auth.verifyOtp({ email, token: code, type: kind });
+  if (error && kind === "signup") {
+    const retry = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
+    error = retry.error;
+  }
+  if (error) {
+    const m = error.message.toLowerCase();
+    if (error.code === "otp_expired" || m.includes("expired") || m.includes("invalid")) return { error: "Code galat ya purana ho gaya. Sahi code likho ya naya code mangao." };
+    return { error: authMessage(error) };
+  }
+  redirect(kind === "recovery" ? "/reset-password" : safeNext(str(formData, "next")));
+}
+
+// Code bhejo / dobara bhejo (kind = "signup" ya "recovery")
+export async function resendEmailCode(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const kind = str(formData, "kind") === "recovery" ? "recovery" : "signup";
+  const email = str(formData, "email").trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { fieldErrors: { email: "Sahi Email likho" } };
+  const supabase = await createClient();
+  if (kind === "recovery") {
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) return { error: authMessage(error) };
+    return { message: "Reset code bhej diya. Email (aur Spam folder) dekho.", otpEmail: email };
+  }
+  const h = await headers();
+  const origin = h.get("origin") ?? `https://${h.get("host")}`;
+  const { error } = await supabase.auth.resend({ type: "signup", email, options: { emailRedirectTo: `${origin}/auth/callback` } });
+  if (error) return { error: authMessage(error) };
+  return { message: "Naya code bhej diya. Email (aur Spam folder) dekho.", otpEmail: email };
+}
