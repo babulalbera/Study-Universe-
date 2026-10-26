@@ -2,7 +2,7 @@
 import { useActionState, useCallback, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, CSSProperties, FormEvent, KeyboardEvent, MouseEvent as RMouseEvent, PointerEvent as RPointerEvent, ReactNode } from "react";
 import Link from "next/link";
-import { forgotPassword, login, oauthLogin, resendSignupCode, signup, verifySignupOtp } from "@/features/profile/actions";
+import { login, oauthLogin, resendEmailCode, resendSignupCode, signup, verifyEmailOtp } from "@/features/profile/actions";
 import type { FormState } from "@/features/profile/types";
 import KrishnaBox from "./KrishnaBox";
 
@@ -11,7 +11,7 @@ const ORDER: View[] = ["login", "signup", "forgot"];
 const COPY: Record<View, [string, string]> = {
   login: ["अपने Account में जाओ।", "Wapas aao — aaj ka task wait kar raha hai."],
   signup: ["Free Account बनाओ।", "Ek minute me ready — streak aaj se shuru."],
-  forgot: ["Password भूल गए?", "Email do, reset link bhej denge."],
+  forgot: ["Password भूल गए?", "Email do, 6 ank ka reset code bhej denge."],
 };
 
 /* ---------- social login: jo providers Supabase me ON hain (Vercel env NEXT_PUBLIC_OAUTH_PROVIDERS, jaise "google") ---------- */
@@ -193,11 +193,11 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
 
   const [ls, la, lp] = useActionState<FormState, FormData>(login, {});
   const [ss, sa, sp] = useActionState<FormState, FormData>(signup, {});
-  const [fs, fa, fp] = useActionState<FormState, FormData>(forgotPassword, {});
+  const [fs, fa, fp] = useActionState<FormState, FormData>(resendEmailCode, {});
   const [rs, rsAction, rsPending] = useActionState<FormState, FormData>(resendSignupCode, {});
   // OTP (Email ka 6 ank ka code)
-  const [vs, vAction, vPending] = useActionState<FormState, FormData>(verifySignupOtp, {});
-  const [rc, rcAction, rcPending] = useActionState<FormState, FormData>(resendSignupCode, {});
+  const [vs, vAction, vPending] = useActionState<FormState, FormData>(verifyEmailOtp, {});
+  const [rc, rcAction, rcPending] = useActionState<FormState, FormData>(resendEmailCode, {});
   const [otpClosed, setOtpClosed] = useState<FormState | null>(null);
   const [code, setCode] = useState("");
   const [cool, setCool] = useState(0);
@@ -320,17 +320,18 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
   useEffect(() => { if (fs.error || fs.fieldErrors) doShake(); }, [fs, doShake]);
 
   // success overlay (signup / forgot) — login par redirect ho jata hai
-  const cur = view === "forgot" ? fs : null;
+  const cur = view === "forgot" && fs.message && !fs.otpEmail ? fs : null;
   const showDone = !!cur && !!cur.message && !cur.error && cur !== seen;
   useEffect(() => { setBurst(showDone ? makeBurst() : []); }, [showDone]);
 
   // OTP overlay: signup ke baad ya login par "Code bhejo" ke baad khulta hai
-  const otpSrc = view === "signup" ? ss : view === "login" ? rs : null;
+  const otpSrc = view === "signup" ? ss : view === "login" ? rs : view === "forgot" ? fs : null;
+  const otpKind = view === "forgot" ? "recovery" : "signup";
   const otpEmail = otpSrc?.otpEmail && otpSrc !== otpClosed ? otpSrc.otpEmail : "";
   useEffect(() => {
     if (!otpEmail) return;
     setCode("");
-    setCool(30);
+    setCool(60);
     const t = setTimeout(() => otpRef.current?.focus(), 450);
     return () => clearTimeout(t);
   }, [otpEmail]);
@@ -339,7 +340,7 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
     const t = setTimeout(() => setCool((c) => c - 1), 1000);
     return () => clearTimeout(t);
   }, [cool]);
-  useEffect(() => { if (rc.message && !rc.error) setCool(30); }, [rc]);
+  useEffect(() => { if (rc.message && !rc.error) setCool(60); }, [rc]);
   useEffect(() => { if (vs.error) { setCode(""); otpRef.current?.focus(); } }, [vs]);
   const onCode = (e: ChangeEvent<HTMLInputElement>) => {
     const v = e.currentTarget.value.replace(/\D/g, "").slice(0, 6);
@@ -493,13 +494,14 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
               {/* FORGOT */}
               <div className={pcls("forgot")} id="p-forgot" ref={(el) => { panelRefs.current.forgot = el; }}>
                 <form action={fa} onSubmit={onForgot} className="ac-form" noValidate>
+                  <input type="hidden" name="kind" value="recovery" />
                   <button type="button" className="ac-link ac-back" onClick={() => go("login", true)}>
                     <svg className="ac-i" aria-hidden="true"><use href="#ac-arrow" /></svg>Login par wapas
                   </button>
                   <Field id="f-email" name="email" label="Email" type="email" icon="mail" auto="email"
                     error={pick(fv.ce, fs.fieldErrors, "email")} ok={fv.ce.email === ""} onBlur={fv.onBlur} onInput={fv.onInput} />
                   {fs.error && <div className="ac-msg show err2" role="alert">{fs.error}</div>}
-                  <Btn pending={fp}>Reset Link भेजो</Btn>
+                  <Btn pending={fp}>Reset Code भेजो</Btn>
                 </form>
               </div>
             </div>
@@ -509,10 +511,11 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
               {otpEmail && (
                 <>
                   <div className="ac-mailic" aria-hidden="true"><svg className="ac-i"><use href="#ac-mail" /></svg></div>
-                  <h3>Email verify karo</h3>
+                  <h3>{otpKind === "recovery" ? "Reset code daalo" : "Email verify karo"}</h3>
                   <p>6 अंकों का code <b className="ac-em">{otpEmail}</b> par bheja hai. Spam folder bhi dekho.</p>
                   <form ref={vFormRef} action={vAction} className="ac-form ac-otpform">
                     <input type="hidden" name="email" value={otpEmail} />
+                    <input type="hidden" name="kind" value={otpKind} />
                     <input type="hidden" name="next" value={next ?? "/profile"} />
                     <input ref={otpRef} className={`ac-otpin${vs.error ? " bad" : ""}`} name="code" value={code} onChange={onCode}
                       inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="······" aria-label="6 ank ka code" />
@@ -524,6 +527,7 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
                   </form>
                   <form action={rcAction} className="ac-otpform ac-otpalt">
                     <input type="hidden" name="email" value={otpEmail} />
+                    <input type="hidden" name="kind" value={otpKind} />
                     <button type="submit" className="ac-link" disabled={cool > 0 || rcPending}>
                       {cool > 0 ? `Code dobara bhejo (${cool}s)` : rcPending ? "रुको…" : "Code dobara bhejo"}
                     </button>

@@ -7,14 +7,14 @@ import { getUser } from "@/lib/auth";
 export const metadata: Metadata = { title: "Naya password" };
 
 export default async function ResetPasswordPage() {
-  const user = await getUser(); // Reset Link se aane par session apne aap ban jata hai
+  const user = await getUser(); // Reset code sahi daalne par session apne aap ban jata hai
   return (
     <>
       <PageHeader title="🔐 नया Password" subtitle="अपना नया Password रखो।" />
       <section className="glass max-w-md w-full self-center">
         {user ? <ResetForm /> : (
           <p className="text-[13px]" style={{ color: "#fca5a5" }}>
-            Reset Link पुराना या गलत है। <Link href="/forgot-password" className="text-[color:var(--gold2)] font-semibold">नया Reset Link मँगाओ</Link>
+            Reset code पुराना या गलत है। <Link href="/forgot-password" className="text-[color:var(--gold2)] font-semibold">नया Reset code मँगाओ</Link>
           </p>
         )}
       </section>

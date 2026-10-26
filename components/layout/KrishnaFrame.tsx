@@ -8,7 +8,7 @@ import KrishnaStrip from "@/components/home/KrishnaStrip";
 // Ye pages isse bahar hain: Admin aur Test dene ka page (dhyan na bante).
 const HIDE = ["/admin", "/auth", "/mock-tests/"];
 // Login/Signup card ke andar apna Krishna box hai, isliye yahan dono box nahi. Wapas dikhana ho to list se hata do.
-const HIDE_ALL = ["/login", "/signup"];
+const HIDE_ALL = ["/login", "/signup", "/forgot-password"];
 
 export default function KrishnaFrame({ children }: { children: ReactNode }) {
   const path = usePathname();
