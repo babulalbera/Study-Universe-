@@ -1224,3 +1224,18 @@ background:linear-gradient(95deg,var(--gold3),var(--gold2) 50%,var(--gold4));box
 .ac-otp .ac-btn:disabled{opacity:.5;filter:saturate(.6);cursor:not-allowed;box-shadow:none}
 .ac-otp .ac-btn:disabled::after{display:none}
 .ac-link:disabled{opacity:.55;cursor:not-allowed;color:var(--mute,#a1a1aa)}
+
+/* ===== AUTH-CLEAN (login / signup / forgot par upar aur neeche ki bar nahi) ===== */
+/* .ac-wrap sirf auth card me hota hai, isliye baaki pages par kuch nahi badalta */
+body:has(.ac-wrap) header,
+body:has(.ac-wrap) nav.nb{display:none!important}
+body:has(.ac-wrap){padding-bottom:0!important}
+body:has(.ac-wrap) .wrap{padding-bottom:12px}
+/* card screen ke beech me (mobile, tablet, desktop): header hat gaya to upar ki jagah khali na dikhe */
+body:has(.ac-wrap) main{display:flex;flex-direction:column;justify-content:center;
+min-height:calc(100vh - 110px);min-height:calc(100svh - 110px);
+padding-top:max(20px,env(safe-area-inset-top));padding-bottom:20px}
+/* Tablet (portrait): card thoda chauda */
+@container ac (min-width:560px) and (max-width:819px){.ac-tilt{max-width:560px}}
+/* Chhoti height wali screen (landscape phone): beech me na rakho, upar se shuru karo taaki scroll aasaan ho */
+@media (max-height:520px){body:has(.ac-wrap) main{justify-content:flex-start;min-height:0}}
