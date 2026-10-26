@@ -180,7 +180,7 @@ function Social({ busy, msg, err, onPick }: { busy: string | null; msg: string; 
 }
 
 /* ================= MAIN ================= */
-export default function AuthCard({ initial = "login", next, notice }: { initial?: View; next?: string; notice?: string }) {
+export default function AuthCard({ initial = "login", next, notice, gate = false }: { initial?: View; next?: string; notice?: string; gate?: boolean }) {
   const [view, setView] = useState<View>(initial);
   const [pwv, setPwv] = useState("");
   const [terms, setTerms] = useState(false);
@@ -438,7 +438,7 @@ export default function AuthCard({ initial = "login", next, notice }: { initial?
               <div className={pcls("login")} id="p-login" role="tabpanel" aria-labelledby="tab-login" ref={(el) => { panelRefs.current.login = el; }}>
                 <form action={la} onSubmit={onLogin} className="ac-form" noValidate>
                   <input type="hidden" name="next" value={next ?? "/profile"} />
-                  {notice && <div className="ac-msg show err2" role="alert">{notice}</div>}
+                  {notice && <div className={`ac-msg show ${gate ? "info" : "err2"}`} role={gate ? "status" : "alert"}>{notice}</div>}
                   <Field id="l-email" name="email" label="Email" type="email" icon="mail" auto="email"
                     error={pick(lv.ce, ls.fieldErrors, "email")} ok={lv.ce.email === ""} onBlur={lv.onBlur} onInput={lv.onInput} />
                   <Field id="l-pw" name="password" label="Password" type="password" icon="lock" auto="current-password" pw

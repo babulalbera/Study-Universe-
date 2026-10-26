@@ -13,5 +13,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         : error === "oauth"
           ? "Google/Social login पूरा नहीं हुआ (शायद आपने cancel किया)। दोबारा try करो या Email से Login करो।"
           : undefined;
-  return <AuthCard initial="login" next={next} notice={notice} />;
+  const gate = !notice && !!next; // kisi feature se redirect hokar aaya
+  return <AuthCard initial="login" next={next} notice={notice ?? (gate ? "Ye feature use karne ke liye pehle Login ya Signup karo. Login ke baad seedha wapas yahin aaoge." : undefined)} gate={gate} />;
 }
