@@ -158,7 +158,7 @@ hide();
 new MutationObserver(hide).observe(document.body,{childList:true,subtree:true});
 })();`;
 
-export function renderTaskPage(boot: Boot, ctx: TaskPageCtx, opts: { embed?: boolean } = {}): string {
+function renderTaskPageRaw(boot: Boot, ctx: TaskPageCtx, opts: { embed?: boolean } = {}): string {
   const json = JSON.stringify(boot).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
   // THEME_HEAD_JS: page dikhne se pehle chuna hua rang laga deta hai (flash nahi hota)
   const boot_ = `<script>${THEME_HEAD_JS}</script><script>window.__SU_BOOT=${json};</script><script>${STORAGE_SHIM}</script>`;
@@ -177,4 +177,27 @@ export function renderTaskPage(boot: Boot, ctx: TaskPageCtx, opts: { embed?: boo
   const end = html.lastIndexOf("</body>");
   const themeJs = `<script>${THEME_JS}</script>`;
   return end < 0 ? html + themeJs : html.slice(0, end) + themeJs + html.slice(end);
+}
+
+// ===== NOCOVER: har task se cover (profile photo) hata diya =====
+// Card ka cover, 3-dot menu ka "Cover Image" aur Add/Edit Task popup ka "Cover Image" hissa, teeno chhupe.
+const NOCOVER_CSS = `.su-cov,.su-cover{display:none!important}.su-m button[data-a="photo"]{display:none!important}`;
+const NOCOVER_JS = `(function(){
+  function clean(){
+    var ls=document.querySelectorAll(".su-box label"),i,n;
+    for(i=0;i<ls.length;i++){
+      if((ls[i].textContent||"").trim().toLowerCase()==="cover image"){
+        n=ls[i].nextElementSibling;ls[i].style.display="none";if(n)n.style.display="none";
+      }
+    }
+  }
+  clean();
+  new MutationObserver(clean).observe(document.body,{childList:true,subtree:true});
+})();`;
+
+export function renderTaskPage(boot: Boot, ctx: TaskPageCtx, opts: { embed?: boolean } = {}): string {
+  const html = renderTaskPageRaw(boot, ctx, opts);
+  const end = html.lastIndexOf("</body>");
+  const add = `<style id="su-nocover">${NOCOVER_CSS}</style><script>${NOCOVER_JS}</script>`;
+  return end < 0 ? html + add : html.slice(0, end) + add + html.slice(end);
 }
