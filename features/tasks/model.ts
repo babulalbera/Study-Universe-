@@ -155,3 +155,54 @@ export function streakFor(mem: Mem, doneSize: number) {
   while (h[ymd(d)] > 0) { s++; d.setDate(d.getDate() - 1); }
   return s;
 }
+
+/* ---------- Add / Edit form ---------- */
+export type TaskForm = {
+  title: string; subject: string; startTime: string; endTime: string; date: string;
+  reminder: string; priority: string; type: string; color: string; description: string;
+};
+
+export const PRIORITIES = ["low", "medium", "high", "urgent"] as const;
+export const TYPES: [string, string][] = [["study", "Study"], ["revision", "Revision"], ["break", "Break"], ["fitness", "Fitness"], ["rest", "Rest"]];
+
+// "14:30" -> 870 (galat ho to NaN)
+export const toMin = (v: string) => { const a = String(v || "").split(":"); return a.length === 2 ? Number(a[0]) * 60 + Number(a[1]) : NaN; };
+export const nextId = (list: Task[]) => list.reduce((m, t) => Math.max(m, t.id), 24) + 1;
+export const sortTasks = (l: Task[]) => l.slice().sort((a, b) => a.start - b.start || a.id - b.id);
+
+// Naya task: abhi se agle 30 minute, aaj ki date
+export function emptyForm(): TaskForm {
+  const n = nowMinutes();
+  return { title: "", subject: "", startTime: hm(n), endTime: hm(Math.min(1439, n + 30)), date: today(), reminder: "", priority: "medium", type: "study", color: "", description: "" };
+}
+
+export function formFromTask(t: Task): TaskForm {
+  return {
+    title: t.title, subject: t.subject ?? "", startTime: t.startTime || hm(t.start), endTime: t.endTime || hm(t.end), date: t.date ?? "",
+    reminder: t.reminder ?? "", priority: t.priority || "medium", type: t.type || "study", color: t.color ?? "", description: t.description ?? "",
+  };
+}
+
+// "" = theek hai, warna error ka message
+export function validateForm(f: TaskForm): string {
+  const s = toMin(f.startTime), e = toMin(f.endTime);
+  if (!f.title.trim()) return "Task name likho.";
+  if (Number.isNaN(s) || Number.isNaN(e)) return "Start aur End time sahi bharo.";
+  if (e <= s) return "End time, Start se baad ka hona chahiye.";
+  return "";
+}
+
+// Form se task banao (edit me purane task ke baaki fields bache rehte hain)
+export function buildTask(f: TaskForm, base: Task | null, list: Task[]): Task {
+  const s = toMin(f.startTime), e = toMin(f.endTime), d = e - s, now = Date.now();
+  const subject = f.subject.trim();
+  const patch: Task = {
+    id: base ? base.id : nextId(list), title: f.title.trim().toUpperCase(), titleHi: subject || f.type, subject,
+    start: s, end: e, startTime: f.startTime, endTime: f.endTime, timeLabel: `${f.startTime} - ${f.endTime}`,
+    duration: d >= 60 && d % 60 === 0 ? `${d / 60} hr` : `${d} min`,
+    type: f.type, category: subject || f.type, priority: f.priority, color: f.color, photo: base?.photo ?? "",
+    date: f.date, description: f.description.trim(), reminder: f.reminder,
+    completed: base ? base.completed : false, createdAt: base?.createdAt ?? now, updatedAt: now,
+  };
+  return base ? { ...base, ...patch } : patch;
+}
