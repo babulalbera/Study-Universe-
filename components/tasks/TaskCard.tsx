@@ -1,12 +1,16 @@
 import { cn } from "@/lib/utils";
 import { fmt12, timeLeft, type Task } from "@/features/tasks/model";
+import TaskMenu, { type MenuAction } from "./TaskMenu";
 
-type Props = { task: Task; no: number; now: number; done: boolean; unlocked: boolean; dim: boolean; onToggle: (t: Task) => void };
+type Props = {
+  task: Task; no: number; now: number; done: boolean; unlocked: boolean; dim: boolean;
+  onToggle: (t: Task) => void; menuOpen: boolean; onMenu: (open: boolean) => void; onAction: (t: Task, a: MenuAction) => void;
+};
 
 const SAFE_COLOR = /^#[0-9a-f]{3,8}$/i;
 
 // Ek task ka card. Left me number (1, 2, 3...), phir time, naam aur neeche Complete / Lock wala hissa.
-export default function TaskCard({ task: t, no, now, done, unlocked, dim, onToggle }: Props) {
+export default function TaskCard({ task: t, no, now, done, unlocked, dim, onToggle, menuOpen, onMenu, onAction }: Props) {
   const live = now >= t.start && now < t.end && !done;
   const upcoming = now < t.start;
   const ended = now >= t.end && !done;
@@ -25,6 +29,7 @@ export default function TaskCard({ task: t, no, now, done, unlocked, dim, onTogg
       style={t.color && SAFE_COLOR.test(t.color) ? { boxShadow: `inset 4px 0 0 ${t.color}` } : undefined}
       className={cn(
         "relative rounded-2xl border p-3.5 transition-all duration-300 hover:-translate-y-0.5",
+        menuOpen && "z-30",
         done
           ? "border-[color-mix(in_srgb,var(--em)_40%,transparent)] bg-[color-mix(in_srgb,var(--em)_7%,transparent)] shadow-[0_10px_30px_color-mix(in_srgb,var(--em)_14%,transparent)]"
           : live
@@ -56,7 +61,13 @@ export default function TaskCard({ task: t, no, now, done, unlocked, dim, onTogg
           <h3 className={cn("mt-1.5 text-[14px] font-extrabold leading-tight tracking-tight", done ? "text-[color:var(--mint)]" : "text-[color:var(--gold3)]")}>{t.title}</h3>
           <p className="mt-0.5 text-[11.5px] font-medium text-[color:var(--mute)]">{[t.titleHi, t.duration, ...extra].join(" • ")}</p>
         </div>
+        <button
+          type="button" aria-label="Task menu" aria-haspopup="menu" aria-expanded={menuOpen}
+          onClick={() => onMenu(!menuOpen)}
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 bg-black/40 text-[18px] font-black leading-none text-zinc-200 transition hover:border-[color-mix(in_srgb,var(--gold)_40%,transparent)]"
+        >⋮</button>
       </div>
+      {menuOpen && <TaskMenu done={done} priority={t.priority} onClose={() => onMenu(false)} onAction={(a) => onAction(t, a)} />}
 
       <div className="mt-3.5 min-h-[74px]">
         {done ? (
