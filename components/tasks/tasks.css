@@ -1,0 +1,28 @@
+/* Tasks page ke popup / confetti ki animations (naam "tk-" se, taaki site ki CSS se na takraye) */
+@keyframes tk-entrance{0%{opacity:0;transform:scale(.88) translateY(18px)}55%{opacity:1;transform:scale(1.03) translateY(-6px)}80%{transform:scale(.98) translateY(2px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes tk-out{0%{opacity:1;transform:scale(1) translateY(0)}100%{opacity:0;transform:scale(.9) translateY(-12px)}}
+@keyframes tk-gold-pulse{0%,100%{box-shadow:0 0 0 1px rgba(212,175,55,.35),0 0 18px rgba(212,175,55,.22),0 0 36px rgba(16,185,129,.12)}50%{box-shadow:0 0 0 1px rgba(212,175,55,.65),0 0 32px rgba(212,175,55,.45),0 0 56px rgba(16,185,129,.22)}}
+@keyframes tk-float{0%,100%{transform:translate(-50%,-50%) translateY(-2px)}50%{transform:translate(-50%,-50%) translateY(2.5px)}}
+@keyframes tk-halo{0%{transform:translate(-50%,-50%) scale(.9);opacity:.6}50%{transform:translate(-50%,-50%) scale(1.22);opacity:.18}100%{transform:translate(-50%,-50%) scale(.9);opacity:.6}}
+@keyframes tk-spin{to{transform:rotate(360deg)}}
+@keyframes tk-twinkle{0%,70%,100%{opacity:0;transform:scale(.2)}75%{opacity:1;transform:scale(1.2)}80%{opacity:.9;transform:scale(1)}85%{opacity:0;transform:scale(.3)}}
+@keyframes tk-shrink{0%{width:100%}100%{width:0%}}
+@keyframes tk-fade-in{0%{opacity:0}100%{opacity:1}}
+@keyframes tk-fade-out{0%{opacity:1}100%{opacity:0}}
+@keyframes tk-confetti{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}100%{transform:translateY(180px) rotate(720deg) scale(.25);opacity:0}}
+
+.tk-card-in{animation:tk-entrance .45s cubic-bezier(.34,1.56,.64,1) forwards,tk-gold-pulse 3.2s ease-in-out infinite}
+.tk-card-out{animation:tk-out .32s cubic-bezier(.4,0,.7,1) forwards}
+.tk-bg-in{animation:tk-fade-in .28s ease forwards}
+.tk-bg-out{animation:tk-fade-out .3s ease forwards}
+.tk-profile{transform:translate(-50%,-50%);animation:tk-float 3.5s ease-in-out infinite}
+.tk-halo{transform:translate(-50%,-50%);animation:tk-halo 2.5s ease-in-out infinite}
+.tk-ring{animation:tk-spin 6s linear infinite}
+.tk-twinkle{animation:tk-twinkle 2s ease-in-out infinite .6s}
+.tk-bar{animation:tk-shrink 5000ms linear forwards}
+.tk-confetti{animation:tk-confetti 1.8s cubic-bezier(.25,.46,.45,.94) forwards}
+
+@media (prefers-reduced-motion:reduce){
+  .tk-card-in,.tk-card-out,.tk-bg-in,.tk-bg-out,.tk-profile,.tk-halo,.tk-ring,.tk-twinkle,.tk-confetti{animation:none}
+  .tk-bar{animation-duration:5000ms}
+}

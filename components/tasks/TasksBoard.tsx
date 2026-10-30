@@ -2,14 +2,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { BLESSINGS } from "@/features/tasks/blessings";
 import { MOTIVATION } from "@/features/tasks/default-tasks";
 import { countToday, hm, isUnlocked, today, todayTasks, type Filter, type Task, type TaskForm as Form } from "@/features/tasks/model";
 import { useTaskStore } from "@/features/tasks/useTaskStore";
+import BlessingPopup, { type BlessingData } from "./BlessingPopup";
+import Confetti, { makeConfetti, type Piece } from "./Confetti";
 import TaskCard from "./TaskCard";
 import TaskFormModal from "./TaskForm";
 import type { MenuAction } from "./TaskMenu";
 import TaskStats from "./TaskStats";
 import TaskToast, { type ToastData } from "./TaskToast";
+import "./tasks.css";
 
 type FormState = { task: Task | null; focus: "title" | "reminder"; key: number } | null;
 
@@ -23,6 +27,8 @@ export default function TasksBoard({ initial, loggedIn }: { initial: Record<stri
   const [form, setForm] = useState<FormState>(null);
   const [confirm, setConfirm] = useState<Task | null>(null);
   const [toast, setToast] = useState<ToastData | null>(null);
+  const [bless, setBless] = useState<BlessingData | null>(null);
+  const [pieces, setPieces] = useState<Piece[]>([]);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tasksRef = useRef<Task[]>([]);
 
@@ -58,6 +64,15 @@ export default function TasksBoard({ initial, loggedIn }: { initial: Record<stri
     return () => clearInterval(iv);
   }, [say]);
 
+  // Task complete hua: confetti + Jai Shree Krishna popup (undo par kuch nahi)
+  const onToggle = (t: Task) => {
+    if (st.toggle(t) !== "done") return;
+    setBless({ taskName: t.title, taskHi: t.titleHi, quoteIdx: Math.floor(Math.random() * BLESSINGS.length), key: Date.now() });
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setPieces(makeConfetti());
+      setTimeout(() => setPieces([]), 2400);
+    }
+  };
   const openForm = (task: Task | null, f: "title" | "reminder" = "title") => setForm({ task, focus: f, key: Date.now() });
 
   const onAction = (t: Task, a: MenuAction) => {
@@ -135,7 +150,7 @@ export default function TasksBoard({ initial, loggedIn }: { initial: Record<stri
             const live = st.nowMin >= t.start && st.nowMin < t.end && !done;
             return (
               <TaskCard key={t.id} task={t} no={numberOf.get(t.id) ?? 0} now={st.nowMin} done={done}
-                unlocked={isUnlocked(t, st.nowMin, st.done)} dim={focus && !live && !done} onToggle={st.toggle}
+                unlocked={isUnlocked(t, st.nowMin, st.done)} dim={focus && !live && !done} onToggle={onToggle}
                 menuOpen={menuId === t.id} onMenu={(o) => setMenuId(o ? t.id : null)} onAction={onAction} />
             );
           })}
@@ -145,6 +160,8 @@ export default function TasksBoard({ initial, loggedIn }: { initial: Record<stri
       {form && <TaskFormModal key={form.key} task={form.task} focus={form.focus} onClose={() => setForm(null)} onSave={onSave} />}
       <ConfirmDialog open={confirm !== null} title="🗑️ Task hatana hai?" text={confirm ? `${confirm.title} hat jayega (Undo milega).` : ""} onConfirm={doRemove} onCancel={() => setConfirm(null)} />
       <TaskToast toast={toast} onDone={() => setToast(null)} />
+      <Confetti pieces={pieces} />
+      {bless && <BlessingPopup key={bless.key} data={bless} onClose={() => setBless(null)} />}
     </div>
   );
 }
