@@ -101,7 +101,7 @@ export function subjectMinutes(inp: StudyInput, now: Date, days = 30): [string, 
   return Object.entries(out).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
 }
 
-// Task page ke saved log wala hi hisaab (lib/task-page.ts ke `subj` ke saath same rakho)
+// Task page ke saved log wala hi hisaab (features/tasks/model.ts ke `subj` ke saath same rakho)
 export function subjectOf(t: { subject?: string; title?: string }): string {
   if (t.subject && t.subject.trim()) return t.subject.trim().slice(0, 30);
   const x = String(t.title ?? "").toUpperCase();

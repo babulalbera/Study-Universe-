@@ -1,25 +1,26 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import PageHeader from "@/components/ui/PageHeader";
-import TaskFrame from "@/components/tasks/TaskFrame";
+import TasksBoard from "@/components/tasks/TasksBoard";
 import { getUser } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Daily Tasks" };
 export const dynamic = "force-dynamic";
 
-// Books / Courses jaisa normal page: layout ka Header, Krishna boxes aur Bottom bar yahan apne aap aate hain.
+// Tasks page: React + Tailwind, site ke baaki pages jaisa (iframe nahi).
+// Data user_task_data se aata hai aur badlav /api/task-sync par save hote hain (Profile ke stats isi data se bante hain).
 export default async function TasksPage() {
   const user = await getUser();
+  let initial: Record<string, string> = {};
+  if (user) {
+    const supabase = await createClient();
+    const { data } = await supabase.from("user_task_data").select("data").eq("user_id", user.id).maybeSingle();
+    initial = ((data as { data: Record<string, string> } | null)?.data) ?? {};
+  }
   return (
     <>
       <PageHeader title="✅ Daily Tasks" subtitle="Roz ke tasks, streak aur progress — ek hi jagah." />
-      {!user && (
-        <div className="su-item" style={{ flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
-          <p style={{ fontFamily: "var(--dev)" }}>⚠️ Login के बिना Tasks सिर्फ़ इसी फोन में रहेंगे।</p>
-          <Link className="su-btn su-btn-primary" href="/login?next=/tasks">Login करो</Link>
-        </div>
-      )}
-      <TaskFrame />
+      <TasksBoard initial={initial} loggedIn={Boolean(user)} />
     </>
   );
 }

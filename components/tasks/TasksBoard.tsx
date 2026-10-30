@@ -103,7 +103,7 @@ export default function TasksBoard({ initial, loggedIn }: { initial: Record<stri
     return (
       <div className="su-item" style={{ flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
         <p style={{ fontFamily: "var(--dev)" }}>Tasks dekhne ke liye pehle Login karo।</p>
-        <Link className="su-btn su-btn-primary" href="/login?next=/tasks/new">Login करो</Link>
+        <Link className="su-btn su-btn-primary" href="/login?next=/tasks">Login करो</Link>
       </div>
     );
   }
