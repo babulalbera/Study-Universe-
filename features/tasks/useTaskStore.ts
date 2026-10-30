@@ -69,14 +69,16 @@ export function useTaskStore(initial: Mem) {
     setData(nd);
   }, [schedule]);
 
-  const toggle = useCallback((t: Task) => {
+  // "done" = abhi complete hua, "undone" = wapas pending, null = lock tha (kuch nahi hua)
+  const toggle = useCallback((t: Task): "done" | "undone" | null => {
     const d = cur.current;
-    if (!d) return;
+    if (!d) return null;
     const has = d.done.has(t.id);
-    if (!has && !isUnlocked(t, nowRef.current, d.done)) return;
+    if (!has && !isUnlocked(t, nowRef.current, d.done)) return null;
     const next = new Set(d.done);
     if (has) next.delete(t.id); else next.add(t.id);
     commit({ done: next });
+    return has ? "undone" : "done";
   }, [commit]);
 
   const saveTask = useCallback((f: TaskForm, base: Task | null) => {
