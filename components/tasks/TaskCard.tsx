@@ -38,7 +38,8 @@ export default function TaskCard({ task: t, no, now, done, unlocked, dim, onTogg
         dim && "opacity-40 blur-[0.5px]",
       )}
     >
-      <div className="flex items-start gap-2.5">
+      {/* Upar ki line: number • time • badge • menu (menu hamesha right me). Title neeche poori chaudai me, taaki kabhi kate nahi */}
+      <div className="flex items-center gap-2">
         <span
           aria-label={`Task number ${no}`}
           className={cn(
@@ -52,14 +53,10 @@ export default function TaskCard({ task: t, no, now, done, unlocked, dim, onTogg
         >
           {no}
         </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded-full border border-white/10 bg-black/40 px-2 py-0.5 font-mono text-[10.5px] font-bold text-zinc-400">{t.timeLabel}</span>
-            {live && <span className="animate-pulse rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-black text-black">LIVE</span>}
-            {done && <span className="rounded-full bg-[color:var(--em)] px-2 py-0.5 text-[10px] font-black text-black">DONE</span>}
-          </div>
-          <h3 className={cn("mt-1.5 text-[14px] font-extrabold leading-tight tracking-tight", done ? "text-[color:var(--mint)]" : "text-[color:var(--gold3)]")}>{t.title}</h3>
-          <p className="mt-0.5 text-[11.5px] font-medium text-[color:var(--mute)]">{[t.titleHi, t.duration, ...extra].join(" • ")}</p>
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+          <span className="whitespace-nowrap rounded-full border border-white/10 bg-black/40 px-2 py-0.5 font-mono text-[10.5px] font-bold text-zinc-400">{t.timeLabel}</span>
+          {live && <span className="animate-pulse whitespace-nowrap rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-black text-black">LIVE</span>}
+          {done && <span className="whitespace-nowrap rounded-full bg-[color:var(--em)] px-2 py-0.5 text-[10px] font-black text-black">DONE</span>}
         </div>
         <button
           type="button" aria-label="Task menu" aria-haspopup="menu" aria-expanded={menuOpen}
@@ -67,28 +64,32 @@ export default function TaskCard({ task: t, no, now, done, unlocked, dim, onTogg
           className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 bg-black/40 text-[18px] font-black leading-none text-zinc-200 transition hover:border-[color-mix(in_srgb,var(--gold)_40%,transparent)]"
         >⋮</button>
       </div>
+      <div className="mt-2.5 min-w-0">
+        <h3 className={cn("break-words text-[14px] font-extrabold leading-tight tracking-tight [overflow-wrap:anywhere] sm:text-[15px]", done ? "text-[color:var(--mint)]" : "text-[color:var(--gold3)]")}>{t.title}</h3>
+        <p className="mt-0.5 break-words text-[11.5px] font-medium leading-snug text-[color:var(--mute)]">{[t.titleHi, t.duration, ...extra].join(" • ")}</p>
+      </div>
       {menuOpen && <TaskMenu done={done} priority={t.priority} onClose={() => onMenu(false)} onAction={(a) => onAction(t, a)} />}
 
-      <div className="mt-3.5 min-h-[74px]">
+      <div className="mt-3 min-h-[74px]">
         {done ? (
           <div className="space-y-2.5">
             <p className="flex items-center gap-2 text-[12px] font-bold text-[color:var(--mint)]">
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-[color:var(--em)] text-[11px] text-black">✓</span>
-              Shabash! Target complete 🎯
+              <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[color:var(--em)] text-[11px] leading-none text-black">✓</span>
+              <span className="min-w-0">Shabash! Target complete 🎯</span>
             </p>
             <button type="button" onClick={() => onToggle(t)} className="su-btn su-btn-ghost !h-9 w-full !text-[12px]">↩️ Undo</button>
           </div>
         ) : unlocked ? (
           <div className="space-y-2.5">
             <p className="text-[11px] font-medium text-[color:var(--mute)]">{ended ? "🔓 Khatam • Ab tick karo" : `🔓 Unlocked • End: ${fmt12(t.end)}`}</p>
-            <button type="button" onClick={() => onToggle(t)} className="su-btn su-btn-primary w-full !text-[13px] font-black">🎯 Complete Karo • Jai Hind!</button>
+            <button type="button" onClick={() => onToggle(t)} className="su-btn su-btn-primary w-full !h-auto min-h-[42px] !px-3 !py-2 text-center !text-[13px] font-black leading-tight">🎯 Complete Karo • Jai Hind!</button>
           </div>
         ) : (
           <div className="space-y-2.5">
-            <div className="flex h-8 items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3">
+            <div className="flex min-h-8 flex-wrap items-center gap-x-2 gap-y-0.5 rounded-2xl border border-white/10 bg-black/40 px-3 py-1">
               <span aria-hidden="true">🔒</span>
-              <span className="text-[11px] font-bold text-zinc-400">⏳ Abhi samay baaki hai</span>
-              {left && <span className="ml-auto font-mono text-[11px] font-bold text-amber-200/90">{left} baaki</span>}
+              <span className="min-w-0 text-[11px] font-bold text-zinc-400">⏳ Abhi samay baaki hai</span>
+              {left && <span className="ml-auto whitespace-nowrap font-mono text-[11px] font-bold text-amber-200/90">{left} baaki</span>}
             </div>
             <p className="line-clamp-2 px-1 text-[11px] font-medium leading-snug text-zinc-500">
               {upcoming ? `Shuru: ${fmt12(t.start)} • End ke baad unlock hoga` : `End: ${fmt12(t.end)} • Khatam hone do, fir tick karna`}
