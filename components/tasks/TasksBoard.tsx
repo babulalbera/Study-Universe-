@@ -112,7 +112,7 @@ export default function TasksBoard({ initial, loggedIn }: { initial: Record<stri
     return (
       <div aria-busy="true" className="space-y-4">
         <div className="glass h-[250px] animate-pulse" />
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,290px),1fr))] gap-3">
           {Array.from({ length: 6 }, (_, i) => <div key={i} className="h-[190px] animate-pulse rounded-2xl border border-white/[0.09] bg-white/[0.04]" />)}
         </div>
       </div>
@@ -135,16 +135,16 @@ export default function TasksBoard({ initial, loggedIn }: { initial: Record<stri
 
       <TaskStats doneCount={st.done.size} total={total} streak={st.streak} now={st.nowMin} filter={filter} onFilter={setFilter} focus={focus} onFocus={() => setFocus((f) => !f)} />
 
-      <div className="flex items-center justify-between gap-2 pt-1">
-        <h2 className="text-[17px] font-black tracking-tight text-[color:var(--gold2)]">📅 Today Task • {total} Tasks</h2>
-        <button type="button" className="su-btn su-btn-primary !h-9 !px-4 !text-[12px]" onClick={() => openForm(null)}>+ Add Task</button>
+      <div className="flex items-center justify-between gap-3 pt-1">
+        <h2 className="min-w-0 text-[16px] font-black leading-tight tracking-tight text-[color:var(--gold2)] sm:text-[17px]">📅 Today Task • {total} Tasks</h2>
+        <button type="button" className="su-btn su-btn-primary shrink-0 whitespace-nowrap !h-9 !px-4 !text-[12px]" onClick={() => openForm(null)}>+ Add Task</button>
       </div>
       <p className="-mt-2 hidden text-[11px] font-medium text-[color:var(--mute)] md:block">Time lock on • End ke baad unlock</p>
 
       {shown.length === 0 ? (
         <div className="su-item"><p>{filter === "done" ? "Abhi koi task complete nahi hua." : "Koi task nahi hai. “+ Add Task” se naya banao."}</p></div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,290px),1fr))] items-start gap-3">
           {shown.map((t) => {
             const done = st.done.has(t.id);
             const live = st.nowMin >= t.start && st.nowMin < t.end && !done;

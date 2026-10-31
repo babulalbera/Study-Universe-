@@ -19,7 +19,8 @@ background:linear-gradient(180deg,color-mix(in srgb,var(--gold2,var(--gold2,#FFD
 box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--gold2,var(--gold2,#FFD700)) 38.0%,transparent),0 0 22px color-mix(in srgb,var(--gold2,var(--gold2,#FFD700)) 20.0%,transparent),inset 0 1px 0 rgba(255,255,255,.12);
 transition:transform .45s cubic-bezier(.2,.9,.3,1.15),width .3s,opacity .3s}
 .nbp:after{content:"";position:absolute;left:50%;bottom:-5px;width:16px;height:3px;margin-left:-8px;border-radius:3px;background:var(--gold2);box-shadow:0 0 10px 1px color-mix(in srgb,var(--gold2,var(--gold2,#FFD700)) 90.0%,transparent)}
-.nbi{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--mute);font:600 11px/1 var(--sans);letter-spacing:.02em;transition:color .25s}
+.nbi{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--mute);font:600 11px/1 var(--sans);letter-spacing:.02em;transition:color .25s}
+.nbi .pl{flex:none}
 .nbi .pl{display:grid;place-items:center;transition:transform .3s}
 .nbi svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .nbi.on{color:var(--gold2)}
@@ -35,6 +36,10 @@ transition:transform .45s cubic-bezier(.2,.9,.3,1.15),width .3s,opacity .3s}
 .nbi{font-size:13px;gap:5px}
 .nbi svg{width:26px;height:26px}
 }
+/* Bade screen (laptop / PC): bar ko bahut zyada failne se roko, beech me rakho */
+@media(min-width:1100px){.nb{width:min(calc(100% - 48px),820px)}}
+/* Bahut chhote phone: thoda compact taaki naam kate nahi */
+@media(max-width:340px){.nb{width:calc(100% - 12px);padding:0 3px}.nbi{font-size:10px;letter-spacing:0}.nbi svg{width:20px;height:20px}}
 @media(prefers-reduced-motion:reduce){.nb *{transition:none!important}}
 `;
 
