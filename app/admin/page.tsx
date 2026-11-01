@@ -6,7 +6,7 @@ export default function AdminDashboard() {
   return (
     <>
       <AdminHeader title="Admin Dashboard" subtitle="यहाँ से पूरी Website का Content बिना Code बदले मैनेज होगा।" />
-      <div className="grid">
+      <div className="lg-grid">
         {ADMIN_LINKS.filter((l) => l.href !== "/admin").map((l) => (
           <Link key={l.href} href={l.href} className="glass block">
             <b style={{ fontFamily: "var(--head)" }}>{l.label}</b>

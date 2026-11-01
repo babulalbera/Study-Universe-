@@ -19,7 +19,7 @@ export default async function AttemptResultPage({ params }: { params: Promise<{ 
   return (
     <>
       <PageHeader title={`🏁 ${attempt.mock_tests?.title ?? "Test"}`} subtitle="तुम्हारा Result और सही उत्तर" />
-      <div className="grid" style={{ gridTemplateColumns: "repeat(2,1fr)" }}>
+      <div className="lg-grid" style={{ gridTemplateColumns: "repeat(2,1fr)" }}>
         <div className="glass su-stat"><b>{attempt.score ?? 0}/{attempt.mock_tests?.total_marks ?? 0}</b><span>अंक</span></div>
         <div className="glass su-stat"><b>{right} ✓ {wrong} ✗ {skipped} –</b><span>सही • गलत • छोड़े</span></div>
       </div>

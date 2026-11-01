@@ -19,7 +19,7 @@ export default async function HomePage() {
       <Marquee />
       <section className="rv">
         <div className="sec"><h2>Premium Study Tools</h2><i /></div>
-        <div className="grid tools">
+        <div className="lg-grid tools">
           {cards.map((c, i) => <FeatureCard key={c.key} card={c} index={i} />)}
         </div>
       </section>

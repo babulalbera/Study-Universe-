@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { fmt12, type Filter } from "@/features/tasks/model";
+import { IconFlame, IconTarget } from "./icons";
 
 type Props = {
   doneCount: number; total: number; streak: number; now: number;
@@ -12,38 +13,36 @@ const CHIPS: [Filter, string][] = [["all", "Sab"], ["pending", "Pending"], ["don
 export default function TaskStats({ doneCount, total, streak, now, filter, onFilter, focus, onFocus }: Props) {
   const pct = Math.round((doneCount / Math.max(1, total)) * 100);
   return (
-    <section className="glass space-y-4" aria-label="Aaj ke stats">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full border border-[color-mix(in_srgb,var(--gold)_35%,transparent)] bg-black/30 px-3 py-1 text-[10.5px] font-black tracking-wider text-[color:var(--gold2)] sm:text-[11px] sm:tracking-widest">TODAY STATS • ROZ JEETO</span>
-        <span aria-hidden="true">🔥</span>
+    <section className="glass tb-stats" aria-label="Aaj ke stats">
+      <div className="tb-tagrow">
+        <span className="tb-tag">TODAY STATS • ROZ JEETO</span>
+        <IconFlame />
       </div>
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,140px),1fr))] gap-3">
-        <div className="min-w-0 rounded-2xl border border-white/10 bg-black/35 p-3.5">
-          <p className="text-[10px] font-black tracking-widest text-[color:var(--mute)]">COMPLETE</p>
-          <p className="mt-1 text-[28px] font-black leading-none tabular-nums">{doneCount}<span className="text-[14px] font-semibold text-[color:var(--mute)]">/{total}</span></p>
-          <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
-            <div className="h-full rounded-full bg-gradient-to-r from-[color:var(--gold3)] to-[color:var(--em)] transition-all duration-700" style={{ width: `${pct}%` }} />
+      <div className="tb-statgrid">
+        <div className="tb-stat">
+          <p className="tb-stat-k">Complete</p>
+          <p className="tb-stat-v">{doneCount}<small>/{total}</small></p>
+          <div className="tb-track" role="progressbar" aria-label="Aaj ka progress" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+            <div className="tb-fill" style={{ width: `${pct}%` }} />
           </div>
-          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-2.5 py-0.5 font-mono text-[11px] font-bold text-zinc-300">
-            <i className="h-1.5 w-1.5 rounded-full bg-[color:var(--em)]" />{fmt12(now)}
-          </p>
+          <p className="tb-clock"><i aria-hidden="true" />{fmt12(now)}</p>
         </div>
-        <div className="min-w-0 rounded-2xl border border-white/10 bg-black/35 p-3.5">
-          <p className="text-[10px] font-black tracking-widest text-[color:var(--mute)]">STREAK • ROZ JEETO</p>
-          <p className="mt-1 text-[28px] font-black leading-none tabular-nums">{streak} <span aria-hidden="true">🔥</span></p>
-          <p className="mt-2.5 text-[11px] font-bold text-[color:var(--mint)]">Daily Win • Lagatar</p>
-          <p className="mt-1 text-[11px] text-[color:var(--mute)]">{pct}% complete</p>
+        <div className="tb-stat">
+          <p className="tb-stat-k">Streak • Roz Jeeto</p>
+          <p className="tb-stat-v">{streak}<IconFlame /></p>
+          <p className="tb-stat-note">Daily Win • Lagatar</p>
+          <p className="tb-stat-note">{pct}% complete</p>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="su-chips" role="group" aria-label="Filter">
+      <div className="tb-filters">
+        <div className="tb-chips" role="group" aria-label="Filter">
           {CHIPS.map(([k, label]) => (
-            <button key={k} type="button" onClick={() => onFilter(k)} aria-pressed={filter === k} className={cn("su-chip", filter === k && "on")}>{label}</button>
+            <button key={k} type="button" onClick={() => onFilter(k)} aria-pressed={filter === k} className="tb-chip">{label}</button>
           ))}
         </div>
-        <button type="button" onClick={onFocus} aria-pressed={focus} className={cn("su-chip shrink-0 whitespace-nowrap font-black tracking-wide", focus && "on")}>🎯 FOCUS</button>
+        <button type="button" onClick={onFocus} aria-pressed={focus} className={cn("tb-chip")}><IconTarget />FOCUS</button>
       </div>
     </section>
   );

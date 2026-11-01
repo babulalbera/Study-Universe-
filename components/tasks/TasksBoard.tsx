@@ -13,7 +13,9 @@ import TaskFormModal from "./TaskForm";
 import type { MenuAction } from "./TaskMenu";
 import TaskStats from "./TaskStats";
 import TaskToast, { type ToastData } from "./TaskToast";
+import { IconBulb, IconCalendar, IconPlus } from "./icons";
 import "./tasks.css";
+import "./tasks-ui.css";
 
 type FormState = { task: Task | null; focus: "title" | "reminder"; key: number } | null;
 
@@ -110,10 +112,10 @@ export default function TasksBoard({ initial, loggedIn }: { initial: Record<stri
 
   if (!st.ready) {
     return (
-      <div aria-busy="true" className="space-y-4">
-        <div className="glass h-[250px] animate-pulse" />
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,290px),1fr))] gap-3">
-          {Array.from({ length: 6 }, (_, i) => <div key={i} className="h-[190px] animate-pulse rounded-2xl border border-white/[0.09] bg-white/[0.04]" />)}
+      <div aria-busy="true" className="tb">
+        <div className="tb-skel" style={{ height: 250 }} />
+        <div className="tb-grid">
+          {Array.from({ length: 6 }, (_, i) => <div key={i} className="tb-skel" style={{ height: 190 }} />)}
         </div>
       </div>
     );
@@ -125,26 +127,24 @@ export default function TasksBoard({ initial, loggedIn }: { initial: Record<stri
   const shown = filter === "done" ? all.filter((t) => st.done.has(t.id)) : filter === "pending" ? all.filter((t) => !st.done.has(t.id)) : all;
 
   return (
-    <div className="space-y-4">
-      <div className="su-item" aria-live="off">
-        <div className="min-w-0">
-          <p className="text-[10.5px] font-black tracking-widest text-[color:var(--mute)]">💡 MOTIVATION • BEST BANAO</p>
-          <p key={mi} className="mt-1 text-[15px] font-bold leading-tight text-[color:var(--gold3)]">“{MOTIVATION[mi]}”</p>
-        </div>
+    <div className="tb">
+      <div className="tb-motive" aria-live="off">
+        <p className="tb-eyebrow"><IconBulb />Motivation • Best Banao</p>
+        <p key={mi} className="tb-quote">“{MOTIVATION[mi]}”</p>
       </div>
 
       <TaskStats doneCount={st.done.size} total={total} streak={st.streak} now={st.nowMin} filter={filter} onFilter={setFilter} focus={focus} onFocus={() => setFocus((f) => !f)} />
 
-      <div className="flex items-center justify-between gap-3 pt-1">
-        <h2 className="min-w-0 text-[16px] font-black leading-tight tracking-tight text-[color:var(--gold2)] sm:text-[17px]">📅 Today Task • {total} Tasks</h2>
-        <button type="button" className="su-btn su-btn-primary shrink-0 whitespace-nowrap !h-9 !px-4 !text-[12px]" onClick={() => openForm(null)}>+ Add Task</button>
+      <div className="tb-bar">
+        <h2 className="tb-h2"><IconCalendar />Today Task • {total} Tasks</h2>
+        <button type="button" className="tb-btn tb-btn--primary tb-btn--auto" onClick={() => openForm(null)}><IconPlus />Add Task</button>
       </div>
-      <p className="-mt-2 hidden text-[11px] font-medium text-[color:var(--mute)] md:block">Time lock on • End ke baad unlock</p>
+      <p className="tb-hint">Time lock on • End ke baad unlock</p>
 
       {shown.length === 0 ? (
         <div className="su-item"><p>{filter === "done" ? "Abhi koi task complete nahi hua." : "Koi task nahi hai. “+ Add Task” se naya banao."}</p></div>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,290px),1fr))] items-start gap-3">
+        <div className="tb-grid">
           {shown.map((t) => {
             const done = st.done.has(t.id);
             const live = st.nowMin >= t.start && st.nowMin < t.end && !done;

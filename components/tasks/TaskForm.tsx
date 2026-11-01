@@ -28,18 +28,18 @@ export default function TaskForm({ task, focus = "title", onClose, onSave }: Pro
   return (
     <Modal open title={task ? "✏️ Edit Task" : "➕ Add Task"} onClose={onClose}>
       <form onSubmit={submit} noValidate>
-        <div className="grid max-h-[62vh] gap-3 overflow-y-auto pr-1">
+        <div className="grid max-h-[60vh] max-h-[60dvh] gap-3 overflow-y-auto overflow-x-hidden pr-1">
           <Input label="Task Name *" name="title" maxLength={60} value={f.title} onChange={set("title")} autoFocus={focus === "title"} />
           <Input label="Subject / Category" name="subject" maxLength={40} value={f.subject} onChange={set("subject")} />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
             <Input label="Start Time" name="startTime" type="time" value={f.startTime} onChange={set("startTime")} />
             <Input label="End Time" name="endTime" type="time" value={f.endTime} onChange={set("endTime")} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
             <Input label="Date (khali = roz)" name="date" type="date" value={f.date} onChange={set("date")} />
             <Input label="Reminder" name="reminder" type="time" value={f.reminder} onChange={set("reminder")} autoFocus={focus === "reminder"} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
             <label className="su-field"><span>Priority</span>
               <select value={f.priority} onChange={set("priority")}>{PRIORITIES.map((p) => <option key={p} value={p}>{p[0].toUpperCase() + p.slice(1)}</option>)}</select>
             </label>
@@ -49,8 +49,8 @@ export default function TaskForm({ task, focus = "title", onClose, onSave }: Pro
           </div>
           <div className="grid gap-2">
             <Input label="Color" name="color" type="color" value={f.color || "#10b981"} onChange={set("color")} disabled={plain} />
-            <label className="flex items-center gap-2 text-[13px] font-semibold text-zinc-300">
-              <input type="checkbox" checked={plain} onChange={(e) => setPlain(e.target.checked)} className="h-4 w-4 accent-[var(--gold2)]" /> Default color
+            <label className="flex min-h-11 items-center gap-2.5 text-[13px] font-semibold text-zinc-300">
+              <input type="checkbox" checked={plain} onChange={(e) => setPlain(e.target.checked)} className="h-5 w-5 shrink-0 accent-[var(--gold2)]" /> Default color
             </label>
           </div>
           <label className="su-field"><span>Description / Note</span>
