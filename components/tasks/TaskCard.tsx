@@ -12,7 +12,13 @@ type Props = {
 
 const SAFE_COLOR = /^#[0-9a-f]{3,8}$/i;
 
-// Ek task ka card. Upar: number • (naam, note, time) • menu. Neeche Complete / Lock wala hissa.
+function IconClock() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+  );
+}
+
+// Ek task ka card. Upar time, uske neeche task ka naam, phir note. Neeche Complete / Lock wala hissa.
 export default function TaskCard({ task: t, no, idx, now, done, unlocked, dim, onToggle, menuOpen, onMenu, onAction }: Props) {
   const live = now >= t.start && now < t.end && !done;
   const upcoming = now < t.start;
@@ -21,6 +27,7 @@ export default function TaskCard({ task: t, no, idx, now, done, unlocked, dim, o
   const pct = Math.min(100, Math.max(0, ((now - t.start) / (t.end - t.start)) * 100));
   const hot = t.priority && t.priority !== "medium" ? t.priority : "";
   const sub = [t.titleHi, t.duration].filter(Boolean).join(" • ");
+  const hasBadges = live || done || !!hot || !!t.description || !!t.reminder;
 
   return (
     <article
@@ -31,16 +38,18 @@ export default function TaskCard({ task: t, no, idx, now, done, unlocked, dim, o
       <div className="tb-head">
         <span className="tb-no" aria-label={`Task number ${no}`}>{no}</span>
         <div className="tb-body">
+          <span className="tb-when"><IconClock />{t.timeLabel}</span>
           <h3 className="tb-title">{t.title}</h3>
           {sub && <p className="tb-sub">{sub}</p>}
-          <div className="tb-meta">
-            <span className="tb-time">{t.timeLabel}</span>
-            {live && <span className="tb-badge tb-badge--live">LIVE</span>}
-            {done && <span className="tb-badge tb-badge--done">DONE</span>}
-            {hot && <span className={cn("tb-pill", (hot === "high" || hot === "urgent") && "tb-pill--hot")}><IconFlag />{hot[0].toUpperCase() + hot.slice(1)}</span>}
-            {t.description && <span className="tb-pill"><IconNote />Note</span>}
-            {t.reminder && <span className="tb-pill"><IconBell />{t.reminder}</span>}
-          </div>
+          {hasBadges && (
+            <div className="tb-meta">
+              {live && <span className="tb-badge tb-badge--live">LIVE</span>}
+              {done && <span className="tb-badge tb-badge--done">DONE</span>}
+              {hot && <span className={cn("tb-pill", (hot === "high" || hot === "urgent") && "tb-pill--hot")}><IconFlag />{hot[0].toUpperCase() + hot.slice(1)}</span>}
+              {t.description && <span className="tb-pill"><IconNote />Note</span>}
+              {t.reminder && <span className="tb-pill"><IconBell />{t.reminder}</span>}
+            </div>
+          )}
         </div>
         <button type="button" className="tb-iconbtn" aria-label={`Task ${no} menu`} aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => onMenu(!menuOpen)}>
           <IconDots />
