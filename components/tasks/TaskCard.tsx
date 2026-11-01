@@ -27,7 +27,7 @@ export default function TaskCard({ task: t, no, idx, now, done, unlocked, dim, o
   const pct = Math.min(100, Math.max(0, ((now - t.start) / (t.end - t.start)) * 100));
   const hot = t.priority && t.priority !== "medium" ? t.priority : "";
   const sub = [t.titleHi, t.duration].filter(Boolean).join(" • ");
-  const hasBadges = live || done || !!hot || !!t.description || !!t.reminder;
+  const hasBadges = live || !!hot || !!t.description || !!t.reminder;
 
   return (
     <article
@@ -44,24 +44,26 @@ export default function TaskCard({ task: t, no, idx, now, done, unlocked, dim, o
           {hasBadges && (
             <div className="tb-meta">
               {live && <span className="tb-badge tb-badge--live">LIVE</span>}
-              {done && <span className="tb-badge tb-badge--done">DONE</span>}
               {hot && <span className={cn("tb-pill", (hot === "high" || hot === "urgent") && "tb-pill--hot")}><IconFlag />{hot[0].toUpperCase() + hot.slice(1)}</span>}
               {t.description && <span className="tb-pill"><IconNote />Note</span>}
               {t.reminder && <span className="tb-pill"><IconBell />{t.reminder}</span>}
             </div>
           )}
         </div>
-        <button type="button" className="tb-iconbtn" aria-label={`Task ${no} menu`} aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => onMenu(!menuOpen)}>
-          <IconDots />
-        </button>
+        <div className="tb-side">
+          {done && <span className="tb-donemark" role="img" aria-label="Task complete"><IconCheck /></span>}
+          <button type="button" className="tb-iconbtn" aria-label={`Task ${no} menu`} aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => onMenu(!menuOpen)}>
+            <IconDots />
+          </button>
+        </div>
       </div>
       {menuOpen && <TaskMenu done={done} priority={t.priority} onClose={() => onMenu(false)} onAction={(a) => onAction(t, a)} />}
 
       <div className="tb-foot">
         {done ? (
           <>
-            <p className="tb-done-msg"><i><IconCheck /></i><span>Shabash! Target complete</span></p>
-            <button type="button" onClick={() => onToggle(t)} className="tb-btn tb-btn--ghost"><IconUndo />Undo</button>
+            <p className="tb-done-msg"><span>Shabash! Target complete</span></p>
+            <button type="button" onClick={() => onToggle(t)} className="tb-btn tb-btn--ghost tb-btn--auto"><IconUndo />Undo</button>
           </>
         ) : unlocked ? (
           <>

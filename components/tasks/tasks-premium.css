@@ -38,3 +38,15 @@
 .tb .tb-progress{height:4px;margin-top:10px}
 @keyframes tb-shine{0%,60%{left:-60%}100%{left:130%}}
 @media(prefers-reduced-motion:reduce){.tb .tb-btn--primary::after{animation:none;display:none}}
+
+/* Right side: DONE mark (sirf tick, text nahi) + menu */
+.tb .tb-side{display:flex;align-items:flex-start;gap:2px;flex:none}
+.tb .tb-side .tb-iconbtn{margin:-8px -8px 0 0}
+.tb .tb-donemark{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:50%;color:#00170d;background:linear-gradient(145deg,var(--mint),var(--em));box-shadow:0 0 0 3px color-mix(in srgb,var(--em) 20%,transparent),0 4px 14px color-mix(in srgb,var(--em) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.55);animation:tb-pop .5s cubic-bezier(.3,1.5,.5,1) both}
+.tb .tb-donemark svg{width:16px;height:16px;stroke-width:3.2;stroke-dasharray:24;animation:tb-draw .45s .15s ease-out both}
+
+/* Done card: Shabash + Undo ek hi line me (height kam) */
+.tb .is-done .tb-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:8px}
+.tb .is-done .tb-done-msg{flex:1 1 auto;min-width:0;font-size:13px;color:var(--mint)}
+.tb .is-done .tb-btn--auto{flex:none;min-height:38px;padding:6px 14px}
+@media(pointer:coarse){.tb .is-done .tb-btn--auto{min-height:44px}}
