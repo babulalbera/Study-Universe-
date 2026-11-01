@@ -50,3 +50,28 @@
 .tb .is-done .tb-done-msg{flex:1 1 auto;min-width:0;font-size:13px;color:var(--mint)}
 .tb .is-done .tb-btn--auto{flex:none;min-height:38px;padding:6px 14px}
 @media(pointer:coarse){.tb .is-done .tb-btn--auto{min-height:44px}}
+
+/* Task naam: alag rang + hamesha chalne wala shimmer animation */
+.tb .tb-body .tb-title{
+  color:#fff4d6;
+  background:linear-gradient(100deg,#ffffff 0%,var(--gold3) 22%,var(--gold2) 42%,#ffffff 58%,var(--gold3) 78%,#ffffff 100%);
+  background-size:260% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:tb-title-flow 5s linear infinite;
+  filter:drop-shadow(0 0 8px color-mix(in srgb,var(--gold2) 30%,transparent));
+}
+.tb .is-live .tb-body .tb-title{
+  background-image:linear-gradient(100deg,#fff 0%,#fdba74 25%,#f97316 45%,#fff 60%,#fdba74 80%,#fff 100%);
+  animation:tb-title-flow 2.6s linear infinite,tb-title-glow 1.8s ease-in-out infinite;
+}
+.tb .is-done .tb-body .tb-title{
+  background-image:linear-gradient(100deg,#ecfdf5 0%,var(--mint) 30%,var(--em) 50%,#ecfdf5 65%,var(--mint) 85%,#ecfdf5 100%);
+  animation-duration:7s;
+  filter:drop-shadow(0 0 6px color-mix(in srgb,var(--em) 28%,transparent));
+}
+@keyframes tb-title-flow{from{background-position:0% 0}to{background-position:260% 0}}
+@keyframes tb-title-glow{0%,100%{filter:drop-shadow(0 0 4px rgba(249,115,22,.25))}50%{filter:drop-shadow(0 0 12px rgba(249,115,22,.6))}}
+@media(prefers-reduced-motion:reduce){
+  .tb .tb-body .tb-title{animation:none!important;background:none;-webkit-text-fill-color:currentColor;color:var(--gold3);filter:none}
+}
