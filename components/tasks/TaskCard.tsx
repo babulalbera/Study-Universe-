@@ -1,17 +1,18 @@
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { fmt12, timeLeft, type Task } from "@/features/tasks/model";
 import { IconBell, IconCheck, IconDots, IconFlag, IconHourglass, IconLock, IconNote, IconTarget, IconUndo, IconUnlock } from "./icons";
 import TaskMenu, { type MenuAction } from "./TaskMenu";
 
 type Props = {
-  task: Task; no: number; now: number; done: boolean; unlocked: boolean; dim: boolean;
+  task: Task; no: number; idx: number; now: number; done: boolean; unlocked: boolean; dim: boolean;
   onToggle: (t: Task) => void; menuOpen: boolean; onMenu: (open: boolean) => void; onAction: (t: Task, a: MenuAction) => void;
 };
 
 const SAFE_COLOR = /^#[0-9a-f]{3,8}$/i;
 
 // Ek task ka card. Upar: number • time • badge • menu. Neeche title, phir Complete / Lock wala hissa.
-export default function TaskCard({ task: t, no, now, done, unlocked, dim, onToggle, menuOpen, onMenu, onAction }: Props) {
+export default function TaskCard({ task: t, no, idx, now, done, unlocked, dim, onToggle, menuOpen, onMenu, onAction }: Props) {
   const live = now >= t.start && now < t.end && !done;
   const upcoming = now < t.start;
   const ended = now >= t.end && !done;
@@ -24,31 +25,28 @@ export default function TaskCard({ task: t, no, now, done, unlocked, dim, onTogg
   return (
     <article
       id={`task-${t.id}`}
-      style={t.color && SAFE_COLOR.test(t.color) ? { boxShadow: `inset 4px 0 0 ${t.color}` } : undefined}
+      style={{ "--i": Math.min(idx, 12), ...(t.color && SAFE_COLOR.test(t.color) ? { boxShadow: `inset 4px 0 0 ${t.color}` } : {}) } as CSSProperties}
       className={cn("tb-card", done && "is-done", live && "is-live", dim && "is-dim", menuOpen && "is-open")}
     >
+      {/* Upar: number • TASK KA NAAM • menu. Neeche: time, badge, tags ek line me, phir chhota note */}
       <div className="tb-head">
         <span className="tb-no" aria-label={`Task number ${no}`}>{no}</span>
-        <div className="tb-meta">
-          <span className="tb-time">{t.timeLabel}</span>
-          {live && <span className="tb-badge tb-badge--live">LIVE</span>}
-          {done && <span className="tb-badge tb-badge--done">DONE</span>}
-        </div>
+        <h3 className="tb-title">{t.title}</h3>
         <button type="button" className="tb-iconbtn" aria-label={`Task ${no} menu`} aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => onMenu(!menuOpen)}>
           <IconDots />
         </button>
       </div>
       {menuOpen && <TaskMenu done={done} priority={t.priority} onClose={() => onMenu(false)} onAction={(a) => onAction(t, a)} />}
 
-      <h3 className="tb-title">{t.title}</h3>
+      <div className="tb-meta">
+        <span className="tb-time">{t.timeLabel}</span>
+        {live && <span className="tb-badge tb-badge--live">LIVE</span>}
+        {done && <span className="tb-badge tb-badge--done">DONE</span>}
+        {hot && <span className={cn("tb-pill", (hot === "high" || hot === "urgent") && "tb-pill--hot")}><IconFlag />{hot[0].toUpperCase() + hot.slice(1)}</span>}
+        {t.description && <span className="tb-pill"><IconNote />Note</span>}
+        {t.reminder && <span className="tb-pill"><IconBell />{t.reminder}</span>}
+      </div>
       {sub && <p className="tb-sub">{sub}</p>}
-      {(hot || t.description || t.reminder) && (
-        <div className="tb-tags">
-          {hot && <span className={cn("tb-pill", (hot === "high" || hot === "urgent") && "tb-pill--hot")}><IconFlag />{hot[0].toUpperCase() + hot.slice(1)}</span>}
-          {t.description && <span className="tb-pill"><IconNote />Note</span>}
-          {t.reminder && <span className="tb-pill"><IconBell />{t.reminder}</span>}
-        </div>
-      )}
 
       <div className="tb-foot">
         {done ? (

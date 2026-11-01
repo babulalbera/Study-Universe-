@@ -136,7 +136,7 @@ export default function TasksBoard({ initial, loggedIn }: { initial: Record<stri
       <TaskStats doneCount={st.done.size} total={total} streak={st.streak} now={st.nowMin} filter={filter} onFilter={setFilter} focus={focus} onFocus={() => setFocus((f) => !f)} />
 
       <div className="tb-bar">
-        <h2 className="tb-h2"><IconCalendar />Today Task • {total} Tasks</h2>
+        <h2 className="tb-h2"><IconCalendar /><span>Today Task • {total} Tasks</span></h2>
         <button type="button" className="tb-btn tb-btn--primary tb-btn--auto" onClick={() => openForm(null)}><IconPlus />Add Task</button>
       </div>
       <p className="tb-hint">Time lock on • End ke baad unlock</p>
@@ -144,12 +144,12 @@ export default function TasksBoard({ initial, loggedIn }: { initial: Record<stri
       {shown.length === 0 ? (
         <div className="su-item"><p>{filter === "done" ? "Abhi koi task complete nahi hua." : "Koi task nahi hai. “+ Add Task” se naya banao."}</p></div>
       ) : (
-        <div className="tb-grid">
-          {shown.map((t) => {
+        <div className="tb-grid" key={filter}>
+          {shown.map((t, i) => {
             const done = st.done.has(t.id);
             const live = st.nowMin >= t.start && st.nowMin < t.end && !done;
             return (
-              <TaskCard key={t.id} task={t} no={numberOf.get(t.id) ?? 0} now={st.nowMin} done={done}
+              <TaskCard key={t.id} task={t} no={numberOf.get(t.id) ?? 0} idx={i} now={st.nowMin} done={done}
                 unlocked={isUnlocked(t, st.nowMin, st.done)} dim={focus && !live && !done} onToggle={onToggle}
                 menuOpen={menuId === t.id} onMenu={(o) => setMenuId(o ? t.id : null)} onAction={onAction} />
             );
