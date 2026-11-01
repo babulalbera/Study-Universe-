@@ -24,7 +24,7 @@ export default async function ResultsPage() {
             action={<Button href="/mock-tests">Test शुरू करें</Button>} />
         ) : (
           <div className="grid gap-3 content-start min-w-0">
-            <div className="grid" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
+            <div className="lg-grid" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
               <div className="glass su-stat"><b>{attempts.length}</b><span>Tests दिए</span></div>
               <div className="glass su-stat"><b>{best.toFixed(0)}%</b><span>सबसे अच्छा</span></div>
               <div className="glass su-stat"><b>{avg.toFixed(0)}%</b><span>औसत</span></div>
