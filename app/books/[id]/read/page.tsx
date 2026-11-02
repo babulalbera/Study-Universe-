@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import BookCover from "@/components/books/BookCover";
+import PdfReader from "@/components/books/PdfReader";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth";
 import { embedUrl, parseBookLink } from "@/lib/book-links";
@@ -41,6 +42,10 @@ export default async function ReadBookPage({ params }: { params: Promise<{ id: s
   const medium = row.medium && row.medium in MEDIUM_LABEL ? MEDIUM_LABEL[row.medium as BookMedium] : null;
   const meta = [row.author, medium, row.exam, row.pages ? `${row.pages} पेज` : null, row.publisher, row.edition].filter(Boolean).join(" • ");
 
+  // Apni upload ki hui file => premium reader. External link (Drive/Mega...) => purana iframe,
+  // kyunki wo files browser se seedhe nahi padhi ja sakti (CORS).
+  const useReader = Boolean(row.storage_path && src);
+
   return (
     <div style={{ display: "grid", gap: 12 }}>
       <div className="su-row" style={{ justifyContent: "space-between", alignItems: "center" }}>
@@ -55,7 +60,9 @@ export default async function ReadBookPage({ params }: { params: Promise<{ id: s
         </div>
       </div>
       {row.description && <p className="su-muted" style={{ fontSize: 13 }}>{row.description}</p>}
-      {src ? (
+      {src && useReader ? (
+        <PdfReader src={src} title={row.title} bookId={id} />
+      ) : src ? (
         <iframe
           src={src}
           title={row.title}

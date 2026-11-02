@@ -1,0 +1,113 @@
+.pdfr {
+  --pdfr-bg: #1a1424;
+  --pdfr-bar: rgba(255, 255, 255, 0.06);
+  --pdfr-text: #ece6f5;
+  --pdfr-accent: #c9a24b;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 180px);
+  min-height: 480px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--pdfr-bg);
+  color: var(--pdfr-text);
+}
+.pdfr[data-theme="sepia"] { --pdfr-bg: #2b2218; }
+.pdfr[data-theme="night"] { --pdfr-bg: #07070a; }
+.pdfr[data-full] { height: 100dvh; border-radius: 0; }
+
+.pdfr-progress { height: 3px; background: rgba(255, 255, 255, 0.08); }
+.pdfr-progress span { display: block; height: 100%; background: var(--pdfr-accent); transition: width 0.25s ease; }
+
+.pdfr-bar,
+.pdfr-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--pdfr-bar);
+}
+.pdfr-nav { justify-content: center; gap: 14px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+.pdfr-group { display: flex; align-items: center; gap: 6px; }
+.pdfr-zoom { min-width: 44px; text-align: center; font-size: 13px; font-variant-numeric: tabular-nums; }
+
+.pdfr-btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.pdfr-btn-text { font-size: 13px; }
+.pdfr-btn:hover:not(:disabled) { border-color: var(--pdfr-accent); }
+.pdfr-btn:focus-visible,
+.pdfr-jump input:focus-visible { outline: 2px solid var(--pdfr-accent); outline-offset: 2px; }
+.pdfr-btn:disabled { opacity: 0.35; cursor: default; }
+
+.pdfr-jump { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+.pdfr-jump input {
+  width: 56px;
+  height: 36px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.pdfr-stage {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+  touch-action: pan-x pan-y pinch-zoom;
+  overscroll-behavior: contain;
+}
+.pdfr-loading { text-align: center; opacity: 0.7; margin-top: 40px; }
+
+.pdfr-pages { display: flex; width: max-content; margin: 0 auto; perspective: 1600px; }
+.pdfr-pages.is-spread { gap: 4px; position: relative; }
+.pdfr-pages.is-spread::after {
+  /* beech ki jild (spine) ki chhaya */
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 28px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.28), transparent);
+  pointer-events: none;
+}
+
+.pdfr-canvas {
+  display: block;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  transition: filter 0.2s ease;
+}
+.pdfr[data-theme="sepia"] .pdfr-canvas { filter: sepia(0.4) brightness(0.97); }
+.pdfr[data-theme="night"] .pdfr-canvas { filter: invert(0.9) hue-rotate(180deg); }
+
+/* Page palatne ka halka effect */
+.pdfr-pages[data-flip="next"] { transform-origin: left center; animation: pdfr-next 0.32s ease-out; }
+.pdfr-pages[data-flip="prev"] { transform-origin: right center; animation: pdfr-prev 0.32s ease-out; }
+@keyframes pdfr-next {
+  from { opacity: 0; transform: rotateY(-14deg) translateX(24px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pdfr-prev {
+  from { opacity: 0; transform: rotateY(14deg) translateX(-24px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pdfr-pages[data-flip] { animation: none; }
+  .pdfr-progress span { transition: none; }
+}
