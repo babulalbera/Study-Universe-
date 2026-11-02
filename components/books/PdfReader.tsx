@@ -86,10 +86,8 @@ export default function PdfReader({ src, title, bookId }: Props) {
     (async () => {
       try {
         const lib = (await import("pdfjs-dist/legacy/build/pdf.mjs")) as unknown as PdfJs;
-        lib.GlobalWorkerOptions.workerSrc = new URL(
-          "pdfjs-dist/legacy/build/pdf.worker.min.mjs",
-          import.meta.url,
-        ).toString();
+        // Worker file public/fonts/ mein rakhi hai (middleware us folder ko chhodta hai)
+        lib.GlobalWorkerOptions.workerSrc = "/fonts/pdf.worker.min.mjs";
         task = lib.getDocument({ url: src });
         const doc = await task.promise;
         if (dead) {
