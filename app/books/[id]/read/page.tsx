@@ -6,6 +6,7 @@ import PdfReader from "@/components/books/PdfReader";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth";
 import { embedUrl, parseBookLink } from "@/lib/book-links";
+import { proxyTarget } from "@/lib/book-proxy";
 import { MEDIUM_LABEL, type BookMedium } from "@/lib/book-meta";
 import type { Book } from "@/types/database";
 
@@ -24,13 +25,19 @@ export default async function ReadBookPage({ params }: { params: Promise<{ id: s
   const row = data as Book | null;
   if (!row) redirect("/books");
 
-  let src: string | null = null;
+  // readerSrc  = premium reader ke liye PDF ka raasta
+  // fallback   = reader na khol paye to purana iframe (Drive preview, Mega embed ...)
+  let readerSrc: string | null = null;
+  let fallback: string | null = null;
   if (row.storage_path) {
     const signed = await supabase.storage.from("books").createSignedUrl(row.storage_path, 3600);
-    src = signed.data?.signedUrl ?? null;
+    readerSrc = signed.data?.signedUrl ?? null;
   } else {
     const link = row.external_url ? parseBookLink(row.external_url) : null;
-    if (link) src = embedUrl(link.source, link.url);
+    if (link) {
+      fallback = embedUrl(link.source, link.url);
+      if (proxyTarget(link.source, link.url)) readerSrc = `/books/${id}/file`;
+    }
   }
 
   // Profile ke "Continue Learning" ke liye haal hi kholi gayi book yaad rakho.
@@ -41,10 +48,6 @@ export default async function ReadBookPage({ params }: { params: Promise<{ id: s
 
   const medium = row.medium && row.medium in MEDIUM_LABEL ? MEDIUM_LABEL[row.medium as BookMedium] : null;
   const meta = [row.author, medium, row.exam, row.pages ? `${row.pages} पेज` : null, row.publisher, row.edition].filter(Boolean).join(" • ");
-
-  // Apni upload ki hui file => premium reader. External link (Drive/Mega...) => purana iframe,
-  // kyunki wo files browser se seedhe nahi padhi ja sakti (CORS).
-  const useReader = Boolean(row.storage_path && src);
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
@@ -60,11 +63,11 @@ export default async function ReadBookPage({ params }: { params: Promise<{ id: s
         </div>
       </div>
       {row.description && <p className="su-muted" style={{ fontSize: 13 }}>{row.description}</p>}
-      {src && useReader ? (
-        <PdfReader src={src} title={row.title} bookId={id} />
-      ) : src ? (
+      {readerSrc ? (
+        <PdfReader src={readerSrc} fallback={fallback} title={row.title} bookId={id} />
+      ) : fallback ? (
         <iframe
-          src={src}
+          src={fallback}
           title={row.title}
           allow="fullscreen"
           referrerPolicy="no-referrer"

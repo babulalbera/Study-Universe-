@@ -22,7 +22,7 @@
 .pdfr[data-theme="night"] { --pdfr-bg: #050507; --pdfr-bg2: #0d0d12; }
 .pdfr[data-full] { height: 100dvh; border-radius: 0; border: 0; }
 
-.pdfr-progress { height: 3px; background: rgba(255, 255, 255, 0.08); }
+.pdfr-progress { height: 3px; background: rgba(255, 255, 255, 0.08); flex: none; }
 .pdfr-progress span { display: block; height: 100%; background: var(--pdfr-accent); transition: width 0.25s ease; }
 
 /* ---- Toolbar ---- */
@@ -36,11 +36,14 @@
   background: var(--pdfr-bar);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  flex: none;
 }
 .pdfr-bar { justify-content: space-between; border-bottom: 1px solid var(--pdfr-line); }
 .pdfr-nav { justify-content: center; gap: 12px; border-top: 1px solid var(--pdfr-line); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
 .pdfr-group { display: flex; align-items: center; gap: 6px; }
 .pdfr-zoom { min-width: 44px; text-align: center; font-size: 13px; color: var(--pdfr-mute); font-variant-numeric: tabular-nums; }
+.pdfr.chrome-off .pdfr-bar,
+.pdfr.chrome-off .pdfr-nav { display: none; } /* beech me tap: poora focus */
 
 .pdfr-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 12px; background: rgba(255, 255, 255, 0.07); }
 .pdfr-seg-btn {
@@ -55,15 +58,16 @@
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   min-width: 40px; height: 40px; padding: 0 12px;
   border: 1px solid var(--pdfr-line); border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04); color: inherit; font-size: 20px; line-height: 1; cursor: pointer;
+  background: rgba(255, 255, 255, 0.04); color: inherit; font-size: 20px; line-height: 1; cursor: pointer; text-decoration: none;
 }
-.pdfr-btn-text { font-size: 13px; }
+.pdfr-btn-text, .pdfr-open { font-size: 13px; }
 .pdfr-btn:hover:not(:disabled) { border-color: var(--pdfr-accent); }
 .pdfr-btn:disabled { opacity: 0.35; cursor: default; }
 .pdfr-btn:focus-visible,
 .pdfr-seg-btn:focus-visible,
 .pdfr-jump input:focus-visible,
 .pdfr-scrub:focus-visible { outline: 2px solid var(--pdfr-accent); outline-offset: 2px; }
+.pdfr-back { display: none; } /* sirf phone par dikhta hai */
 
 .pdfr-jump { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--pdfr-mute); font-variant-numeric: tabular-nums; }
 .pdfr-jump input {
@@ -78,6 +82,11 @@
 .pdfr-stage.is-scroll { display: block; padding: 0 12px; }
 .pdfr-stage.is-slide { padding: 0; overflow: hidden; }
 .pdfr-loading { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--pdfr-mute); }
+
+/* ---- Reader khul na paye (fallback) ---- */
+.pdfr-fail-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
+.pdfr-frame { flex: 1; width: 100%; min-height: 0; border: 0; background: #fff; }
+.pdfr-fail-msg { margin: 0; padding: 32px 20px; text-align: center; color: var(--pdfr-mute); }
 
 /* ---- Book mode ---- */
 .pdfr-pages { display: flex; width: max-content; margin: auto; position: relative; }
@@ -118,6 +127,16 @@
 .pdfr[data-theme="night"] .pdfr-leaf { background: #14141a; }
 .pdfr[data-theme="night"] .pdfr-canvas { filter: invert(0.9) hue-rotate(180deg); }
 
+/* ---- Phone: poori screen (full screen) ---- */
+@media (max-width: 768px) {
+  .pdfr {
+    position: fixed; inset: 0; z-index: 1000;
+    height: 100dvh; min-height: 0; border-radius: 0; border: 0;
+  }
+  .pdfr-back { display: inline-flex; }
+  .pdfr-fsbtn { display: none; } /* phone par pehle se full screen */
+  .pdfr-bar { padding-top: max(8px, env(safe-area-inset-top)); }
+}
 @media (max-width: 460px) {
   .pdfr-seg-btn span, .pdfr-btn-text span { display: none; }
   .pdfr-seg-btn { padding: 0 11px; }
