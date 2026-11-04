@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as RMouseEvent, type TouchEvent as RTouchEvent } from "react";
 import { saveBookProgress } from "@/features/profile/dashboard/progress-actions";
 import "./pdf-reader.css";
@@ -15,7 +16,7 @@ type PdfDoc = { numPages: number; getPage: (n: number) => Promise<PageProxy>; de
 type LoadingTask = { promise: Promise<PdfDoc>; destroy: () => Promise<void>; onProgress?: (p: { loaded: number; total?: number }) => void };
 type PdfJs = {
   GlobalWorkerOptions: { workerSrc: string };
-  getDocument: (o: { url: string }) => LoadingTask;
+  getDocument: (o: { url: string; disableAutoFetch?: boolean }) => LoadingTask;
 };
 
 type Theme = "paper" | "sepia" | "night";
@@ -28,6 +29,7 @@ const GAP = 14; // Scroll mode me do page ke beech ki jagah
 
 /* ---- Icons ---- */
 const sv = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
+const IcBack = () => <svg {...sv}><path d="M19 12H5M11 6l-6 6 6 6" /></svg>;
 const IcBook = () => <svg {...sv}><path d="M3 5.5C5.5 4.3 8.5 4.3 12 6c3.5-1.7 6.5-1.7 9-.5V19c-2.5-1.2-5.5-1.2-9 .5-3.5-1.7-6.5-1.7-9-.5V5.5Z" /><path d="M12 6v13.5" /></svg>;
 const IcSlide = () => <svg {...sv}><path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4" /></svg>;
 const IcScroll = () => <svg {...sv}><path d="M12 4v16M8 8l4-4 4 4M8 16l4 4 4-4" /></svg>;
@@ -155,9 +157,9 @@ function PageCanvas({ rend, num, width, onSize }: { rend: Renderer; num: number;
   return <canvas ref={ref} className="pdfr-canvas" aria-label={`Page ${num}`} />;
 }
 
-type Props = { src: string; title: string; bookId: string };
+type Props = { src: string; title: string; bookId: string; fallback?: string | null };
 
-export default function PdfReader({ src, title, bookId }: Props) {
+export default function PdfReader({ src, title, bookId, fallback = null }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const slidesRef = useRef<HTMLDivElement>(null);
@@ -186,6 +188,7 @@ export default function PdfReader({ src, title, bookId }: Props) {
   const [jump, setJump] = useState("1");
   const [full, setFull] = useState(false);
   const [canFs, setCanFs] = useState(false);
+  const [chrome, setChrome] = useState(true); // toolbar dikhe ya chhupe (beech me tap)
   const [, setBump] = useState(0);
 
   const storeKey = `su-pdf:${bookId}`;
@@ -197,6 +200,16 @@ export default function PdfReader({ src, title, bookId }: Props) {
     live.current.total = total;
   });
 
+  /* 0) Phone par reader poori screen hai: peeche ka page scroll na ho */
+  useEffect(() => {
+    if (!window.matchMedia("(max-width: 768px)").matches) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
   /* 1) PDF load + pichhli baar ka page/theme/zoom/mode wapas */
   useEffect(() => {
     let dead = false;
@@ -206,7 +219,8 @@ export default function PdfReader({ src, title, bookId }: Props) {
         const lib = (await import("pdfjs-dist/legacy/build/pdf.mjs")) as unknown as PdfJs;
         // Worker file public/fonts/ mein rakhi hai (middleware us folder ko chhodta hai)
         lib.GlobalWorkerOptions.workerSrc = "/fonts/pdf.worker.min.mjs";
-        task = lib.getDocument({ url: src });
+        // Apni site ke raaste (Drive/Mega) par sirf zaroori hissa mangao: server ka bandwidth bachta hai
+        task = lib.getDocument({ url: src, disableAutoFetch: src.startsWith("/") });
         task.onProgress = (p) => {
           if (!dead && p.total) setLoadPct(Math.min(100, Math.round((p.loaded / p.total) * 100)));
         };
@@ -273,7 +287,7 @@ export default function PdfReader({ src, title, bookId }: Props) {
     const ro = new ResizeObserver(read);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [failed]);
 
   useEffect(() => {
     setCanFs(typeof document.documentElement.requestFullscreen === "function");
@@ -453,7 +467,7 @@ export default function PdfReader({ src, title, bookId }: Props) {
     });
   };
 
-  /* ---- Book mode: swipe + kinare par tap ---- */
+  /* ---- Book mode: swipe; tap: kinara = page palto, beech = buttons chhupao/dikhao ---- */
   const onTouchStart = (e: RTouchEvent<HTMLDivElement>) => {
     if (mode !== "book") return;
     const t = e.touches[0];
@@ -469,12 +483,20 @@ export default function PdfReader({ src, title, bookId }: Props) {
     if (Math.abs(dx) > 60 && Math.abs(dy) < 60) goTo(dx < 0 ? left + step : left - step, dx < 0 ? "next" : "prev");
   };
   const onStageClick = (e: RMouseEvent<HTMLDivElement>) => {
-    if (mode !== "book" || zoom > 1) return;
     if (window.getSelection()?.toString()) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width;
-    if (x < 0.22) goTo(left - step, "prev");
-    else if (x > 0.78) goTo(left + step, "next");
+    if (mode === "book" && zoom <= 1) {
+      const r = e.currentTarget.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      if (x < 0.22) {
+        goTo(left - step, "prev");
+        return;
+      }
+      if (x > 0.78) {
+        goTo(left + step, "next");
+        return;
+      }
+    }
+    setChrome((c) => !c);
   };
 
   const switchMode = (m: Mode) => {
@@ -499,16 +521,25 @@ export default function PdfReader({ src, title, bookId }: Props) {
 
   const nums = useMemo(() => Array.from({ length: total }, (_, i) => i + 1), [total]);
 
-  /* Agar pdf.js khol na paye (jaise PDF nahi hai) to purana iframe wapas */
+  /* Reader PDF na khol paye (link public nahi, bahut badi file, ...) to purana iframe / naya Tab */
   if (failed) {
     return (
-      <iframe
-        src={src}
-        title={title}
-        allow="fullscreen"
-        referrerPolicy="no-referrer"
-        style={{ width: "100%", height: "calc(100dvh - 180px)", minHeight: 480, border: 0, borderRadius: 12, background: "#fff" }}
-      />
+      <div className="pdfr pdfr-plain" role="region" aria-label={title}>
+        <div className="pdfr-bar">
+          <Link href="/books" className="pdfr-btn pdfr-back" aria-label="Books par wapas">
+            <IcBack />
+          </Link>
+          <span className="pdfr-fail-title">{title}</span>
+          <a className="pdfr-btn pdfr-open" href={`/books/${bookId}/open`} target="_blank" rel="noopener noreferrer">
+            ↗ Naye Tab me
+          </a>
+        </div>
+        {fallback ? (
+          <iframe className="pdfr-frame" src={fallback} title={title} allow="fullscreen" referrerPolicy="no-referrer" />
+        ) : (
+          <p className="pdfr-fail-msg">Ye book yahan nahi khul payi. Upar “Naye Tab me” dabao.</p>
+        )}
+      </div>
     );
   }
 
@@ -517,12 +548,15 @@ export default function PdfReader({ src, title, bookId }: Props) {
   const atEnd = (right ?? left) >= total;
 
   return (
-    <div ref={wrapRef} className="pdfr" data-theme={theme} data-full={full || undefined} role="region" aria-label={title}>
+    <div ref={wrapRef} className={`pdfr${chrome ? "" : " chrome-off"}`} data-theme={theme} data-full={full || undefined} role="region" aria-label={title}>
       <div className="pdfr-progress" aria-hidden="true">
         <span style={{ width: `${progress}%` }} />
       </div>
 
       <div className="pdfr-bar">
+        <Link href="/books" className="pdfr-btn pdfr-back" aria-label="Books par wapas">
+          <IcBack />
+        </Link>
         <div className="pdfr-seg" role="tablist" aria-label="Padhne ka tareeka">
           {MODES.map((m) => (
             <button
@@ -553,7 +587,7 @@ export default function PdfReader({ src, title, bookId }: Props) {
             <span>{THEME_LABEL[theme]}</span>
           </button>
           {canFs && (
-            <button type="button" className="pdfr-btn" onClick={toggleFull} aria-label={full ? "Full screen band" : "Full screen"}>
+            <button type="button" className="pdfr-btn pdfr-fsbtn" onClick={toggleFull} aria-label={full ? "Full screen band" : "Full screen"}>
               {full ? <IcExit /> : <IcFull />}
             </button>
           )}
