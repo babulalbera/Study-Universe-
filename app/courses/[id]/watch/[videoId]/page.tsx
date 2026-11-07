@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageHeader from "@/components/ui/PageHeader";
+import PlayerStage from "@/components/courses/PlayerStage";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { VIDEO_SOURCE_LABEL, playerFor, type Player } from "@/lib/video-links";
@@ -54,25 +55,22 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
       <PageHeader title={video.title} subtitle={course.title} />
       <div className="cv-wrap">
         <div>
-          <div className="cv-stage">
-            {!player ? (
+          {player ? (
+            <PlayerStage
+              key={video.id}
+              kind={player.kind}
+              src={player.src}
+              title={video.title}
+              portraitHint={!!video.url && video.url.includes("/shorts/")}
+            />
+          ) : (
+            <div className="cv-stage">
               <div className="cv-fail">
                 <p>Video यहाँ नहीं चल पाया।</p>
                 {video.url && <a className="su-btn su-btn-primary" href={video.url} target="_blank" rel="noopener noreferrer">🔗 बाहर खोलो</a>}
               </div>
-            ) : player.kind === "iframe" ? (
-              <iframe
-                key={video.id}
-                src={player.src}
-                title={video.title}
-                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                allowFullScreen
-                referrerPolicy="strict-origin-when-cross-origin"
-              />
-            ) : (
-              <video key={video.id} src={player.src} controls controlsList="nodownload" playsInline preload="metadata" />
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="cv-nav">
             {prev ? <Link href={`/courses/${id}/watch/${prev.id}`} className="su-btn">← पिछला</Link> : <span />}
