@@ -1,10 +1,12 @@
+import Link from "next/link";
 import AdminHeader from "@/components/admin/AdminHeader";
 import Flash from "@/components/admin/Flash";
 import Field from "@/components/admin/Field";
 import DeleteButton from "@/components/admin/DeleteButton";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
-import { saveCourse, deleteCourse } from "@/features/admin/content-actions";
+import { saveCourse } from "@/features/admin/content-actions";
+import { deleteCourseWithVideos } from "@/features/admin/course-video-actions";
 import type { Course } from "@/types/database";
 
 function Fields({ c }: { c?: Course }) {
@@ -14,7 +16,7 @@ function Fields({ c }: { c?: Course }) {
       <Field label="Course का नाम" name="title" defaultValue={c?.title} required />
       <Field label="Category (जैसे SSC CGL, Army)" name="category" defaultValue={c?.category} />
       <Field label="छोटा विवरण" name="description" rows={3} defaultValue={c?.description} />
-      <Field label="Link (YouTube / Website: https://...)" name="url" defaultValue={c?.url ?? ""} placeholder="https://..." />
+      <Field label="बाहरी Link (ज़रूरी नहीं: YouTube Playlist / Website https://...)" name="url" defaultValue={c?.url ?? ""} placeholder="https://..." />
       <Field label="क्रम (छोटा नंबर पहले)" name="sort_order" type="number" defaultValue={c?.sort_order ?? 0} />
       <label className="adm-chk"><input type="checkbox" name="is_published" defaultChecked={c ? c.is_published : true} /> Students को दिखाओ</label>
       <button type="submit" className="pbtn pbtn-gold">Save करो</button>
@@ -30,14 +32,15 @@ export default async function AdminCoursesPage({ searchParams }: { searchParams:
   const courses = (data ?? []) as Course[];
   return (
     <>
-      <AdminHeader title="🎓 Courses" subtitle="Courses जोड़ना, बदलना और हटाना" />
+      <AdminHeader title="🎓 Courses" subtitle="Courses जोड़ना, बदलना और हटाना। Folders और Videos हर Course के अंदर हैं" />
       <Flash ok={ok} error={error} />
       <details className="adm-d" open={courses.length === 0}><summary>➕ नया Course</summary><form action={saveCourse}><Fields /></form></details>
       {courses.map((c) => (
         <details key={c.id} className="adm-d">
           <summary><span>{c.title}</span><span className={`adm-tag ${c.is_published ? "" : "off"}`}>{c.is_published ? "दिख रहा" : "छिपा"}</span></summary>
+          <div className="su-row"><Link href={`/admin/courses/${c.id}`} className="pbtn pbtn-gold">📂 Folders और Videos</Link></div>
           <form action={saveCourse}><Fields c={c} /></form>
-          <form action={deleteCourse} className="su-row"><input type="hidden" name="id" value={c.id} /><DeleteButton /></form>
+          <form action={deleteCourseWithVideos} className="su-row"><input type="hidden" name="id" value={c.id} /><DeleteButton /></form>
         </details>
       ))}
     </>
