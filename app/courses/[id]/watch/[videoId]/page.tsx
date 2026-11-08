@@ -88,6 +88,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <aside className="cv-side" aria-label="Playlist">
+          <h3 className="cv-side-title">📚 Playlist ({flat.length})</h3>
           {groups.filter((g) => g.videos.length > 0).map((g) => (
             <div key={g.folder.id} className="cv-folder">
               <h4>📁 {g.folder.title}</h4>
