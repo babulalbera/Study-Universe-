@@ -4,7 +4,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import { ResetForm } from "@/features/profile/ResetForms";
 import { getUser } from "@/lib/auth";
 
-export const metadata: Metadata = { title: "Naya password" };
+export const metadata: Metadata = { title: "Naya password", robots: { index: false, follow: true } };
 
 export default async function ResetPasswordPage() {
   const user = await getUser(); // Reset code sahi daalne par session apne aap ban jata hai

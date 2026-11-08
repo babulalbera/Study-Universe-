@@ -3,7 +3,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
 import { getSiteSettings } from "@/features/home/queries";
 
-export const metadata: Metadata = { title: "Contact" };
+export const metadata: Metadata = { title: "Contact", description: "Study Universe team se sampark karo: sawal, suggestion ya feedback bhejo. Hum jaldi jawab dete hain." };
 
 export default async function ContactPage() {
   const settings = await getSiteSettings();

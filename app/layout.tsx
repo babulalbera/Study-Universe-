@@ -8,15 +8,33 @@ import BackgroundFX from "@/components/layout/BackgroundFX";
 import KrishnaFrame from "@/components/layout/KrishnaFrame";
 import { getSiteSettings } from "@/features/home/queries";
 import { ToastProvider } from "@/components/ui/Toast";
+import { SITE } from "@/lib/site";
 
 const outfit = Outfit({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-outfit", display: "swap" });
 const space = Space_Grotesk({ subsets: ["latin"], weight: ["500", "700"], variable: "--font-space", display: "swap" });
 const deva = Noto_Sans_Devanagari({ subsets: ["devanagari", "latin"], weight: ["400", "600", "700"], variable: "--font-deva", display: "swap" });
 const serif = Cormorant_Garamond({ subsets: ["latin"], weight: ["500", "600", "700"], style: ["normal", "italic"], variable: "--font-serif", display: "swap" });
 
+// SEO: Google search, WhatsApp/Facebook link preview aur Twitter card sab yahin se banta hai.
+// Har page ka apna title "%s | Study Universe" ban jata hai, aur canonical "./" har page ka apna sahi link deta hai.
 export const metadata: Metadata = {
-  title: { default: "Study Universe – Learn • Grow • Achieve", template: "%s | Study Universe" },
-  description: "SSC CGL aur dusri exams ke liye free tasks, books, PDFs aur mock tests.",
+  metadataBase: new URL(SITE.url),
+  title: { default: SITE.title, template: `%s | ${SITE.name}` },
+  description: SITE.description,
+  keywords: [...SITE.keywords],
+  applicationName: SITE.name,
+  authors: [{ name: SITE.name }],
+  creator: SITE.name,
+  alternates: { canonical: "./" },
+  openGraph: { type: "website", siteName: SITE.name, locale: "hi_IN", title: SITE.title, description: SITE.description },
+  twitter: { card: "summary_large_image", title: SITE.title, description: SITE.description },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+  },
+  formatDetection: { telephone: false, email: false, address: false },
+  ...(SITE.googleVerification ? { verification: { google: SITE.googleVerification } } : {}),
 };
 
 export const viewport: Viewport = { themeColor: "#020603", width: "device-width", initialScale: 1, viewportFit: "cover" };

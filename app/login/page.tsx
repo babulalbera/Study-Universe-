@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import AuthCard from "@/components/auth/AuthCard";
 
-export const metadata: Metadata = { title: "Login" };
+export const metadata: Metadata = { title: "Login", robots: { index: false, follow: true } };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
   const { next, error } = await searchParams;

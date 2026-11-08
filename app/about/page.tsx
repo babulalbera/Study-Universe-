@@ -3,7 +3,7 @@ import Link from "next/link";
 import PageHeader from "@/components/ui/PageHeader";
 import { getSiteSettings } from "@/features/home/queries";
 
-export const metadata: Metadata = { title: "About" };
+export const metadata: Metadata = { title: "About", description: "Study Universe ke baare me jaano: SSC CGL aur dusri exams ke liye free tasks, books, PDFs, mock tests aur video courses ek hi jagah." };
 
 export default async function AboutPage() {
   const { contact_email: email } = await getSiteSettings();

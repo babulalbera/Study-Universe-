@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import PageHeader from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = { title: "Privacy Policy" };
+export const metadata: Metadata = { title: "Privacy Policy", description: "Study Universe ki Privacy Policy: aapka data kaise surakshit rakha jata hai aur kaise use hota hai." };
 
 export default function PrivacyPage() {
   return (

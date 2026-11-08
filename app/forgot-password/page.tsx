@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import AuthCard from "@/components/auth/AuthCard";
 
-export const metadata: Metadata = { title: "Password bhool gaye" };
+export const metadata: Metadata = { title: "Password bhool gaye", robots: { index: false, follow: true } };
 
 // Wahi premium card, seedha "Password भूल गए?" wale hisse se (Email par 6 ank ka code)
 export default function ForgotPasswordPage() {

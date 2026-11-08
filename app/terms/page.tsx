@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import PageHeader from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = { title: "Terms & Conditions" };
+export const metadata: Metadata = { title: "Terms & Conditions", description: "Study Universe ke Terms aur Conditions: website use karne ke niyam." };
 
 export default function TermsPage() {
   return (
