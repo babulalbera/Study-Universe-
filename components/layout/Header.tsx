@@ -1,11 +1,15 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import ThemeDock from "./ThemeDock";
 import "./header-actions.css";
 
 export default function Header() {
+  const path = usePathname();
+  // Book padhte waqt (phone par) ye header chhupa rehta hai: CSS "header.rd-hide" components/books/pdf-reader.css me hai
+  const reading = /^\/books\/[^/]+\/read/.test(path);
   const headerRef = useRef<HTMLElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
@@ -27,7 +31,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header ref={headerRef}>
+    <header ref={headerRef} className={reading ? "rd-hide" : undefined}>
       <div className="hin">
         <Link href="/" className="brand" aria-label="Study Universe Home">
           <div className="logo" style={{ padding: 0, overflow: "hidden", background: "transparent", border: "2px solid var(--gold)", boxShadow: "0 0 18px color-mix(in srgb, var(--gold) 50%, transparent)" }}>

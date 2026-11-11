@@ -17,13 +17,14 @@
   background: radial-gradient(120% 90% at 50% 0%, var(--pdfr-bg2) 0%, var(--pdfr-bg) 62%);
   color: var(--pdfr-text);
   border: 1px solid var(--pdfr-line);
+  -webkit-tap-highlight-color: transparent;
 }
 .pdfr[data-theme="sepia"] { --pdfr-bg: #2a2117; --pdfr-bg2: #3a2d1d; }
 .pdfr[data-theme="night"] { --pdfr-bg: #050507; --pdfr-bg2: #0d0d12; }
 .pdfr[data-full] { height: 100dvh; border-radius: 0; border: 0; }
 
 .pdfr-progress { height: 3px; background: rgba(255, 255, 255, 0.08); flex: none; }
-.pdfr-progress span { display: block; height: 100%; background: var(--pdfr-accent); transition: width 0.25s ease; }
+.pdfr-progress span { display: block; height: 100%; background: linear-gradient(90deg, #8f6f2a, var(--pdfr-accent), #f0d58a); transition: width 0.25s ease; }
 
 /* ---- Toolbar ---- */
 .pdfr-bar,
@@ -50,8 +51,9 @@
   display: inline-flex; align-items: center; gap: 6px;
   height: 34px; padding: 0 12px; border: 0; border-radius: 9px;
   background: transparent; color: var(--pdfr-mute); font: inherit; font-size: 13px; cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
 }
-.pdfr-seg-btn.on { background: var(--pdfr-accent); color: #1a1424; font-weight: 600; }
+.pdfr-seg-btn.on { background: var(--pdfr-accent); color: #1a1424; font-weight: 600; box-shadow: 0 2px 10px rgba(201, 162, 75, 0.35); }
 .pdfr-seg-btn:not(.on):hover { color: var(--pdfr-text); }
 
 .pdfr-btn {
@@ -59,7 +61,9 @@
   min-width: 40px; height: 40px; padding: 0 12px;
   border: 1px solid var(--pdfr-line); border-radius: 12px;
   background: rgba(255, 255, 255, 0.04); color: inherit; font-size: 20px; line-height: 1; cursor: pointer; text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.12s ease;
 }
+.pdfr-btn:active:not(:disabled) { transform: scale(0.94); }
 .pdfr-btn-text, .pdfr-open { font-size: 13px; }
 .pdfr-btn:hover:not(:disabled) { border-color: var(--pdfr-accent); }
 .pdfr-btn:disabled { opacity: 0.35; cursor: default; }
@@ -81,7 +85,49 @@
 .pdfr-stage.is-book { display: flex; }
 .pdfr-stage.is-scroll { display: block; padding: 0 12px; }
 .pdfr-stage.is-slide { padding: 0; overflow: hidden; }
-.pdfr-loading { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--pdfr-mute); }
+
+/* ---- Loading (premium) ---- */
+.pdfr-loading {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; margin: 0; padding: 0 28px; text-align: center; color: var(--pdfr-mute);
+}
+.pdfr-ring {
+  width: 46px; height: 46px; border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.1); border-top-color: var(--pdfr-accent);
+  animation: pdfr-spin 0.9s linear infinite;
+}
+.pdfr-load-title {
+  margin: 6px 0 0; max-width: 320px; color: var(--pdfr-text); font-weight: 600; font-size: 15px; line-height: 1.35;
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.pdfr-load-sub { margin: 0; font-size: 13px; }
+.pdfr-load-bar { width: min(220px, 60vw); height: 4px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.pdfr-load-bar span { display: block; height: 100%; background: var(--pdfr-accent); transition: width 0.2s ease; }
+@keyframes pdfr-spin { to { transform: rotate(360deg); } }
+
+/* ---- Chhota pill (toolbar chhupi ho tab page number) aur "Page N se aage" message ---- */
+.pdfr-pill {
+  position: absolute; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); z-index: 5;
+  transform: translate(-50%, 8px); padding: 5px 13px; border-radius: 999px;
+  background: rgba(18, 12, 28, 0.72); border: 1px solid var(--pdfr-line);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  color: var(--pdfr-mute); font-size: 12px; font-variant-numeric: tabular-nums;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.pdfr.chrome-off .pdfr-pill { opacity: 1; transform: translate(-50%, 0); }
+.pdfr-toast {
+  position: absolute; left: 50%; top: calc(max(10px, env(safe-area-inset-top)) + 72px); z-index: 7;
+  transform: translateX(-50%); max-width: calc(100% - 32px); padding: 8px 16px; border-radius: 999px;
+  background: rgba(18, 12, 28, 0.88); border: 1px solid rgba(201, 162, 75, 0.45);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  color: #f0d58a; font-size: 13px; white-space: nowrap; pointer-events: none;
+  animation: pdfr-pop 3s ease forwards;
+}
+@keyframes pdfr-pop {
+  0% { opacity: 0; transform: translate(-50%, -8px); }
+  12%, 85% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -4px); }
+}
 
 /* ---- Reader khul na paye (fallback) ---- */
 .pdfr-fail-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
@@ -135,13 +181,42 @@
   }
   .pdfr-back { display: inline-flex; }
   .pdfr-fsbtn { display: none; } /* phone par pehle se full screen */
+  .pdfr-zoom { display: none; } /* jagah bachane ke liye: − aur + button kaafi hain */
   .pdfr-bar { padding-top: max(8px, env(safe-area-inset-top)); }
+
+  /* Site ka upar wala header padhte waqt chhupa rehta hai (Header.tsx isse "rd-hide" class deta hai) */
+  header.rd-hide { display: none !important; }
+
+  /* Premium: toolbar page ke upar tairti glass hai, isliye chhupne/dikhne par page ka size nahi badalta */
+  .pdfr:not(.pdfr-plain) .pdfr-stage { position: absolute; inset: 0; flex: none; }
+  .pdfr:not(.pdfr-plain) .pdfr-progress { position: absolute; top: 0; left: 0; right: 0; z-index: 8; height: 2px; }
+  .pdfr:not(.pdfr-plain) .pdfr-bar,
+  .pdfr:not(.pdfr-plain) .pdfr-nav {
+    position: absolute; left: 10px; right: 10px; z-index: 6;
+    flex-wrap: nowrap; gap: 6px; padding: 6px; border-radius: 18px;
+    border: 1px solid rgba(201, 162, 75, 0.3);
+    background: rgba(18, 12, 28, 0.78);
+    backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease;
+  }
+  .pdfr:not(.pdfr-plain) .pdfr-bar { top: max(10px, env(safe-area-inset-top)); }
+  .pdfr:not(.pdfr-plain) .pdfr-nav { bottom: max(10px, env(safe-area-inset-bottom)); flex-wrap: wrap; justify-content: center; gap: 6px 12px; }
+  .pdfr:not(.pdfr-plain).chrome-off .pdfr-bar { display: flex; transform: translateY(-140%); opacity: 0; pointer-events: none; }
+  .pdfr:not(.pdfr-plain).chrome-off .pdfr-nav { display: flex; transform: translateY(140%); opacity: 0; pointer-events: none; }
 }
 @media (max-width: 460px) {
   .pdfr-seg-btn span, .pdfr-btn-text span { display: none; }
   .pdfr-seg-btn { padding: 0 11px; }
   .pdfr-bar { gap: 6px; }
 }
+@media (max-width: 380px) {
+  .pdfr-seg-btn { padding: 0 8px; }
+  .pdfr-btn { min-width: 36px; padding: 0 8px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .pdfr-progress span, .pdfr-canvas { transition: none; }
+  .pdfr-ring { animation-duration: 2.4s; }
+  .pdfr-toast { animation: none; }
+  .pdfr:not(.pdfr-plain) .pdfr-bar, .pdfr:not(.pdfr-plain) .pdfr-nav, .pdfr-pill { transition: none; }
 }

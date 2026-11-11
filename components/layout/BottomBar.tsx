@@ -7,10 +7,12 @@ import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
 
 // Auto-hide: scroll karte waqt bar dikhe, scroll ruke to kuch der baad neeche chhup jaye (class: nb-hide).
+// nb-off: Book reader (/books/<id>/read) me bar bilkul nahi dikhti.
 const HIDE_AFTER_MS = 1500;
 const AUTOHIDE_CSS = `
 .nb{transition:transform .35s cubic-bezier(.22,1,.36,1),opacity .3s ease}
 .nb.nb-hide{transform:translateX(-50%) translateY(calc(100% + 60px));opacity:0;pointer-events:none}
+.nb.nb-off{visibility:hidden;opacity:0;pointer-events:none}
 @media(prefers-reduced-motion:reduce){.nb{transition:none}}
 `;
 
@@ -21,6 +23,7 @@ export default function BottomBar({ courseHref }: { courseHref: string | null })
   const navRef = useRef<HTMLElement>(null);
   const pillRef = useRef<HTMLSpanElement>(null);
 
+  const reading = /^\/books\/[^/]+\/read/.test(path);
   const active = path === "/" ? "home" : path.startsWith("/tasks") ? "task" : path.startsWith("/books") ? "books" : path.startsWith("/profile") ? "prof" : path.startsWith("/courses") ? "course" : null;
 
   const place = useCallback(() => {
@@ -44,7 +47,7 @@ export default function BottomBar({ courseHref }: { courseHref: string | null })
   // Scroll / touch par bar dikhao, HIDE_AFTER_MS baad chhupao. Page chhota ho (scroll hi na ho) to chhupao mat, warna menu band ho jayega.
   useEffect(() => {
     const nav = navRef.current;
-    if (!nav) return;
+    if (!nav || reading) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const scrollable = () => document.documentElement.scrollHeight > window.innerHeight + 8;
     const hide = () => { if (scrollable()) nav.classList.add("nb-hide"); };
@@ -65,7 +68,7 @@ export default function BottomBar({ courseHref }: { courseHref: string | null })
       window.removeEventListener("wheel", show);
       nav.removeEventListener("pointerdown", show);
     };
-  }, [path]);
+  }, [path, reading]);
 
   const vib = () => { try { navigator.vibrate?.(8); } catch { /* koi baat nahi */ } };
   const cls = (k: string) => cn("nbi", active === k && "on");
@@ -81,7 +84,7 @@ export default function BottomBar({ courseHref }: { courseHref: string | null })
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: BOTTOM_BAR_CSS + AUTOHIDE_CSS }} />
-      <nav className="nb" ref={navRef} aria-label="Main navigation">
+      <nav className={cn("nb", reading && "nb-off")} ref={navRef} aria-label="Main navigation" aria-hidden={reading || undefined}>
         <span className="nbp" ref={pillRef} aria-hidden="true" />
         <Link href="/" className={cls("home")} data-k="home" aria-current={cur("home")} onClick={vib}>
           <span className="pl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" /></svg></span>Home

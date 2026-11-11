@@ -26,6 +26,7 @@ const THEME_LABEL: Record<Theme, string> = { paper: "Paper", sepia: "Sepia", nig
 const MODE_KEY = "su-pdf-mode";
 const PAD = 12; // stage ke andar kinara
 const GAP = 14; // Scroll mode me do page ke beech ki jagah
+const AUTO_HIDE_MS = 3500; // phone par toolbar itni der baad apne aap chhup jata hai
 
 /* ---- Icons ---- */
 const sv = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
@@ -189,6 +190,8 @@ export default function PdfReader({ src, title, bookId, fallback = null }: Props
   const [full, setFull] = useState(false);
   const [canFs, setCanFs] = useState(false);
   const [chrome, setChrome] = useState(true); // toolbar dikhe ya chhupe (beech me tap)
+  const [resume, setResume] = useState(0); // "Page N se aage" ka chhota message
+  const [tick, setTick] = useState(0); // toolbar ko chhute hi auto-hide ki ghadi dobara shuru
   const [, setBump] = useState(0);
 
   const storeKey = `su-pdf:${bookId}`;
@@ -253,6 +256,7 @@ export default function PdfReader({ src, title, bookId, fallback = null }: Props
         setRatio0(v.height / v.width);
         setTotal(doc.numPages);
         setPage(startPage);
+        if (startPage > 1) setResume(startPage);
         if (saved.theme && THEMES.includes(saved.theme)) setTheme(saved.theme);
         if (saved.zoom && saved.zoom >= 1 && saved.zoom <= 3) setZoom(saved.zoom);
         if (savedMode === "book" || savedMode === "slide" || savedMode === "scroll") setMode(savedMode);
@@ -294,6 +298,50 @@ export default function PdfReader({ src, title, bookId, fallback = null }: Props
     const onFs = () => setFull(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", onFs);
     return () => document.removeEventListener("fullscreenchange", onFs);
+  }, []);
+
+  /* 4) Phone par: kuch der kuch na chhuo to toolbar apne aap chhup jaye (page ka size nahi badalta) */
+  useEffect(() => {
+    if (!pdf || !chrome) return;
+    if (!window.matchMedia("(max-width: 768px)").matches) return;
+    const id = window.setTimeout(() => setChrome(false), AUTO_HIDE_MS);
+    return () => window.clearTimeout(id);
+  }, [pdf, chrome, page, mode, zoom, theme, jump, tick]);
+
+  /* 5) "Page N se aage" message 3 second baad hat jaye */
+  useEffect(() => {
+    if (!resume) return;
+    const id = window.setTimeout(() => setResume(0), 3000);
+    return () => window.clearTimeout(id);
+  }, [resume]);
+
+  /* 6) Padhte waqt screen band na ho (jahan browser allow kare) */
+  useEffect(() => {
+    let lock: WakeLockSentinel | null = null;
+    let dead = false;
+    const ask = async () => {
+      try {
+        if (!("wakeLock" in navigator) || document.visibilityState !== "visible") return;
+        const l = await navigator.wakeLock.request("screen");
+        if (dead) {
+          void l.release().catch(() => {});
+          return;
+        }
+        lock = l;
+      } catch {
+        /* browser ne allow nahi kiya: koi baat nahi */
+      }
+    };
+    void ask();
+    const onVis = () => {
+      if (document.visibilityState === "visible") void ask();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      dead = true;
+      document.removeEventListener("visibilitychange", onVis);
+      void lock?.release().catch(() => {});
+    };
   }, []);
 
   const rend = useMemo(() => (pdf ? createRenderer(pdf) : null), [pdf]);
@@ -518,6 +566,8 @@ export default function PdfReader({ src, title, bookId, fallback = null }: Props
     if (n >= 1) goTo(n);
     else setJump(String(left));
   };
+  // Toolbar ko ungli lagi: auto-hide ki ghadi dobara shuru
+  const poke = () => setTick((t) => t + 1);
 
   const nums = useMemo(() => Array.from({ length: total }, (_, i) => i + 1), [total]);
 
@@ -553,7 +603,7 @@ export default function PdfReader({ src, title, bookId, fallback = null }: Props
         <span style={{ width: `${progress}%` }} />
       </div>
 
-      <div className="pdfr-bar">
+      <div className="pdfr-bar" onPointerDown={poke} onPointerUp={poke}>
         <Link href="/books" className="pdfr-btn pdfr-back" aria-label="Books par wapas">
           <IcBack />
         </Link>
@@ -602,7 +652,18 @@ export default function PdfReader({ src, title, bookId, fallback = null }: Props
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        {!pdf && <p className="pdfr-loading">Book khul rahi hai{loadPct > 0 ? ` • ${loadPct}%` : "…"}</p>}
+        {!pdf && (
+          <div className="pdfr-loading" role="status">
+            <div className="pdfr-ring" aria-hidden="true" />
+            <p className="pdfr-load-title">{title}</p>
+            <p className="pdfr-load-sub">Book khul rahi hai{loadPct > 0 ? ` • ${loadPct}%` : "…"}</p>
+            {loadPct > 0 && (
+              <div className="pdfr-load-bar" aria-hidden="true">
+                <span style={{ width: `${loadPct}%` }} />
+              </div>
+            )}
+          </div>
+        )}
 
         {pdf && rend && mode === "book" && (
           <div ref={bookRef} className={`pdfr-pages${spread ? " is-spread" : ""}`}>
@@ -642,7 +703,20 @@ export default function PdfReader({ src, title, bookId, fallback = null }: Props
         )}
       </div>
 
-      <div className="pdfr-nav">
+      {resume > 0 && (
+        <div className="pdfr-toast" role="status">
+          Page {resume} se aage padho 📖
+        </div>
+      )}
+
+      {/* Toolbar chhupi ho to bhi page number ek chhote pill me dikhe */}
+      {pdf && (
+        <div className="pdfr-pill" aria-hidden="true">
+          {right ? `${left}–${right}` : left} / {total || "–"}
+        </div>
+      )}
+
+      <div className="pdfr-nav" onPointerDown={poke} onPointerUp={poke}>
         <input
           className="pdfr-scrub"
           type="range"
