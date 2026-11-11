@@ -9,7 +9,6 @@ import { getBookmarkedBookIds } from "@/features/bookmarks/queries";
 import { BOOKS_PER_PAGE, getBookCategories, getBooks } from "@/features/books/queries";
 import { SOURCE_LABEL, type BookSource } from "@/lib/book-links";
 import { MEDIUM_LABEL, type BookMedium } from "@/lib/book-meta";
-import { cn } from "@/lib/utils";
 import "./books.css";
 
 export const metadata: Metadata = { title: "Books & PDFs" };
@@ -26,13 +25,7 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
 
   return (
     <>
-      <PageHeader title="📚 Books & PDFs" subtitle="Category चुनो, PDF पढ़ो या Download करो।" />
-      {cats.length > 0 && (
-        <div className="su-chips">
-          <Link href="/books" className={cn("su-chip", !cat && "on")}>सब</Link>
-          {cats.map((c) => <Link key={c.id} href={href(c.id, 1)} className={cn("su-chip", cat === c.id && "on")}>{c.name}</Link>)}
-        </div>
-      )}
+      <PageHeader title="📚 Books & PDFs" subtitle="PDF पढ़ो या Download करो।" />
       {books.length === 0 ? (
         <EmptyState icon="📖" title="अभी कोई Book/PDF नहीं है" text="Admin Panel से PDF या Link जुड़ते ही Category के हिसाब से यहाँ दिखेंगी।" />
       ) : (
