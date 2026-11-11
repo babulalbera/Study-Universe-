@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { BLESSINGS } from "@/features/tasks/blessings";
-import { MOTIVATION } from "@/features/tasks/default-tasks";
 import { countToday, hm, isUnlocked, today, todayTasks, type Filter, type Task, type TaskForm as Form } from "@/features/tasks/model";
 import { useTaskStore } from "@/features/tasks/useTaskStore";
 import BlessingPopup, { type BlessingData } from "./BlessingPopup";
@@ -13,18 +12,17 @@ import TaskFormModal from "./TaskForm";
 import type { MenuAction } from "./TaskMenu";
 import TaskStats from "./TaskStats";
 import TaskToast, { type ToastData } from "./TaskToast";
-import { IconBulb, IconCalendar, IconPlus } from "./icons";
+import { IconCalendar, IconPlus } from "./icons";
 import "./tasks.css";
 import "./tasks-ui.css";
 
 type FormState = { task: Task | null; focus: "title" | "reminder"; key: number } | null;
 
-// Poora Tasks page: motivation, stats, filter aur task cards (site ke baaki pages jaisa, iframe ke bina).
+// Poora Tasks page: stats, filter aur task cards (site ke baaki pages jaisa, iframe ke bina).
 export default function TasksBoard({ initial, loggedIn }: { initial: Record<string, string>; loggedIn: boolean }) {
   const st = useTaskStore(initial);
   const [filter, setFilter] = useState<Filter>("all");
   const [focus, setFocus] = useState(false);
-  const [mi, setMi] = useState(0);
   const [menuId, setMenuId] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>(null);
   const [confirm, setConfirm] = useState<Task | null>(null);
@@ -38,11 +36,6 @@ export default function TasksBoard({ initial, loggedIn }: { initial: Record<stri
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast({ id: Date.now(), msg, undo });
     toastTimer.current = setTimeout(() => setToast(null), undo ? 5000 : 2400);
-  }, []);
-
-  useEffect(() => {
-    const iv = setInterval(() => setMi((i) => (i + 1) % MOTIVATION.length), 4000);
-    return () => clearInterval(iv);
   }, []);
 
   // Reminder: har 20 second me dekho, kisi task ka reminder abhi ke HH:MM par hai to message + notification
@@ -128,11 +121,6 @@ export default function TasksBoard({ initial, loggedIn }: { initial: Record<stri
 
   return (
     <div className="tb">
-      <div className="tb-motive" aria-live="off">
-        <p className="tb-eyebrow"><IconBulb />Motivation • Best Banao</p>
-        <p key={mi} className="tb-quote">“{MOTIVATION[mi]}”</p>
-      </div>
-
       <TaskStats doneCount={st.done.size} total={total} streak={st.streak} now={st.nowMin} filter={filter} onFilter={setFilter} focus={focus} onFocus={() => setFocus((f) => !f)} />
 
       <div className="tb-bar">

@@ -6,6 +6,14 @@ import { BOTTOM_BAR_CSS } from "@/lib/bottom-bar";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
 
+// Auto-hide: scroll karte waqt bar dikhe, scroll ruke to kuch der baad neeche chhup jaye (class: nb-hide).
+const HIDE_AFTER_MS = 1500;
+const AUTOHIDE_CSS = `
+.nb{transition:transform .35s cubic-bezier(.22,1,.36,1),opacity .3s ease}
+.nb.nb-hide{transform:translateX(-50%) translateY(calc(100% + 60px));opacity:0;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.nb{transition:none}}
+`;
+
 // courseHref: Admin > Settings mein "Course ka Link" se aata hai (Home ke Free Course Card se bilkul alag).
 export default function BottomBar({ courseHref }: { courseHref: string | null }) {
   const path = usePathname();
@@ -33,6 +41,32 @@ export default function BottomBar({ courseHref }: { courseHref: string | null })
     return () => { window.removeEventListener("resize", place); window.removeEventListener("load", place); };
   }, [place]);
 
+  // Scroll / touch par bar dikhao, HIDE_AFTER_MS baad chhupao. Page chhota ho (scroll hi na ho) to chhupao mat, warna menu band ho jayega.
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const scrollable = () => document.documentElement.scrollHeight > window.innerHeight + 8;
+    const hide = () => { if (scrollable()) nav.classList.add("nb-hide"); };
+    const show = () => {
+      nav.classList.remove("nb-hide");
+      clearTimeout(timer);
+      timer = setTimeout(hide, HIDE_AFTER_MS);
+    };
+    show(); // page khulte hi thodi der dikhao
+    window.addEventListener("scroll", show, { passive: true, capture: true });
+    window.addEventListener("touchmove", show, { passive: true });
+    window.addEventListener("wheel", show, { passive: true });
+    nav.addEventListener("pointerdown", show);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", show, { capture: true });
+      window.removeEventListener("touchmove", show);
+      window.removeEventListener("wheel", show);
+      nav.removeEventListener("pointerdown", show);
+    };
+  }, [path]);
+
   const vib = () => { try { navigator.vibrate?.(8); } catch { /* koi baat nahi */ } };
   const cls = (k: string) => cn("nbi", active === k && "on");
   const cur = (k: string) => (active === k ? "page" : undefined);
@@ -46,7 +80,7 @@ export default function BottomBar({ courseHref }: { courseHref: string | null })
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: BOTTOM_BAR_CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: BOTTOM_BAR_CSS + AUTOHIDE_CSS }} />
       <nav className="nb" ref={navRef} aria-label="Main navigation">
         <span className="nbp" ref={pillRef} aria-hidden="true" />
         <Link href="/" className={cls("home")} data-k="home" aria-current={cur("home")} onClick={vib}>
