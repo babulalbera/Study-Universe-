@@ -14,7 +14,9 @@
   min-height: 480px;
   border-radius: 14px;
   overflow: hidden;
-  background: radial-gradient(120% 90% at 50% 0%, var(--pdfr-bg2) 0%, var(--pdfr-bg) 62%);
+  background:
+    radial-gradient(70% 38% at 50% 0%, rgba(201, 162, 75, 0.11), transparent 72%),
+    radial-gradient(120% 90% at 50% 0%, var(--pdfr-bg2) 0%, var(--pdfr-bg) 62%);
   color: var(--pdfr-text);
   border: 1px solid var(--pdfr-line);
   -webkit-tap-highlight-color: transparent;
@@ -61,12 +63,13 @@
   min-width: 40px; height: 40px; padding: 0 12px;
   border: 1px solid var(--pdfr-line); border-radius: 12px;
   background: rgba(255, 255, 255, 0.04); color: inherit; font-size: 20px; line-height: 1; cursor: pointer; text-decoration: none;
-  transition: border-color 0.2s ease, background 0.2s ease, transform 0.12s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.12s ease;
 }
 .pdfr-btn:active:not(:disabled) { transform: scale(0.94); }
 .pdfr-btn-text, .pdfr-open { font-size: 13px; }
 .pdfr-btn:hover:not(:disabled) { border-color: var(--pdfr-accent); }
 .pdfr-btn:disabled { opacity: 0.35; cursor: default; }
+.pdfr-btn.is-on { color: #f0d58a; border-color: var(--pdfr-accent); background: rgba(201, 162, 75, 0.16); }
 .pdfr-btn:focus-visible,
 .pdfr-seg-btn:focus-visible,
 .pdfr-jump input:focus-visible,
@@ -78,15 +81,33 @@
   width: 58px; height: 38px; text-align: center; border: 1px solid var(--pdfr-line); border-radius: 10px;
   background: rgba(0, 0, 0, 0.25); color: var(--pdfr-text); font: inherit;
 }
-.pdfr-scrub { flex: 1 1 100%; width: 100%; height: 22px; margin: 0; accent-color: var(--pdfr-accent); }
+.pdfr-pct { margin-left: 8px; font-style: normal; font-size: 12px; color: var(--pdfr-accent); }
+
+/* Slider: sone jaisa bhara hua raasta */
+.pdfr-scrub {
+  flex: 1 1 100%; width: 100%; height: 26px; margin: 0; background: transparent;
+  -webkit-appearance: none; appearance: none; cursor: pointer;
+}
+.pdfr-scrub::-webkit-slider-runnable-track {
+  height: 5px; border-radius: 5px;
+  background: linear-gradient(90deg, var(--pdfr-accent) var(--p, 0%), rgba(255, 255, 255, 0.15) var(--p, 0%));
+}
+.pdfr-scrub::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6.5px; border-radius: 50%;
+  background: #f6e3a8; border: 2px solid var(--pdfr-accent); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+.pdfr-scrub::-moz-range-track { height: 5px; border-radius: 5px; background: rgba(255, 255, 255, 0.15); }
+.pdfr-scrub::-moz-range-progress { height: 5px; border-radius: 5px; background: var(--pdfr-accent); }
+.pdfr-scrub::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #f6e3a8; border: 2px solid var(--pdfr-accent); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); }
+.pdfr-scrub:disabled { opacity: 0.4; cursor: default; }
 
 /* ---- Stage ---- */
-.pdfr-stage { position: relative; flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; touch-action: pan-x pan-y pinch-zoom; padding: 12px; }
+.pdfr-stage { position: relative; flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; touch-action: pan-x pan-y; padding: 12px; }
 .pdfr-stage.is-book { display: flex; }
 .pdfr-stage.is-scroll { display: block; padding: 0 12px; }
 .pdfr-stage.is-slide { padding: 0; overflow: hidden; }
 
-/* ---- Loading (premium) ---- */
+/* ---- Loading ---- */
 .pdfr-loading {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 10px; margin: 0; padding: 0 28px; text-align: center; color: var(--pdfr-mute);
@@ -105,7 +126,10 @@
 .pdfr-load-bar span { display: block; height: 100%; background: var(--pdfr-accent); transition: width 0.2s ease; }
 @keyframes pdfr-spin { to { transform: rotate(360deg); } }
 
-/* ---- Chhota pill (toolbar chhupi ho tab page number) aur "Page N se aage" message ---- */
+/* ---- Roshni kam karne ki parat ---- */
+.pdfr-dim { position: absolute; inset: 0; z-index: 4; background: #000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+
+/* ---- Chhota pill (toolbar chhupi ho tab page number) aur message ---- */
 .pdfr-pill {
   position: absolute; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); z-index: 5;
   transform: translate(-50%, 8px); padding: 5px 13px; border-radius: 999px;
@@ -121,7 +145,7 @@
   background: rgba(18, 12, 28, 0.88); border: 1px solid rgba(201, 162, 75, 0.45);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   color: #f0d58a; font-size: 13px; white-space: nowrap; pointer-events: none;
-  animation: pdfr-pop 3s ease forwards;
+  animation: pdfr-pop 2.6s ease forwards;
 }
 @keyframes pdfr-pop {
   0% { opacity: 0; transform: translate(-50%, -8px); }
@@ -173,6 +197,122 @@
 .pdfr[data-theme="night"] .pdfr-leaf { background: #14141a; }
 .pdfr[data-theme="night"] .pdfr-canvas { filter: invert(0.9) hue-rotate(180deg); }
 
+/* Search ka peela nishaan aur bookmark ka ribbon (page ke upar) */
+.pdfr-marks { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.pdfr-marks i { position: absolute; background: rgba(255, 213, 74, 0.42); border-radius: 2px; box-shadow: 0 0 0 1px rgba(255, 190, 40, 0.5); animation: pdfr-flash 1s ease 3; }
+@keyframes pdfr-flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.pdfr-ribbon {
+  position: absolute; top: 0; right: 14px; z-index: 3; width: 18px; height: 30px;
+  background: linear-gradient(#e6c05a, #b8902f); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+}
+
+/* ---- Menu (neeche se nikalne wali sheet) ---- */
+.pdfr-sheet { position: absolute; inset: 0; z-index: 20; pointer-events: none; visibility: hidden; transition: visibility 0s linear 0.34s; }
+.pdfr-sheet.open { pointer-events: auto; visibility: visible; transition-delay: 0s; }
+.pdfr-sheet-bg { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); opacity: 0; transition: opacity 0.28s ease; }
+.pdfr-sheet.open .pdfr-sheet-bg { opacity: 1; }
+.pdfr-sheet-panel {
+  position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 560px;
+  height: min(84dvh, 680px); display: flex; flex-direction: column;
+  border-radius: 22px 22px 0 0; border: 1px solid rgba(201, 162, 75, 0.3); border-bottom: 0;
+  background: linear-gradient(180deg, rgba(36, 27, 52, 0.98), rgba(20, 14, 30, 0.99));
+  box-shadow: 0 -16px 50px rgba(0, 0, 0, 0.55);
+  padding-bottom: env(safe-area-inset-bottom);
+  transform: translateY(104%); transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.pdfr-sheet.open .pdfr-sheet-panel { transform: none; }
+.pdfr-sheet-handle { flex: none; width: 42px; height: 4px; margin: 8px auto 4px; border-radius: 4px; background: rgba(255, 255, 255, 0.22); }
+.pdfr-sheet-x {
+  position: absolute; top: 6px; right: 8px; width: 34px; height: 34px; display: grid; place-items: center;
+  border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.07); color: var(--pdfr-mute); cursor: pointer;
+}
+.pdfr-tabs { flex: none; display: flex; gap: 2px; padding: 6px 8px; border-bottom: 1px solid var(--pdfr-line); }
+.pdfr-tab {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 0;
+  border: 0; border-radius: 12px; background: transparent; color: var(--pdfr-mute); font: inherit; font-size: 11px; cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.pdfr-tab.on { color: #f0d58a; background: rgba(201, 162, 75, 0.14); }
+.pdfr-sheet-body { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 14px; animation: pdfr-fade 0.22s ease; }
+@keyframes pdfr-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.pdfr-empty, .pdfr-hint { margin: 0; color: var(--pdfr-mute); font-size: 13px; line-height: 1.5; }
+.pdfr-empty { padding: 26px 8px; text-align: center; }
+.pdfr-hint { margin-top: 8px; }
+
+/* Search */
+.pdfr-search { display: grid; gap: 4px; }
+.pdfr-sbox {
+  display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 12px;
+  border: 1px solid rgba(201, 162, 75, 0.35); border-radius: 14px; background: rgba(0, 0, 0, 0.28); color: var(--pdfr-mute);
+}
+.pdfr-sbox input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; color: var(--pdfr-text); font: inherit; font-size: 16px; }
+.pdfr-sbox button { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.08); color: inherit; cursor: pointer; }
+.pdfr-hits { display: grid; gap: 8px; margin-top: 10px; }
+.pdfr-hit {
+  display: flex; gap: 10px; align-items: flex-start; width: 100%; padding: 10px 12px; text-align: left;
+  border: 1px solid var(--pdfr-line); border-radius: 12px; background: rgba(255, 255, 255, 0.04); color: var(--pdfr-text); font: inherit; font-size: 13.5px; line-height: 1.45; cursor: pointer;
+}
+.pdfr-hit b { flex: none; min-width: 44px; padding: 2px 8px; border-radius: 8px; background: rgba(201, 162, 75, 0.18); color: #f0d58a; font-size: 12px; text-align: center; }
+.pdfr-hit mark { background: rgba(255, 213, 74, 0.35); color: #fff3c4; border-radius: 3px; padding: 0 1px; }
+
+/* Index (Contents) */
+.pdfr-toc { display: grid; gap: 2px; }
+.pdfr-toc-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; padding: 10px;
+  border: 0; border-radius: 10px; background: transparent; color: var(--pdfr-text); font: inherit; font-size: 14px; line-height: 1.4; text-align: left; cursor: pointer;
+}
+.pdfr-toc-row:active, .pdfr-toc-row:hover { background: rgba(255, 255, 255, 0.06); }
+.pdfr-toc-t { min-width: 0; }
+.pdfr-toc-row em { flex: none; font-style: normal; font-size: 12px; color: var(--pdfr-accent); font-variant-numeric: tabular-nums; }
+
+/* Pages (thumbnails) */
+.pdfr-thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 10px; }
+.pdfr-th { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 0; border: 0; background: none; color: var(--pdfr-mute); font: inherit; font-size: 12px; cursor: pointer; }
+.pdfr-th-box {
+  position: relative; display: block; width: 100%; aspect-ratio: 1 / 1.414; overflow: hidden; border-radius: 4px; background: #f3f0f7;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+.pdfr-th-box canvas { display: block; width: 100% !important; height: 100% !important; }
+.pdfr-th.on .pdfr-th-box { outline: 2px solid var(--pdfr-accent); outline-offset: 2px; }
+.pdfr-th.on { color: #f0d58a; font-weight: 600; }
+.pdfr-th-bm { position: absolute; top: 0; right: 8px; width: 12px; height: 20px; background: linear-gradient(#e6c05a, #b8902f); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 74%, 0 100%); }
+
+/* Saved (bookmarks) */
+.pdfr-saved { display: grid; gap: 10px; }
+.pdfr-act {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 14px;
+  border: 1px solid var(--pdfr-line); border-radius: 14px; background: rgba(255, 255, 255, 0.05); color: var(--pdfr-text);
+  font: inherit; font-size: 14px; text-decoration: none; cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease;
+}
+.pdfr-act:hover { border-color: var(--pdfr-accent); }
+.pdfr-act-main { background: linear-gradient(180deg, rgba(201, 162, 75, 0.28), rgba(201, 162, 75, 0.12)); border-color: rgba(201, 162, 75, 0.55); color: #f6e3a8; font-weight: 600; }
+.pdfr-act-main.on { background: rgba(255, 255, 255, 0.05); border-color: var(--pdfr-line); color: var(--pdfr-text); font-weight: 400; }
+.pdfr-bm-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.pdfr-bm-list li { display: flex; gap: 8px; }
+.pdfr-bm-go {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 11px 12px;
+  border: 1px solid var(--pdfr-line); border-radius: 12px; background: rgba(255, 255, 255, 0.04); color: var(--pdfr-text); font: inherit; font-size: 14px; text-align: left; cursor: pointer;
+}
+.pdfr-bm-go svg { color: var(--pdfr-accent); flex: none; }
+.pdfr-bm-go span { flex: 1; }
+.pdfr-bm-go em { font-style: normal; font-size: 12px; color: var(--pdfr-mute); }
+.pdfr-bm-x { flex: none; width: 44px; display: grid; place-items: center; border: 1px solid var(--pdfr-line); border-radius: 12px; background: rgba(255, 255, 255, 0.04); color: var(--pdfr-mute); cursor: pointer; }
+
+/* Settings */
+.pdfr-settings { display: grid; gap: 20px; }
+.pdfr-settings h4 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 13px; font-weight: 600; color: var(--pdfr-mute); letter-spacing: 0.02em; }
+.pdfr-settings h4 em { margin-left: auto; font-style: normal; color: var(--pdfr-accent); font-variant-numeric: tabular-nums; }
+.pdfr-settings .pdfr-scrub { flex: none; }
+.pdfr-chips { display: flex; gap: 8px; }
+.pdfr-chip {
+  flex: 1; height: 42px; border: 1px solid var(--pdfr-line); border-radius: 12px; background: rgba(255, 255, 255, 0.05);
+  color: var(--pdfr-text); font: inherit; font-size: 14px; cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease;
+}
+.pdfr-chip.on { background: var(--pdfr-accent); border-color: var(--pdfr-accent); color: #1a1424; font-weight: 600; }
+.pdfr-chip:disabled { opacity: 0.35; cursor: default; }
+.pdfr-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pdfr-actions .pdfr-act { flex-direction: column; gap: 4px; min-height: 58px; padding: 8px 4px; font-size: 12px; }
+
 /* ---- Phone: poori screen (full screen) ---- */
 @media (max-width: 768px) {
   .pdfr {
@@ -181,7 +321,7 @@
   }
   .pdfr-back { display: inline-flex; }
   .pdfr-fsbtn { display: none; } /* phone par pehle se full screen */
-  .pdfr-zoom { display: none; } /* jagah bachane ke liye: − aur + button kaafi hain */
+  .pdfr-only-desk { display: none !important; } /* zoom aur theme: phone par Menu > Settings me (aur pinch / double-tap) */
   .pdfr-bar { padding-top: max(8px, env(safe-area-inset-top)); }
 
   /* Site ka upar wala header padhte waqt chhupa rehta hai (Header.tsx isse "rd-hide" class deta hai) */
@@ -213,10 +353,12 @@
 @media (max-width: 380px) {
   .pdfr-seg-btn { padding: 0 8px; }
   .pdfr-btn { min-width: 36px; padding: 0 8px; }
+  .pdfr-tab { font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .pdfr-progress span, .pdfr-canvas { transition: none; }
   .pdfr-ring { animation-duration: 2.4s; }
-  .pdfr-toast { animation: none; }
-  .pdfr:not(.pdfr-plain) .pdfr-bar, .pdfr:not(.pdfr-plain) .pdfr-nav, .pdfr-pill { transition: none; }
+  .pdfr-toast, .pdfr-sheet-body, .pdfr-marks i { animation: none; }
+  .pdfr-sheet-panel, .pdfr-sheet-bg, .pdfr-pill { transition: none; }
+  .pdfr:not(.pdfr-plain) .pdfr-bar, .pdfr:not(.pdfr-plain) .pdfr-nav { transition: none; }
 }
