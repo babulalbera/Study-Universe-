@@ -1,0 +1,92 @@
+/* Courses list page: Mobile = 1 column, Desktop = 2 column, premium card.
+   Sab kuch "cv-grid-courses" / "cv-course" ke andar hai, isliye Course ke andar ke Videos wale page par koi asar nahi. */
+.cv-grid.cv-grid-courses { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+@media (min-width: 760px) {
+  .cv-grid.cv-grid-courses { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+}
+
+.cv-card.cv-course {
+  position: relative; isolation: isolate; gap: 0; padding: 0; overflow: hidden; border-radius: 22px;
+  border: 1px solid rgba(245, 196, 81, 0.28);
+  border-color: color-mix(in srgb, var(--gold, #f5c451) 30%, transparent);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 55%), rgba(10, 8, 18, 0.55);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+  animation: cvc-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(min(var(--i, 0), 8) * 70ms);
+}
+/* upar sone jaisi patli line */
+.cv-card.cv-course::before {
+  content: ""; position: absolute; z-index: 3; left: 18px; right: 18px; top: 0; height: 2px;
+  border-radius: 0 0 4px 4px; pointer-events: none; opacity: 0.85;
+  background: linear-gradient(90deg, transparent, var(--gold, #f5c451), transparent);
+}
+
+/* ---- Thumbnail ---- */
+.cv-course .cv-thumb {
+  border-radius: 0; aspect-ratio: 16 / 9;
+  background: radial-gradient(circle at 28% 18%, rgba(245, 196, 81, 0.3), transparent 56%), linear-gradient(135deg, #3b3a6e, #1c3b4f);
+}
+.cv-course .cv-thumb img { transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.cv-course .cv-ph { font-size: 54px; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45)); }
+.cv-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgba(8, 6, 14, 0.82), rgba(8, 6, 14, 0) 58%); }
+.cv-vids {
+  position: absolute; left: 12px; bottom: 12px; padding: 5px 11px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; color: #fff; background: rgba(8, 6, 14, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.cv-go {
+  position: absolute; right: 12px; bottom: 12px; width: 40px; height: 40px; display: grid; place-content: center;
+  border-radius: 50%; font-size: 15px; color: #1a1424;
+  background: linear-gradient(180deg, #f6dc8c, var(--gold, #e0b64a)); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ---- Body ---- */
+.cv-cbody { display: flex; flex-direction: column; flex: 1; gap: 8px; padding: 16px 18px 18px; }
+.cv-cat {
+  align-self: flex-start; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold, #f5c451);
+  background: rgba(245, 196, 81, 0.12); border: 1px solid rgba(245, 196, 81, 0.3);
+}
+.cv-course .cv-ctitle { margin: 0; font-size: 19px; line-height: 1.3; font-weight: 700; }
+.cv-desc {
+  margin: 0; font-size: 13.5px; line-height: 1.55; opacity: 0.75;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.cv-cfoot {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.cv-kind { font-size: 12px; letter-spacing: 0.04em; opacity: 0.7; }
+.cv-cta {
+  flex: none; padding: 9px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; color: #1a1424;
+  background: linear-gradient(180deg, #f6dc8c, var(--gold, #e0b64a)); box-shadow: 0 8px 20px rgba(224, 182, 74, 0.26);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* "जल्द आएगा": abhi link nahi, isliye halka */
+.cv-card.cv-course.is-soon { opacity: 0.88; }
+.cv-course.is-soon .cv-cta { color: inherit; font-weight: 600; background: rgba(255, 255, 255, 0.08); box-shadow: none; }
+
+/* ---- Touch / hover ---- */
+a.cv-card.cv-course:active { transform: scale(0.985); }
+@media (hover: hover) {
+  a.cv-card.cv-course:hover {
+    transform: translateY(-5px);
+    border-color: rgba(245, 196, 81, 0.6);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03) 55%), rgba(10, 8, 18, 0.55);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.5), 0 0 36px rgba(245, 196, 81, 0.14);
+  }
+  a.cv-card.cv-course:hover .cv-thumb img { transform: scale(1.07); }
+  a.cv-card.cv-course:hover .cv-go { transform: scale(1.1); }
+  a.cv-card.cv-course:hover .cv-cta { transform: translateX(2px); box-shadow: 0 10px 26px rgba(224, 182, 74, 0.38); }
+}
+
+@keyframes cvc-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cv-card.cv-course { animation: none; transition: none; }
+  .cv-course .cv-thumb img, .cv-go, .cv-cta { transition: none; }
+}
