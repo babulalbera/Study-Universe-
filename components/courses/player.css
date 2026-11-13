@@ -1,0 +1,67 @@
+/* Video player: premium dabba + neeche control patti (sab class "cvp" se shuru) */
+.cvp { display: grid; gap: 12px; width: 100%; min-width: 0; }
+
+.cvp-frame {
+  position: relative; margin-inline: auto; max-width: 100%; overflow: hidden; border-radius: 18px; background: #000;
+  border: 1px solid rgba(245, 196, 81, 0.3);
+  border-color: color-mix(in srgb, var(--gold, #f5c451) 34%, transparent);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), 0 0 40px rgba(245, 196, 81, 0.08);
+}
+.cvp-frame iframe, .cvp-frame video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; object-fit: contain; }
+.cvp-frame.fs { width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; border: 0; box-shadow: none; }
+
+/* Load hote waqt */
+.cvp-load, .cvp-err, .cvp-next {
+  position: absolute; inset: 0; z-index: 2; display: grid; place-content: center; justify-items: center; gap: 10px;
+  padding: 16px; text-align: center; color: #e4ddf0; font-size: 14px;
+  background: radial-gradient(circle at 50% 38%, rgba(245, 196, 81, 0.14), transparent 60%), linear-gradient(135deg, #14101e, #0a0810);
+}
+.cvp-load { pointer-events: none; }
+.cvp-load p, .cvp-err p, .cvp-next p, .cvp-hint p { margin: 0; }
+.cvp-ring {
+  width: 44px; height: 44px; border-radius: 50%; border: 3px solid rgba(255, 255, 255, 0.12); border-top-color: var(--gold, #f5c451);
+  animation: cvp-spin 0.9s linear infinite;
+}
+@keyframes cvp-spin { to { transform: rotate(360deg); } }
+.cvp-err span { font-size: 34px; }
+.cvp-next { background: rgba(8, 6, 14, 0.82); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.cvp-err > div, .cvp-next > div, .cvp-hint > div { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+
+/* Der se load ho raha ho: video ke neeche ek patti (beech ka play button dabta rahe) */
+.cvp-hint {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: grid; justify-items: center; gap: 8px;
+  padding: 36px 12px 12px; text-align: center; font-size: 13px; color: #fff; pointer-events: none;
+  background: linear-gradient(to top, rgba(8, 6, 14, 0.95), rgba(8, 6, 14, 0));
+}
+.cvp-hint > div { pointer-events: auto; }
+
+/* Neeche control patti */
+.cvp-bar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 8px;
+  border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.cvp-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 12px; background: rgba(255, 255, 255, 0.07); }
+.cvp-seg button {
+  height: 34px; padding: 0 11px; border: 0; border-radius: 9px; background: transparent; color: inherit; opacity: 0.75;
+  font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s ease, opacity 0.2s ease;
+}
+.cvp-seg button.on { opacity: 1; color: #1a1424; background: linear-gradient(180deg, #f6dc8c, var(--gold, #e0b64a)); box-shadow: 0 2px 10px rgba(224, 182, 74, 0.35); }
+.cvp-tools { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.cvp-ib {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 38px; height: 38px; padding: 0 11px;
+  border-radius: 11px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: #fff;
+  font: inherit; font-size: 12px; font-weight: 600; text-decoration: none; cursor: pointer; transition: border-color 0.2s ease, transform 0.12s ease;
+}
+.cvp-ib:hover { border-color: var(--gold, #f5c451); }
+.cvp-ib:active { transform: scale(0.95); }
+.cvp-ib-gold { color: #1a1424; border-color: transparent; background: linear-gradient(180deg, #f6dc8c, var(--gold, #e0b64a)); }
+.cvp-seg button:focus-visible, .cvp-ib:focus-visible { outline: 2px solid var(--gold, #f5c451); outline-offset: 2px; }
+
+@media (max-width: 420px) {
+  .cvp-bar { justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cvp-ring { animation-duration: 2.4s; }
+  .cvp-seg button, .cvp-ib { transition: none; }
+}

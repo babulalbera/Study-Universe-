@@ -1,0 +1,70 @@
+/* Watch page: Phone = 1 column (Player upar, Playlist neeche). 2 column sirf 1024px+ par,
+   isliye phone ka "Desktop site" mode (~980px) bhi 1 column rehta hai aur player bada dikhta hai. */
+.cv-wrap.cv-wrap-watch { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.cv-main { display: grid; gap: 14px; min-width: 0; align-content: start; }
+.cv-wrap-watch .cv-side { position: static; max-height: none; overflow: visible; }
+@media (min-width: 1024px) {
+  .cv-wrap.cv-wrap-watch { grid-template-columns: minmax(0, 1.8fr) minmax(320px, 1fr); gap: 24px; align-items: start; }
+  .cv-wrap-watch .cv-side { position: sticky; top: 76px; max-height: calc(100vh - 96px); overflow: auto; }
+}
+
+/* Video na chale to */
+.cvp-failbox {
+  display: grid; place-content: center; justify-items: center; gap: 12px; aspect-ratio: 16 / 9; padding: 16px; text-align: center; color: #fff;
+  border-radius: 18px; border: 1px solid rgba(245, 196, 81, 0.3);
+  background: radial-gradient(circle at 50% 38%, rgba(245, 196, 81, 0.14), transparent 60%), linear-gradient(135deg, #14101e, #0a0810);
+}
+.cvp-failbox span { font-size: 38px; }
+.cvp-failbox p { margin: 0; }
+
+/* Pichla / Agla */
+.cv-pnav { display: grid; grid-template-columns: auto 1fr 1fr; gap: 10px; }
+.cv-pbtn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; padding: 0 16px; border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.05); color: inherit; font-size: 14px; font-weight: 700;
+  text-decoration: none; transition: border-color 0.2s ease, transform 0.12s ease, box-shadow 0.2s ease;
+}
+a.cv-pbtn:hover { border-color: var(--gold, #f5c451); }
+.cv-pbtn:active { transform: scale(0.98); }
+.cv-pbtn:focus-visible { outline: 2px solid var(--gold, #f5c451); outline-offset: 2px; }
+.cv-pbtn-main { color: #1a1424; border-color: transparent; background: linear-gradient(180deg, #f6dc8c, var(--gold, #e0b64a)); box-shadow: 0 8px 20px rgba(224, 182, 74, 0.26); }
+a.cv-pbtn-main:hover { border-color: transparent; box-shadow: 0 10px 26px rgba(224, 182, 74, 0.38); }
+.cv-pbtn.is-off { opacity: 0.35; pointer-events: none; }
+.cv-pbtn-all { padding: 0 14px; font-size: 18px; }
+.cv-pbtn-all .cv-hide-sm { font-size: 13px; }
+@media (max-width: 520px) { .cv-hide-sm { display: none; } }
+
+/* Video ki jaankari */
+.cv-pinfo { display: grid; gap: 10px; justify-items: start; }
+.cv-pchips { display: flex; flex-wrap: wrap; gap: 8px; }
+.cv-chip {
+  padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+  border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.05);
+}
+.cv-chip-gold { color: var(--gold, #f5c451); border-color: rgba(245, 196, 81, 0.4); background: rgba(245, 196, 81, 0.12); }
+.cv-pdesc { margin: 0; font-family: var(--dev); line-height: 1.6; }
+.cv-tip {
+  margin: 0; padding: 10px 14px; border-radius: 14px; font-size: 13px; line-height: 1.55; opacity: 0.9;
+  border: 1px solid rgba(245, 196, 81, 0.25); background: rgba(245, 196, 81, 0.07);
+}
+
+/* Playlist (premium) */
+.cv-side-pro {
+  padding: 16px; border-radius: 22px; border: 1px solid rgba(245, 196, 81, 0.25);
+  border-color: color-mix(in srgb, var(--gold, #f5c451) 26%, transparent);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.015) 60%), rgba(10, 8, 18, 0.5);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+.cv-side-pro .cv-side-title { font-size: 18px; }
+.cv-prog { height: 5px; border-radius: 5px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.cv-prog span { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #8f6f2a, var(--gold, #e0b64a), #f6dc8c); }
+.cv-side-pro .cv-folder { margin-bottom: 4px; }
+.cv-side-pro .cv-folder h4 { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold, #f5c451); opacity: 0.9; }
+.cv-side-pro .cv-row { gap: 12px; padding: 11px 12px; border-radius: 14px; transition: background 0.2s ease, border-color 0.2s ease; }
+.cv-side-pro .cv-row.on { border-color: var(--gold, #f5c451); background: linear-gradient(90deg, rgba(245, 196, 81, 0.18), rgba(245, 196, 81, 0.05)); font-weight: 700; }
+.cv-side-pro .cv-num { width: 28px; height: 28px; }
+.cv-side-pro .cv-row.on .cv-num { color: #1a1424; background: linear-gradient(180deg, #f6dc8c, var(--gold, #e0b64a)); font-size: 11px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-pbtn, .cv-side-pro .cv-row { transition: none; }
+}
