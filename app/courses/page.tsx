@@ -31,7 +31,6 @@ function Card({ c, count, i }: { c: CourseRow; count: number; i: number }) {
         )}
         <span className="cv-scrim" aria-hidden="true" />
         {count > 0 && <span className="cv-vids">▶ {count} Videos</span>}
-        {!soon && <span className="cv-go" aria-hidden="true">{count > 0 ? "▶" : "↗"}</span>}
       </div>
       <div className="cv-cbody">
         {c.category && <span className="cv-cat">{c.category}</span>}
