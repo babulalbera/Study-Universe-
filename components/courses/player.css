@@ -146,3 +146,13 @@
   .cvp-tap, .cvv-flash { animation: none; }
   .cvv-ui, .cvv-b { transition: none; }
 }
+
+/* Quality menu (HLS / DASH) */
+.cvv-qwrap { position: relative; }
+.cvv-menu {
+  position: absolute; right: 0; bottom: 44px; z-index: 4; min-width: 104px; margin: 0; padding: 6px; list-style: none; border-radius: 12px;
+  background: rgba(14, 10, 22, 0.96); border: 1px solid rgba(245, 196, 81, 0.35); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+}
+.cvv-menu button { display: block; width: 100%; padding: 8px 12px; border: 0; border-radius: 8px; background: transparent; color: #fff; font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.cvv-menu button:hover { background: rgba(255, 255, 255, 0.1); }
+.cvv-menu button.on { color: #f6dc8c; font-weight: 700; background: rgba(245, 196, 81, 0.18); }

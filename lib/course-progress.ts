@@ -2,8 +2,10 @@
 // Sirf browser me chalta hai (components "use client" se import karo).
 const DONE_EVENT = "cv-done-change";
 
-export const RATES = [0.75, 1, 1.25, 1.5, 1.75, 2];
+export const RATES = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 export const nextRate = (r: number) => RATES[(RATES.indexOf(r) + 1) % RATES.length] ?? 1;
+// Keyboard ke "<" ">" ke liye: ek kadam upar/neeche (kinare par ruk jata hai)
+export const stepRate = (r: number, d: 1 | -1) => RATES[Math.min(RATES.length - 1, Math.max(0, RATES.indexOf(r) + d))] ?? 1;
 
 const get = (k: string) => {
   try { return localStorage.getItem(k); } catch { return null; }

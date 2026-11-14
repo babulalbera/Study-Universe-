@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type SyntheticEvent } from "react";
-import { clearPos, getPos, nextRate, savePos } from "@/lib/course-progress";
+import { clearPos, getPos, nextRate, savePos, stepRate } from "@/lib/course-progress";
+import { attachStream, streamKindOf, type Level, type StreamHandle } from "./streaming";
 
 type Props = {
   src: string;
@@ -53,6 +54,11 @@ export default function CustomVideo(p: Props) {
   const [wait, setWait] = useState(true);
   const [canPip, setCanPip] = useState(false);
   const [flash, setFlash] = useState<{ side: "l" | "r"; id: number } | null>(null);
+  const engine = useRef<StreamHandle | null>(null);
+  const [levels, setLevels] = useState<Level[]>([]);
+  const [quality, setQuality] = useState(-1); // -1 = Auto
+  const [showQ, setShowQ] = useState(false);
+  const streamKind = streamKindOf(p.src); // .m3u8 = HLS, .mpd = DASH, baaki seedhi file
 
   useEffect(() => {
     setCanPip(typeof document !== "undefined" && !!document.pictureInPictureEnabled);
@@ -61,6 +67,35 @@ export default function CustomVideo(p: Props) {
   useEffect(() => {
     if (vid.current) vid.current.playbackRate = p.rate;
   }, [p.rate]);
+
+  // HLS / DASH stream: engine lagao (sirf jab link .m3u8 / .mpd ho)
+  useEffect(() => {
+    const el = vid.current;
+    if (!el || !streamKind) return;
+    let dead = false;
+    setLevels([]);
+    setQuality(-1);
+    attachStream(streamKind, el, p.src, {
+      onLevels: (l) => {
+        if (!dead) setLevels(l);
+      },
+      onFail: () => {
+        if (!dead && el.readyState < 2) p.onFail(); // chalte hue chhoti dikkat par overlay nahi
+      },
+    })
+      .then((h) => {
+        if (dead) h.destroy();
+        else engine.current = h;
+      })
+      .catch(() => {
+        if (!dead) p.onFail();
+      });
+    return () => {
+      dead = true;
+      engine.current?.destroy();
+      engine.current = null;
+    };
+  }, [p.src, streamKind]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!flash) return;
     const id = window.setTimeout(() => setFlash(null), 650);
@@ -104,7 +139,7 @@ export default function CustomVideo(p: Props) {
 
   const onMeta = (e: SyntheticEvent<HTMLVideoElement>) => {
     const el = e.currentTarget;
-    setDur(el.duration || 0);
+    setDur(Number.isFinite(el.duration) ? el.duration : 0);
     setWait(false);
     if (el.videoWidth && el.videoHeight) p.onRatio(el.videoWidth / el.videoHeight);
     el.playbackRate = p.rate;
@@ -133,8 +168,18 @@ export default function CustomVideo(p: Props) {
     setMuted(e.currentTarget.muted);
   };
 
+  const pickQ = (id: number) => {
+    engine.current?.setLevel(id);
+    setQuality(id);
+    setShowQ(false);
+  };
+
   const onTap = (e: PointerEvent<HTMLDivElement>) => {
     wrap.current?.focus({ preventScroll: true });
+    if (showQ) {
+      setShowQ(false);
+      return;
+    }
     const r = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width;
     const now = Date.now();
@@ -173,7 +218,11 @@ export default function CustomVideo(p: Props) {
     else if (k === "ArrowDown") setVolume(vol - 0.1);
     else if (k === "m") toggleMute();
     else if (k === "f") p.onFull();
-    else return;
+    else if (k === ">") p.onRate(stepRate(p.rate, 1));
+    else if (k === "<") p.onRate(stepRate(p.rate, -1));
+    else if (/^[0-9]$/.test(k) && dur > 0) {
+      if (vid.current) vid.current.currentTime = (dur * Number(k)) / 10; // 0-9: poore video ka 0%-90%
+    } else return;
     e.preventDefault();
     poke();
   };
@@ -187,7 +236,7 @@ export default function CustomVideo(p: Props) {
     <div ref={wrap} className="cvv" tabIndex={0} onKeyDown={onKey} onMouseMove={poke} aria-label={p.title}>
       <video
         ref={vid}
-        src={p.src}
+        src={streamKind ? undefined : p.src}
         playsInline
         preload="metadata"
         onLoadedMetadata={onMeta}
@@ -238,6 +287,21 @@ export default function CustomVideo(p: Props) {
             <span className="cvv-sp" />
             <button type="button" className="cvv-b" onClick={toggleMute} aria-label={muted || vol === 0 ? "Awaaz chalu" : "Awaaz band"}>{muted || vol === 0 ? <IcMute /> : <IcVol />}</button>
             <input className="cvv-vol" type="range" min={0} max={1} step={0.05} value={muted ? 0 : vol} style={{ ["--p" as string]: `${(muted ? 0 : vol) * 100}%` } as CSSProperties} onChange={(e) => setVolume(Number(e.target.value))} aria-label="Awaaz" />
+            {levels.length > 1 && (
+              <div className="cvv-qwrap">
+                <button type="button" className="cvv-b cvv-t" onClick={() => setShowQ((s) => !s)} aria-label="Quality chuno" aria-expanded={showQ}>
+                  {quality < 0 ? "Auto" : levels.find((l) => l.id === quality)?.label ?? "Auto"}
+                </button>
+                {showQ && (
+                  <ul className="cvv-menu" role="menu">
+                    <li><button type="button" role="menuitemradio" aria-checked={quality < 0} className={quality < 0 ? "on" : ""} onClick={() => pickQ(-1)}>Auto</button></li>
+                    {levels.map((l) => (
+                      <li key={l.id}><button type="button" role="menuitemradio" aria-checked={quality === l.id} className={quality === l.id ? "on" : ""} onClick={() => pickQ(l.id)}>{l.label}</button></li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
             <button type="button" className="cvv-b cvv-t" onClick={() => p.onRate(nextRate(p.rate))} aria-label={`Speed ${p.rate}x`}>{p.rate}x</button>
             {canPip && <button type="button" className="cvv-b" onClick={togglePip} aria-label="Chhoti window me chalao"><IcPip /></button>}
             {p.canFull && <button type="button" className="cvv-b" onClick={p.onFull} aria-label={p.full ? "Full screen band" : "Full screen"}>{p.full ? <IcExit /> : <IcFull />}</button>}

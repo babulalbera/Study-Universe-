@@ -12,14 +12,14 @@ export const VIDEO_SOURCE_LABEL: Record<VideoSource, string> = {
   upload: "Upload",
 };
 
-export const VIDEO_LINK_ERR = "Link player me nahi chalega. YouTube, Google Drive, MEGA ya seedha .mp4 file ka https:// link daalo (folder link nahi chalta)";
+export const VIDEO_LINK_ERR = "Link player me nahi chalega. YouTube, Google Drive, MEGA ya seedha .mp4 / .m3u8 (HLS) / .mpd (DASH) file ka https:// link daalo (folder link nahi chalta)";
 
 export const UPLOAD_MAX_MB = 50;
 export const UPLOAD_TYPES = ["video/mp4", "video/webm", "video/quicktime", "video/x-m4v"];
 export const UPLOAD_PATH_RE = /^[0-9a-f-]{36}\.(mp4|webm|mov|m4v)$/i;
 
 const YT_HOSTS = ["youtube.com", "youtu.be", "youtube-nocookie.com"];
-const DIRECT_EXT = /\.(mp4|webm|mov|m4v|ogv)$/i;
+const DIRECT_EXT = /\.(mp4|webm|mov|m4v|ogv|m3u8|mpd)$/i; // m3u8 = HLS, mpd = DASH (quality chunne wala stream)
 const ID11 = /^[\w-]{11}$/;
 const LIST_ID = /^[\w-]{10,60}$/;
 
