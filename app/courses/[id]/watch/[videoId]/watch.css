@@ -58,11 +58,14 @@ a.cv-pbtn-main:hover { border-color: transparent; box-shadow: 0 10px 26px rgba(2
 .cv-side-pro .cv-side-title { font-size: 18px; }
 .cv-prog { height: 5px; border-radius: 5px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
 .cv-prog span { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #8f6f2a, var(--gold, #e0b64a), #f6dc8c); }
+.cv-prog-t { margin: 6px 0 12px; font-size: 12px; letter-spacing: 0.02em; opacity: 0.75; }
 .cv-side-pro .cv-folder { margin-bottom: 4px; }
 .cv-side-pro .cv-folder h4 { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold, #f5c451); opacity: 0.9; }
 .cv-side-pro .cv-row { gap: 12px; padding: 11px 12px; border-radius: 14px; transition: background 0.2s ease, border-color 0.2s ease; }
 .cv-side-pro .cv-row.on { border-color: var(--gold, #f5c451); background: linear-gradient(90deg, rgba(245, 196, 81, 0.18), rgba(245, 196, 81, 0.05)); font-weight: 700; }
 .cv-side-pro .cv-num { width: 28px; height: 28px; }
+.cv-side-pro .cv-row.done .cv-num { color: #7ee2a8; background: rgba(52, 210, 123, 0.16); }
+.cv-side-pro .cv-row.done:not(.on) .cv-title { opacity: 0.7; }
 .cv-side-pro .cv-row.on .cv-num { color: #1a1424; background: linear-gradient(180deg, #f6dc8c, var(--gold, #e0b64a)); font-size: 11px; }
 
 @media (prefers-reduced-motion: reduce) {

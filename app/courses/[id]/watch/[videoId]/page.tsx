@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageHeader from "@/components/ui/PageHeader";
 import PlayerStage from "@/components/courses/PlayerStage";
-import ActiveRowScroll from "@/components/courses/ActiveRowScroll";
+import PlaylistPanel, { type PlaylistSection } from "@/components/courses/PlaylistPanel";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { VIDEO_SOURCE_LABEL, playerFor, type Player } from "@/lib/video-links";
@@ -39,7 +39,6 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
   const prevHref = prev ? `/courses/${id}/watch/${prev.id}` : null;
   const nextHref = next ? `/courses/${id}/watch/${next.id}` : null;
   const folderName = video.folder_id ? groups.find((g) => g.folder.id === video.folder_id)?.folder.title ?? null : null;
-  const pct = Math.round(((idx + 1) / flat.length) * 100);
 
   let player: Player | null = null;
   if (video.source === "upload" && video.storage_path) {
@@ -48,16 +47,24 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
   } else {
     player = playerFor(video.source, video.url);
   }
+  // YouTube se "kitna chala / speed / khatam" jaanne ke liye uska JS-API chalu karo
+  if (player && player.kind === "iframe" && video.source === "youtube") {
+    player = { ...player, src: `${player.src}${player.src.includes("?") ? "&" : "?"}enablejsapi=1` };
+  }
 
-  const item = (v: CourseVideo) => {
-    const on = v.id === video.id;
-    return (
-      <Link key={v.id} href={`/courses/${id}/watch/${v.id}`} className={`cv-row ${on ? "on" : ""}`} aria-current={on ? "true" : undefined}>
-        <span className="cv-num">{on ? "▶" : flat.findIndex((x) => x.id === v.id) + 1}</span>
-        <span className="cv-title">{v.title}</span>
-      </Link>
-    );
-  };
+  // Playlist (client component) ko sirf zaroori jaankari do
+  const numOf = new Map(flat.map((v, i) => [v.id, i + 1]));
+  const items = (list: CourseVideo[]) => list.map((v) => ({ id: v.id, title: v.title, n: numOf.get(v.id) ?? 0 }));
+  const withVideos = groups.filter((g) => g.videos.length > 0);
+  const sections: PlaylistSection[] = [
+    ...withVideos.map((g) => ({ key: g.folder.id, title: `📁 ${g.folder.title}`, items: items(g.videos) })),
+    ...(loose.length > 0 ? [{ key: "loose", title: withVideos.length > 0 ? "📄 अन्य Videos" : null, items: items(loose) }] : []),
+  ];
+
+  const tip =
+    video.source === "drive" || video.source === "mega"
+      ? `💡 ${video.source === "drive" ? "Drive" : "MEGA"} ka player unka apna hai: video par tap karke chalao. अटक रहा हो तो “दोबारा” दबाओ, Full Screen करो या “बाहर खोलो” से देखो। नया upload किया video कुछ देर “processing” में रह सकता है।`
+      : null;
 
   return (
     <>
@@ -71,6 +78,8 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
               src={player.src}
               title={video.title}
               videoId={video.id}
+              courseId={id}
+              source={video.source}
               portraitHint={!!video.url && video.url.includes("/shorts/")}
               openUrl={video.url}
               nextHref={nextHref}
@@ -96,31 +105,11 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
               {folderName && <span className="cv-chip">📁 {folderName}</span>}
             </div>
             {video.description && <p className="cv-pdesc">{video.description}</p>}
-            {(video.source === "drive" || video.source === "mega") && (
-              <p className="cv-tip">💡 Video अटक रहा हो तो Full Screen करो, “दोबारा” दबाओ या “बाहर खोलो” से देखो। {video.source === "drive" ? "Drive" : "MEGA"} की अपनी Speed Limit होती है।</p>
-            )}
+            {tip && <p className="cv-tip">{tip}</p>}
           </section>
         </div>
 
-        <aside className="cv-side cv-side-pro" aria-label="Playlist">
-          <ActiveRowScroll />
-          <h3 className="cv-side-title">📚 Playlist ({flat.length})</h3>
-          <div className="cv-prog" role="progressbar" aria-valuemin={0} aria-valuemax={flat.length} aria-valuenow={idx + 1} aria-label="Course me abhi kahan ho">
-            <span style={{ width: `${pct}%` }} />
-          </div>
-          {groups.filter((g) => g.videos.length > 0).map((g) => (
-            <div key={g.folder.id} className="cv-folder">
-              <h4>📁 {g.folder.title}</h4>
-              <div className="cv-list">{g.videos.map(item)}</div>
-            </div>
-          ))}
-          {loose.length > 0 && (
-            <div className="cv-folder">
-              {groups.some((g) => g.videos.length > 0) && <h4>📄 अन्य Videos</h4>}
-              <div className="cv-list">{loose.map(item)}</div>
-            </div>
-          )}
-        </aside>
+        <PlaylistPanel courseId={id} currentId={video.id} total={flat.length} sections={sections} />
       </div>
     </>
   );

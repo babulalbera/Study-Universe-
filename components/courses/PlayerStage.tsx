@@ -1,6 +1,9 @@
 "use client";
-import { useEffect, useRef, useState, type CSSProperties, type SyntheticEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
+import CustomVideo from "./CustomVideo";
+import { useYouTube } from "./useYouTube";
+import { clearPos, getAutoNext, getDone, getPos, getRate, nextRate, onDoneChange, saveAutoNext, savePos, saveRate, setDone } from "@/lib/course-progress";
 import "./player.css";
 
 type Mode = "auto" | "wide" | "std" | "tall";
@@ -8,10 +11,12 @@ type Props = {
   kind: "iframe" | "video";
   src: string;
   title: string;
-  videoId: string; // seedhe video me "jahan chhoda wahin se" yaad rakhne ke liye
+  videoId: string;
+  courseId: string;
+  source: string; // youtube / drive / mega / direct / upload
   portraitHint?: boolean;
   openUrl?: string | null; // asli link: "बाहर खोलो" ke liye
-  nextHref?: string | null; // seedhe video khatam hone par agla video
+  nextHref?: string | null; // video khatam hone par agla video
 };
 
 const RATIO = { wide: 16 / 9, std: 4 / 3, tall: 9 / 16 } as const;
@@ -21,10 +26,10 @@ const MODES: { id: Mode; label: string }[] = [
   { id: "std", label: "4:3" },
   { id: "tall", label: "9:16" },
 ];
-const RATES = [1, 1.25, 1.5, 1.75, 2, 0.75];
 const clampRatio = (n: number) => Math.min(2.4, Math.max(0.4, n));
 const SLOW_MS = 10_000; // itni der load na ho to "dobara / bahar kholo" ka sujhav
 const NEXT_SECONDS = 5;
+const DONE_AT = 0.9; // 90% dekha to "complete"
 
 const lsGet = (k: string) => {
   try { return localStorage.getItem(k); } catch { return null; }
@@ -38,13 +43,18 @@ const IcReload = () => <svg {...sv}><path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v5h-5"
 const IcFull = () => <svg {...sv}><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>;
 const IcExit = () => <svg {...sv}><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /></svg>;
 const IcOpen = () => <svg {...sv}><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></svg>;
+const IcCheck = () => <svg {...sv}><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>;
 
-// Video ka dabba: shape apne aap (ya 16:9 / 4:3 / 9:16 chuno), dheema load ho to madad, seedhe video me speed aur resume.
-export default function PlayerStage({ kind, src, title, videoId, portraitHint = false, openUrl = null, nextHref = null }: Props) {
+// Video ka dabba: shape apne aap, dheema load ho to madad, "complete" ka hisaab, auto-next.
+// Seedhe video me apna player, YouTube me speed/resume (agar YouTube jawab de), Drive/MEGA me unka apna player.
+export default function PlayerStage({ kind, src, title, videoId, courseId, source, portraitHint = false, openUrl = null, nextHref = null }: Props) {
   const router = useRouter();
   const box = useRef<HTMLDivElement>(null);
-  const vid = useRef<HTMLVideoElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const lastSave = useRef(0);
+  const doneRef = useRef(false);
+  const ytInit = useRef(false);
+  const ytEnded = useRef(false);
   const [mode, setMode] = useState<Mode>("auto");
   const [ratio, setRatio] = useState<number | null>(null);
   const [fs, setFs] = useState(false);
@@ -54,13 +64,19 @@ export default function PlayerStage({ kind, src, title, videoId, portraitHint = 
   const [failed, setFailed] = useState(false);
   const [nonce, setNonce] = useState(0); // "dobara" dabane par player naya ban jata hai
   const [rate, setRate] = useState(1);
+  const [done, setDoneState] = useState(false);
+  const [autoNext, setAutoNextState] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [touched, setTouched] = useState(false); // Drive/MEGA: user ne video ko chhua ya nahi
+
+  const isYt = source === "youtube" && kind === "iframe";
+  const yt = useYouTube(iframeRef, isYt, loaded, nonce);
 
   useEffect(() => {
     const m = lsGet("cv-aspect");
     if (m === "wide" || m === "tall" || m === "std") setMode(m);
-    const r = Number(lsGet("cv-rate"));
-    if (RATES.includes(r)) setRate(r);
+    setRate(getRate());
+    setAutoNextState(getAutoNext());
     setCanFs(typeof document !== "undefined" && !!document.fullscreenEnabled);
     const onChange = () => {
       const on = document.fullscreenElement === box.current;
@@ -73,6 +89,17 @@ export default function PlayerStage({ kind, src, title, videoId, portraitHint = 
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
+  // "Complete" ka hisaab (doosre tab me badle to bhi yahan dikhe)
+  useEffect(() => {
+    const sync = () => {
+      const on = getDone(courseId).includes(videoId);
+      doneRef.current = on;
+      setDoneState(on);
+    };
+    sync();
+    return onDoneChange(courseId, sync);
+  }, [courseId, videoId]);
+
   // Iframe (YouTube/Drive/MEGA) der tak load na ho to sujhav dikhao
   useEffect(() => {
     if (kind !== "iframe" || loaded || failed) return;
@@ -80,11 +107,21 @@ export default function PlayerStage({ kind, src, title, videoId, portraitHint = 
     return () => window.clearTimeout(id);
   }, [kind, loaded, failed, nonce]);
 
+  // Drive/MEGA ka apna player pehle se ruka hota hai: jab tak chhua na jaye "tap karo" ka sujhav (sujhav tap ko rokta nahi)
   useEffect(() => {
-    if (vid.current) vid.current.playbackRate = rate;
-  }, [rate, nonce]);
+    if (kind !== "iframe" || isYt || !loaded || touched) return;
+    const onBlur = () => {
+      if (document.activeElement === iframeRef.current) setTouched(true);
+    };
+    window.addEventListener("blur", onBlur);
+    const id = window.setTimeout(() => setTouched(true), 9000);
+    return () => {
+      window.removeEventListener("blur", onBlur);
+      window.clearTimeout(id);
+    };
+  }, [kind, isYt, loaded, touched]);
 
-  // Seedhe video khatam: 5 second baad agla
+  // Khatam hone ke baad 5 second me agla video
   useEffect(() => {
     if (countdown === null) return;
     if (countdown <= 0) {
@@ -95,6 +132,45 @@ export default function PlayerStage({ kind, src, title, videoId, portraitHint = 
     return () => window.clearTimeout(id);
   }, [countdown, nextHref, router]);
 
+  const markDone = (on: boolean) => {
+    doneRef.current = on;
+    setDoneState(on);
+    setDone(courseId, videoId, on);
+  };
+  const tick = (t: number, d: number) => {
+    if (d > 0 && t / d >= DONE_AT && !doneRef.current) markDone(true);
+  };
+  const ended = () => {
+    clearPos(videoId);
+    markDone(true);
+    if (autoNext && nextHref) setCountdown(NEXT_SECONDS);
+  };
+
+  // YouTube ne jo bataya (samay / halat): resume, speed, complete, auto-next
+  useEffect(() => {
+    const i = yt.info;
+    if (!i) return;
+    if (!ytInit.current && i.duration > 0) {
+      ytInit.current = true;
+      const t = getPos(videoId);
+      if (t > 5 && t < i.duration - 8) yt.seek(t);
+      if (rate !== 1) yt.setRate(rate);
+    }
+    if (i.state === 1) {
+      tick(i.time, i.duration);
+      const now = Date.now();
+      if (now - lastSave.current > 4000) {
+        lastSave.current = now;
+        savePos(videoId, i.time);
+      }
+    }
+    if (i.state === 0 && !ytEnded.current) {
+      ytEnded.current = true;
+      ended();
+    }
+    if (i.state !== 0) ytEnded.current = false;
+  }, [yt.info]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const pick = (m: Mode) => {
     setMode(m);
     lsSet("cv-aspect", m);
@@ -104,16 +180,20 @@ export default function PlayerStage({ kind, src, title, videoId, portraitHint = 
     setSlow(false);
     setFailed(false);
     setCountdown(null);
+    setTouched(false);
+    ytInit.current = false;
     setNonce((n) => n + 1);
   };
-  const cycleRate = () => {
-    const next = RATES[(RATES.indexOf(rate) + 1) % RATES.length];
-    setRate(next);
-    lsSet("cv-rate", String(next));
+  const changeRate = (r: number) => {
+    setRate(r);
+    saveRate(r);
+    if (isYt) yt.setRate(r);
   };
-  const skip = (d: number) => {
-    const v = vid.current;
-    if (v) v.currentTime = Math.max(0, Math.min(v.duration || Infinity, v.currentTime + d));
+  const toggleAutoNext = () => {
+    const on = !autoNext;
+    setAutoNextState(on);
+    saveAutoNext(on);
+    if (!on) setCountdown(null);
   };
 
   const r = mode === "auto" ? clampRatio(ratio ?? (portraitHint ? RATIO.tall : RATIO.wide)) : RATIO[mode];
@@ -135,27 +215,8 @@ export default function PlayerStage({ kind, src, title, videoId, portraitHint = 
     } catch { /* browser ne allow nahi kiya */ }
   };
 
-  const onMeta = (e: SyntheticEvent<HTMLVideoElement>) => {
-    const v = e.currentTarget;
-    setLoaded(true);
-    if (v.videoWidth && v.videoHeight) setRatio(v.videoWidth / v.videoHeight);
-    v.playbackRate = rate;
-    const t = Number(lsGet(`cv-t:${videoId}`));
-    if (t > 5 && Number.isFinite(v.duration) && t < v.duration - 8) v.currentTime = t; // jahan chhoda tha wahin se
-  };
-  const onTime = (e: SyntheticEvent<HTMLVideoElement>) => {
-    const v = e.currentTarget;
-    const now = Date.now();
-    if (!v.currentTime || now - lastSave.current < 4000) return;
-    lastSave.current = now;
-    lsSet(`cv-t:${videoId}`, String(Math.floor(v.currentTime)));
-  };
-  const onEnded = () => {
-    try { localStorage.removeItem(`cv-t:${videoId}`); } catch { /* chalta hai */ }
-    if (nextHref) setCountdown(NEXT_SECONDS);
-  };
-
   const style: CSSProperties | undefined = fs ? undefined : { aspectRatio: String(r), width: `min(100%, calc(78vh * ${r}))` };
+  const ytTools = isYt && yt.info;
 
   return (
     <div className="cvp">
@@ -163,6 +224,7 @@ export default function PlayerStage({ kind, src, title, videoId, portraitHint = 
         {kind === "iframe" ? (
           <iframe
             key={nonce}
+            ref={iframeRef}
             src={src}
             title={title}
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
@@ -171,18 +233,21 @@ export default function PlayerStage({ kind, src, title, videoId, portraitHint = 
             onLoad={() => setLoaded(true)}
           />
         ) : (
-          <video
+          <CustomVideo
             key={nonce}
-            ref={vid}
             src={src}
-            controls
-            controlsList="nodownload"
-            playsInline
-            preload="metadata"
-            onLoadedMetadata={onMeta}
-            onTimeUpdate={onTime}
-            onEnded={onEnded}
-            onError={() => setFailed(true)}
+            title={title}
+            videoId={videoId}
+            rate={rate}
+            onRate={changeRate}
+            full={fs}
+            canFull={canFs}
+            onFull={() => void goFs()}
+            onRatio={setRatio}
+            onTick={tick}
+            onEnded={ended}
+            onFail={() => setFailed(true)}
+            onReady={() => setLoaded(true)}
           />
         )}
 
@@ -211,6 +276,9 @@ export default function PlayerStage({ kind, src, title, videoId, portraitHint = 
             </div>
           </div>
         )}
+        {loaded && !failed && !isYt && kind === "iframe" && !touched && (
+          <div className="cvp-tap" aria-hidden="true">▶ Chalane ke liye video par tap karo</div>
+        )}
         {countdown !== null && nextHref && (
           <div className="cvp-next" role="status">
             <p>Agla video {Math.max(countdown, 0)} second me…</p>
@@ -231,15 +299,23 @@ export default function PlayerStage({ kind, src, title, videoId, portraitHint = 
           ))}
         </div>
         <div className="cvp-tools">
-          {kind === "video" && (
+          {ytTools && (
             <>
-              <button type="button" className="cvp-ib" onClick={() => skip(-10)} aria-label="10 second peeche">−10s</button>
-              <button type="button" className="cvp-ib" onClick={cycleRate} aria-label={`Speed ${rate}x, badalne ke liye dabao`}>{rate}x</button>
-              <button type="button" className="cvp-ib" onClick={() => skip(10)} aria-label="10 second aage">+10s</button>
+              <button type="button" className="cvp-ib" onClick={() => yt.seek(yt.info!.time - 10)} aria-label="10 second peeche">−10s</button>
+              <button type="button" className="cvp-ib" onClick={() => changeRate(nextRate(rate))} aria-label={`Speed ${rate}x, badalne ke liye dabao`}>{rate}x</button>
+              <button type="button" className="cvp-ib" onClick={() => yt.seek(yt.info!.time + 10)} aria-label="10 second aage">+10s</button>
             </>
           )}
+          <button type="button" className={`cvp-ib cvp-done${done ? " on" : ""}`} onClick={() => markDone(!done)} aria-pressed={done}>
+            <IcCheck /> {done ? "Complete" : "Mark complete"}
+          </button>
+          {nextHref && (
+            <button type="button" className={`cvp-ib${autoNext ? " on" : ""}`} onClick={toggleAutoNext} aria-pressed={autoNext} title="Video khatam hone par agla apne aap chale (sirf YouTube aur seedhe video me)">
+              Auto-next {autoNext ? "ON" : "OFF"}
+            </button>
+          )}
           <button type="button" className="cvp-ib" onClick={reload} aria-label="Player dobara chalao"><IcReload /></button>
-          {canFs && (
+          {canFs && kind === "iframe" && (
             <button type="button" className="cvp-ib" onClick={() => void goFs()} aria-label={fs ? "Full screen band" : "Full screen"}>
               {fs ? <IcExit /> : <IcFull />}
             </button>
