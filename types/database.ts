@@ -5,6 +5,10 @@ export type Profile = {
   id: string; full_name: string; avatar_url: string | null; role: Role; created_at: string; updated_at: string;
   phone: string | null; target_exam: string | null; exam_date: string | null; favorite_subjects: string[];
   daily_goal_minutes: number | null; avatar_path: string | null; notify_prefs: Record<string, boolean>;
+  // migration 016 se: Telegram Bind + Referral
+  telegram_id?: number | null; telegram_username?: string | null; telegram_linked_at?: string | null;
+  link_code?: string | null; link_code_expires_at?: string | null;
+  referral_code?: string | null; referred_by?: string | null;
 };
 export type Task = { id: string; title: string; subject: string; note: string; due_date: string | null; sort_order: number; is_active: boolean };
 export type TaskCompletion = { user_id: string; task_id: string; completed_at: string };

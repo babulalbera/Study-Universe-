@@ -9,6 +9,9 @@ export type FullProfile = {
   id: string; email: string; emailVerified: boolean; lastSignIn: string | null; createdAt: string; provider: string;
   role: "student" | "admin"; fullName: string; phone: string; targetExam: string; examDate: string | null;
   subjects: string[]; dailyGoal: number; avatarUrl: string | null; hasAvatar: boolean; prefs: NotifyPrefs;
+  // migration 016 se: Telegram Bind + Referral
+  telegramLinked: boolean; telegramUsername: string | null; linkCode: string | null; linkCodeExpiresAt: string | null;
+  referralCode: string;
 };
 
 const DEFAULT_PREFS: NotifyPrefs = { new_content: true, daily_reminder: false, goal_reminder: false };
@@ -32,6 +35,9 @@ export const getFullProfile = cache(async (): Promise<FullProfile | null> => {
     examDate: typeof r.exam_date === "string" ? r.exam_date : null, subjects: Array.isArray(r.favorite_subjects) ? (r.favorite_subjects as string[]) : [],
     dailyGoal: typeof r.daily_goal_minutes === "number" ? r.daily_goal_minutes : 120, avatarUrl, hasAvatar: Boolean(path),
     prefs: { ...DEFAULT_PREFS, ...p },
+    telegramLinked: Boolean(r.telegram_id), telegramUsername: typeof r.telegram_username === "string" ? r.telegram_username : null,
+    linkCode: typeof r.link_code === "string" ? r.link_code : null, linkCodeExpiresAt: typeof r.link_code_expires_at === "string" ? r.link_code_expires_at : null,
+    referralCode: typeof r.referral_code === "string" ? r.referral_code : "",
   };
 });
 
