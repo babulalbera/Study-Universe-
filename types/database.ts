@@ -9,6 +9,8 @@ export type Profile = {
   telegram_id?: number | null; telegram_username?: string | null; telegram_linked_at?: string | null;
   link_code?: string | null; link_code_expires_at?: string | null;
   referral_code?: string | null; referred_by?: string | null;
+  // migration 017 se: Channel Join Gate
+  channel_member?: boolean;
 };
 export type Task = { id: string; title: string; subject: string; note: string; due_date: string | null; sort_order: number; is_active: boolean };
 export type TaskCompletion = { user_id: string; task_id: string; completed_at: string };
