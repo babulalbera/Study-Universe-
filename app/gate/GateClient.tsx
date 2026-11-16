@@ -57,15 +57,24 @@ export default function GateClient({ telegramLinked, channelMember, referralCoun
   const toast = useToast();
   const code = cancelled ? null : (st.code ?? linkCode);
 
+  // Referral link ab TELEGRAM BOT ka deep-link hai (website ka link nahi) — StudyKing jaisa.
+  // "r_" prefix se bot ko pata chalta hai ye referral hai, bind-code nahi.
+  const referralLink = BOT ? `https://t.me/${BOT}?start=r_${referralCode}` : "";
+
   const copyCommand = () => {
     if (!code) return;
     navigator.clipboard.writeText(`/start ${code}`);
     toast("Command copy ho gaya — Telegram bot me paste kar do.");
   };
   const copyReferral = () => {
-    const link = `${window.location.origin}/r/${referralCode}`;
-    navigator.clipboard.writeText(link);
+    if (!referralLink) return;
+    navigator.clipboard.writeText(referralLink);
     toast("Referral link copy ho gaya!");
+  };
+  const sendReferral = () => {
+    if (!referralLink) return;
+    const text = "StudyUniverse join karo mere saath! 🎓";
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`, "_blank");
   };
   const resetClick = () => setCancelled(false); // naya code maangte waqt purana "cancelled" flag hata do
   const cancelClick = async () => {
@@ -150,8 +159,11 @@ export default function GateClient({ telegramLinked, channelMember, referralCoun
           <>
             <p className="pd-ok">✅ Telegram + Channel done</p>
             <p>📊 Active Referrals: <b>{referralCount} / {referralQuota}</b></p>
-            <p className="pd-dim">{referralQuota - referralCount} aur dost ko apna Referral Link bhejo.</p>
-            <button type="button" className="pbtn pbtn-gold" onClick={copyReferral}>Referral Link Copy karo</button>
+            <p className="pd-dim">{referralQuota - referralCount} aur dost ko apna Referral Link bhejo (Telegram bot link hai, dost sign up ke baad "Link Code" se bind karega).</p>
+            <div className="pd-row" style={{ justifyContent: "center", gap: 10 }}>
+              <button type="button" className="pbtn pbtn-gold" onClick={sendReferral}>📤 Referral Link Send Karo</button>
+              <button type="button" className="pbtn pbtn-ghost" onClick={copyReferral}>📋 Copy</button>
+            </div>
           </>
         )}
 

@@ -32,17 +32,27 @@ function TelegramBlock({ linked, username }: { linked: boolean; username: string
   );
 }
 
+// Referral link ab TELEGRAM BOT ka deep-link hai (website ka link nahi), StudyKing jaisa.
 function ReferralBlock({ code, count }: { code: string; count: number }) {
   const toast = useToast();
+  const link = BOT ? `https://t.me/${BOT}?start=r_${code}` : "";
   const copy = () => {
-    const link = `${window.location.origin}/r/${code}`;
+    if (!link) return;
     navigator.clipboard.writeText(link);
     toast("Referral link copy ho gaya!");
+  };
+  const send = () => {
+    if (!link) return;
+    const text = "StudyUniverse join karo mere saath! 🎓";
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`, "_blank");
   };
   return (
     <>
       <p className="pd-dim">Apna link doston ko bhejo. Abhi tak <b>{count}</b> log tumhare link se join kar chuke hain.</p>
-      <button type="button" className="pbtn pbtn-gold" onClick={copy}>Referral Link Copy karo</button>
+      <div className="pd-row" style={{ gap: 10 }}>
+        <button type="button" className="pbtn pbtn-gold" onClick={send}>📤 Send Karo</button>
+        <button type="button" className="pbtn pbtn-ghost" onClick={copy}>📋 Copy</button>
+      </div>
     </>
   );
 }

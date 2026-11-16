@@ -61,6 +61,33 @@ async function sendStatusMessage(supabase: Supa, profileId: string, chatId: numb
   });
 }
 
+// "/start r_<referral_code>" — kisi doston ke referral link se naya banda aaya
+async function handleReferralStart(supabase: Supa, refCode: string, chatId: number, tgId: number) {
+  const { data: referrer } = await supabase.from("profiles").select("id").eq("referral_code", refCode).maybeSingle();
+  if (!referrer) {
+    await tg("sendMessage", { chat_id: chatId, text: "Ye referral link sahi nahi hai ya purana ho gaya." });
+    return;
+  }
+
+  // Ye Telegram user agar pehle se kisi StudyUniverse account se bound hai, to seedha abhi credit de do
+  const { data: already } = await supabase.from("profiles").select("id, referred_by").eq("telegram_id", tgId).maybeSingle();
+  if (already) {
+    if (!already.referred_by && already.id !== referrer.id) {
+      await supabase.from("profiles").update({ referred_by: referrer.id }).eq("id", already.id).is("referred_by", null);
+    }
+    await tg("sendMessage", { chat_id: chatId, text: "✅ Referral set ho gaya! Apna status check karne ke liye /start bhejo." });
+    return;
+  }
+
+  // Abhi koi StudyUniverse account bound nahi hai — referrer yaad rakho, jab account bind hoga tab credit milega
+  await supabase.from("pending_referrals").upsert({ telegram_id: tgId, referrer_id: referrer.id });
+  await tg("sendMessage", {
+    chat_id: chatId,
+    text: "👋 Welcome! Pehle StudyUniverse website par Signup/Login karo. Wahan 'Link Code banao' dabake jo code milega, usko yahin bot me /start <code> se bhejo — tumhara referral automatically count ho jayega.",
+    reply_markup: SITE_URL ? { inline_keyboard: [[{ text: "🌐 StudyUniverse Kholo", url: SITE_URL }]] } : undefined,
+  });
+}
+
 export async function POST(req: Request) {
   if (!SECRET || req.headers.get("x-telegram-bot-api-secret-token") !== SECRET) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
@@ -69,7 +96,7 @@ export async function POST(req: Request) {
   const update = await req.json().catch(() => null);
   const supabase = createAdminClient();
 
-  // CASE 1 (naya): hamare REQUIRED channel me koi join/leave hua — real-time re-lock isi se hota hai
+  // CASE 1: hamare REQUIRED channel me koi join/leave hua — real-time re-lock isi se hota hai
   const cm = update?.chat_member;
   if (cm && CHANNEL_ID && String(cm.chat?.id) === String(CHANNEL_ID)) {
     const tgId = cm.new_chat_member?.user?.id as number | undefined;
@@ -81,7 +108,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  // CASE 2: /start command (bind code ya dobara status-check)
+  // CASE 2: /start command (referral code, ya bind code, ya dobara status-check)
   const msg = update?.message;
   const text: string | undefined = msg?.text;
   if (!text?.startsWith("/start")) return NextResponse.json({ ok: true });
@@ -98,6 +125,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  // Referral link se aaya hai (code "r_" se shuru hota hai)
+  if (code.toLowerCase().startsWith("r_")) {
+    await handleReferralStart(supabase, code.slice(2).toLowerCase(), chatId, tgId);
+    return NextResponse.json({ ok: true });
+  }
+
+  // Normal Bind Code flow
   const { data: profile } = await supabase
     .from("profiles")
     .select("id, link_code_expires_at")
@@ -117,6 +151,13 @@ export async function POST(req: Request) {
   if (error) {
     await tg("sendMessage", { chat_id: chatId, text: "Ye Telegram account pehle se kisi aur StudyUniverse account se juda hai." });
     return NextResponse.json({ ok: true });
+  }
+
+  // Agar ye banda pehle kisi referral link se aaya tha (pending_referrals me baitha tha), to ab credit de do
+  const { data: pending } = await supabase.from("pending_referrals").select("referrer_id").eq("telegram_id", tgId).maybeSingle();
+  if (pending && pending.referrer_id !== profile.id) {
+    await supabase.from("profiles").update({ referred_by: pending.referrer_id }).eq("id", profile.id).is("referred_by", null);
+    await supabase.from("pending_referrals").delete().eq("telegram_id", tgId);
   }
 
   await sendStatusMessage(supabase, profile.id, chatId, tgId);
