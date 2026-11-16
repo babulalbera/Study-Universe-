@@ -159,7 +159,7 @@ export default function GateClient({ telegramLinked, channelMember, referralCoun
           <>
             <p className="pd-ok">✅ Telegram + Channel done</p>
             <p>📊 Active Referrals: <b>{referralCount} / {referralQuota}</b></p>
-            <p className="pd-dim">{referralQuota - referralCount} aur dost ko apna Referral Link bhejo (Telegram bot link hai, dost sign up ke baad "Link Code" se bind karega).</p>
+            <p className="pd-dim">{referralQuota - referralCount} aur dost ko apna Referral Link bhejo (Telegram bot link hai, dost sign up ke baad &quot;Link Code&quot; se bind karega).</p>
             <div className="pd-row" style={{ justifyContent: "center", gap: 10 }}>
               <button type="button" className="pbtn pbtn-gold" onClick={sendReferral}>📤 Referral Link Send Karo</button>
               <button type="button" className="pbtn pbtn-ghost" onClick={copyReferral}>📋 Copy</button>
