@@ -5,11 +5,8 @@ import StudyOverview from "@/features/profile/dashboard/StudyOverview";
 import QuickAccess from "@/features/profile/dashboard/QuickAccess";
 import LearningCards from "@/features/profile/dashboard/LearningCards";
 import CommunityRow from "@/features/profile/dashboard/CommunityRow";
-import TelegramReferralCard from "@/features/profile/dashboard/TelegramReferralCard";
 import { getFullProfile, getStudyData, getTestsOverview } from "@/features/profile/dashboard/queries";
 import { getProfileExtras } from "@/features/profile/dashboard/redesign-queries";
-import { getReferralCount } from "@/features/profile/dashboard/referral-queries";
-import { claimPendingReferral } from "@/features/profile/dashboard/referral-actions";
 import { getFavorites } from "@/features/bookmarks/queries";
 import ContinueLearning from "@/features/profile/dashboard/ContinueLearning";
 import SettingsMore from "@/features/profile/dashboard/SettingsMore";
@@ -21,7 +18,7 @@ import "@/features/profile/dashboard/profile-redesign.css";
 export const metadata: Metadata = { title: "Meri Profile" };
 
 // Profile: Profile card (Points/Rank), Quick Access, Study Overview, Continue Learning, Settings & More,
-// My Learning, Telegram+Referral, Community.
+// My Learning, Community.
 // Sab kuch ek bhasha (English / हिन्दी) me, jo user ne Settings & More > Language me chuni hai.
 export default async function ProfilePage() {
   const p = await getFullProfile();
@@ -41,11 +38,8 @@ export default async function ProfilePage() {
     );
   }
 
-  // Agar ye banda kisi referral link (/r/CODE) se aaya tha, to ek hi baar "credit" de do
-  await claimPendingReferral();
-
-  const [socials, settings, study, tests, extras, favs, cont, referralCount] = await Promise.all([
-    getHomeSocials(), getSiteSettings(), getStudyData(p.id), getTestsOverview(), getProfileExtras(p.id), getFavorites(), getContinueBook(), getReferralCount(p.id),
+  const [socials, settings, study, tests, extras, favs, cont] = await Promise.all([
+    getHomeSocials(), getSiteSettings(), getStudyData(p.id), getTestsOverview(), getProfileExtras(p.id), getFavorites(), getContinueBook(),
   ]);
   const lang = extras.lang;
   const favCount = favs.books.length + favs.tests.length;
@@ -58,7 +52,6 @@ export default async function ProfilePage() {
       <ContinueLearning book={cont} lang={lang} />
       <SettingsMore lang={lang} favCount={favCount} notifyOn={extras.notifyOn} />
       <LearningCards input={study} lang={lang} />
-      <TelegramReferralCard telegramLinked={p.telegramLinked} telegramUsername={p.telegramUsername} referralCode={p.referralCode} referralCount={referralCount} />
       <CommunityRow socials={socials.map((s) => ({ key: s.key, name: s.name, href: s.href, icon: s.icon }))} lang={lang} />
       <div className="pr-foot">
         <b>{T[lang].footer}</b>
