@@ -2,7 +2,7 @@
 // Server aur browser dono jagah chalta hai, isliye "server-only" nahi lagaya.
 import { embedUrl, parseBookLink } from "@/lib/book-links";
 
-export type VideoSource = "youtube" | "drive" | "mega" | "direct" | "upload";
+export type VideoSource = "youtube" | "drive" | "mega" | "direct" | "upload" | "telegram";
 
 export const VIDEO_SOURCE_LABEL: Record<VideoSource, string> = {
   youtube: "YouTube",
@@ -10,9 +10,10 @@ export const VIDEO_SOURCE_LABEL: Record<VideoSource, string> = {
   mega: "MEGA",
   direct: "Direct Video",
   upload: "Upload",
+  telegram: "Telegram",
 };
 
-export const VIDEO_LINK_ERR = "Link player me nahi chalega. YouTube, Google Drive, MEGA ya seedha .mp4 / .m3u8 (HLS) / .mpd (DASH) file ka https:// link daalo (folder link nahi chalta)";
+export const VIDEO_LINK_ERR = "Link player me nahi chalega. YouTube, Google Drive, MEGA, Telegram (public channel post) ya seedha .mp4 / .m3u8 (HLS) / .mpd (DASH) file ka https:// link daalo (folder link nahi chalta)";
 
 export const UPLOAD_MAX_MB = 50;
 export const UPLOAD_TYPES = ["video/mp4", "video/webm", "video/quicktime", "video/x-m4v"];
@@ -22,6 +23,8 @@ const YT_HOSTS = ["youtube.com", "youtu.be", "youtube-nocookie.com"];
 const DIRECT_EXT = /\.(mp4|webm|mov|m4v|ogv|m3u8|mpd)$/i; // m3u8 = HLS, mpd = DASH (quality chunne wala stream)
 const ID11 = /^[\w-]{11}$/;
 const LIST_ID = /^[\w-]{10,60}$/;
+// Telegram public channel post: https://t.me/<channel_username>/<post_number>
+const TG_POST = /^\/[A-Za-z]\w{3,31}\/\d{1,12}$/;
 
 const hostIs = (h: string, d: string) => h === d || h.endsWith(`.${d}`);
 
@@ -55,6 +58,9 @@ export function parseVideoLink(raw: string): { source: VideoSource; url: string 
 
   if (YT_HOSTS.some((d) => hostIs(host, d))) return ytEmbed(u) ? { source: "youtube", url: u.toString() } : null;
 
+  // Telegram: sirf public channel ka post link (https://t.me/channel/123)
+  if (host === "t.me") return TG_POST.test(u.pathname) ? { source: "telegram", url: `https://t.me${u.pathname}` } : null;
+
   const book = parseBookLink(text); // host ki safai jaanch (IP, .local waghera band)
   if (!book) return null;
 
@@ -81,6 +87,10 @@ export function playerFor(source: VideoSource, url: string | null): Player | nul
   if (source === "youtube") {
     const src = ytEmbed(u);
     return src ? { kind: "iframe", src } : null;
+  }
+  if (source === "telegram") {
+    if (u.protocol !== "https:" || u.hostname !== "t.me" || !TG_POST.test(u.pathname)) return null;
+    return { kind: "iframe", src: `https://t.me${u.pathname}?embed=1&mode=tme` };
   }
   if (source === "drive" || source === "mega") {
     const src = embedUrl(source, url);
