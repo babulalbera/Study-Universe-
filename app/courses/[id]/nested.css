@@ -1,0 +1,3 @@
+/* Folder ke andar Folder: andar wala dabba thoda alag dikhe */
+.cv-fbody .cv-fbox { margin-top: 10px; }
+.cv-fbody > .cv-grid + .cv-fbox { margin-top: 14px; }

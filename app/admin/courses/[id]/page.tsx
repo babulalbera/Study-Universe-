@@ -8,23 +8,34 @@ import CourseVideoAdd from "@/components/admin/CourseVideoAdd";
 import CoverPicker from "@/components/admin/CoverPicker";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
-import { saveFolder, deleteFolder, saveVideo, deleteVideo } from "@/features/admin/course-video-actions";
+import { saveVideo, deleteVideo } from "@/features/admin/course-video-actions";
+import { saveFolder, deleteFolder } from "@/features/admin/folder-actions";
 import { VIDEO_SOURCE_LABEL } from "@/lib/video-links";
 import type { Course } from "@/types/database";
 
 type CourseRow = Course & { cover_path?: string | null };
-import type { CourseFolder, CourseVideo } from "@/types/course-content";
+import { orderContent, type CourseFolder, type CourseVideo, type FolderNode } from "@/types/course-content";
 
 type VideoRow = CourseVideo & { thumb_path?: string | null };
+type Opt = { id: string; title: string };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function FolderFields({ courseId, f }: { courseId: string; f?: CourseFolder }) {
+// Is Folder ke andar ke saare Folders ki id (Folder ko apne hi andar daalne se rokne ke liye)
+const below = (n: FolderNode): string[] => n.children.flatMap((c) => [c.folder.id, ...below(c)]);
+
+function FolderFields({ courseId, f, parents }: { courseId: string; f?: CourseFolder; parents: Opt[] }) {
   return (
     <div className="grid gap-3">
       <input type="hidden" name="course_id" value={courseId} />
       {f && <input type="hidden" name="id" value={f.id} />}
       <Field label="Folder का नाम (जैसे Maths, Reasoning)" name="title" defaultValue={f?.title} required />
+      <label className="su-field"><span>किस Folder के अंदर (खाली = सबसे ऊपर)</span>
+        <select name="parent_id" defaultValue={f?.parent_id ?? ""}>
+          <option value="">— सबसे ऊपर (Main) —</option>
+          {parents.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
+        </select>
+      </label>
       <Field label="क्रम (छोटा नंबर पहले)" name="sort_order" type="number" defaultValue={f?.sort_order ?? 0} />
       <label className="adm-chk"><input type="checkbox" name="is_published" defaultChecked={f ? f.is_published : true} /> Students को दिखाओ</label>
       <button type="submit" className="pbtn pbtn-gold">Save करो</button>
@@ -32,7 +43,7 @@ function FolderFields({ courseId, f }: { courseId: string; f?: CourseFolder }) {
   );
 }
 
-function VideoFields({ courseId, v, folders }: { courseId: string; v: CourseVideo; folders: CourseFolder[] }) {
+function VideoFields({ courseId, v, folders }: { courseId: string; v: CourseVideo; folders: Opt[] }) {
   return (
     <div className="grid gap-3">
       <input type="hidden" name="course_id" value={courseId} />
@@ -53,7 +64,7 @@ function VideoFields({ courseId, v, folders }: { courseId: string; v: CourseVide
   );
 }
 
-function VideoItem({ courseId, v, folders }: { courseId: string; v: VideoRow; folders: CourseFolder[] }) {
+function VideoItem({ courseId, v, folders }: { courseId: string; v: VideoRow; folders: Opt[] }) {
   return (
     <details className="adm-d">
       <summary>
@@ -92,6 +103,8 @@ export default async function AdminCourseContentPage({ params, searchParams }: {
   const folders = (fd ?? []) as CourseFolder[];
   const videos = (vd ?? []) as VideoRow[];
   const loose = videos.filter((v) => !v.folder_id);
+  const { groups } = orderContent(folders, videos); // Folders upar se neeche ke kram me (andar wale unke parent ke neeche)
+  const opts: Opt[] = groups.map((g) => ({ id: g.folder.id, title: `${"— ".repeat(g.depth)}${g.trail}` })); // "Ssc cgl › Maths" jaise naam
 
   return (
     <>
@@ -106,31 +119,42 @@ export default async function AdminCourseContentPage({ params, searchParams }: {
 
       <details className="adm-d" open={videos.length === 0}>
         <summary>🎬 नया Video जोड़ो</summary>
-        <CourseVideoAdd courseId={id} folders={folders.map((f) => ({ id: f.id, title: f.title }))} />
+        <CourseVideoAdd courseId={id} folders={groups.map((g) => ({ id: g.folder.id, title: g.trail }))} />
       </details>
 
       <details className="adm-d" open={folders.length === 0}>
         <summary>📁 नया Folder</summary>
-        <form action={saveFolder}><FolderFields courseId={id} /></form>
+        <form action={saveFolder}><FolderFields courseId={id} parents={opts} /></form>
       </details>
 
-      {folders.map((f) => {
-        const inside = videos.filter((v) => v.folder_id === f.id);
+      {groups.map((n) => {
+        const f = n.folder;
+        const banned = new Set([f.id, ...below(n)]);
         return (
-          <details key={f.id} className="adm-d">
+          <details key={f.id} className="adm-d" style={{ marginLeft: Math.min(n.depth, 5) * 14 }}>
             <summary>
-              <span>📁 {f.title}</span>
-              <span className="adm-tag">{inside.length} Video</span>
+              <span>{n.depth > 0 ? "↳ " : ""}📁 {f.title}</span>
+              <span className="adm-tag">{n.videos.length} Video</span>
+              {n.children.length > 0 && <span className="adm-tag">{n.children.length} Folder</span>}
               <span className={`adm-tag ${f.is_published ? "" : "off"}`}>{f.is_published ? "दिख रहा" : "छिपा"}</span>
             </summary>
-            <form action={saveFolder}><FolderFields courseId={id} f={f} /></form>
-            {inside.length === 0 ? <p className="su-muted">इस Folder में अभी कोई Video नहीं।</p> : inside.map((v) => <VideoItem key={v.id} courseId={id} v={v} folders={folders} />)}
+            <form action={saveFolder}><FolderFields courseId={id} f={f} parents={opts.filter((o) => !banned.has(o.id))} /></form>
+
+            <form action={saveFolder} className="grid gap-3">
+              <input type="hidden" name="course_id" value={id} />
+              <input type="hidden" name="parent_id" value={f.id} />
+              <input type="hidden" name="is_published" value="on" />
+              <Field label="➕ इस Folder के अंदर नया Folder (नाम लिखो)" name="title" required />
+              <button type="submit" className="pbtn pbtn-gold">अंदर Folder बनाओ</button>
+            </form>
+
+            {n.videos.length === 0 ? <p className="su-muted">इस Folder में अभी कोई Video नहीं।</p> : n.videos.map((v) => <VideoItem key={v.id} courseId={id} v={v as VideoRow} folders={opts} />)}
             <form action={deleteFolder} className="su-row">
               <input type="hidden" name="course_id" value={id} />
               <input type="hidden" name="id" value={f.id} />
               <DeleteButton />
             </form>
-            <p className="su-muted">⚠️ Folder हटाने पर उसके सारे Videos भी हट जाते हैं।</p>
+            <p className="su-muted">⚠️ Folder हटाने पर उसके अंदर के Folders और सारे Videos भी हट जाते हैं।</p>
           </details>
         );
       })}
@@ -138,7 +162,7 @@ export default async function AdminCourseContentPage({ params, searchParams }: {
       {loose.length > 0 && (
         <>
           <h3 style={{ marginTop: 8 }}>📄 बिना Folder वाले Videos</h3>
-          {loose.map((v) => <VideoItem key={v.id} courseId={id} v={v} folders={folders} />)}
+          {loose.map((v) => <VideoItem key={v.id} courseId={id} v={v} folders={opts} />)}
         </>
       )}
     </>

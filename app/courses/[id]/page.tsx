@@ -8,10 +8,11 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { videoThumbUrl } from "@/lib/course-thumbs";
 import { VIDEO_SOURCE_LABEL } from "@/lib/video-links";
-import { orderContent, type CourseFolder, type CourseVideo } from "@/types/course-content";
+import { orderContent, type CourseFolder, type CourseVideo, type FolderNode } from "@/types/course-content";
 import type { Course } from "@/types/database";
 import "../courses.css";
 import "./detail.css"; // Videos ka 1/2 column grid, folder box aur video card (sirf is page ke liye)
+import "./nested.css"; // Folder ke andar Folder
 
 export const metadata: Metadata = { title: "Course" };
 
@@ -79,10 +80,17 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
     supabase.from("course_folders").select("*").eq("course_id", id).eq("is_published", true).order("sort_order").order("created_at").limit(200),
     supabase.from("course_videos").select("*").eq("course_id", id).eq("is_published", true).order("sort_order").order("created_at").limit(1000),
   ]);
-  const { groups, loose, flat } = orderContent((fd ?? []) as CourseFolder[], (vd ?? []) as VideoRow[]);
+  const { tree, loose, flat } = orderContent((fd ?? []) as CourseFolder[], (vd ?? []) as VideoRow[]);
   const numberOf = (vid: string) => flat.findIndex((x) => x.id === vid) + 1;
-  const shown = groups.filter((g) => g.videos.length > 0);
+  const shown = tree.filter((n) => n.total > 0);
   const cards = (list: CourseVideo[]) => list.map((v) => <VideoCard key={v.id} courseId={id} v={v as VideoRow} n={numberOf(v.id)} />);
+  // Folder + uske Videos + uske andar ke Folders (khali Folder nahi dikhte)
+  const renderNode = (n: FolderNode): ReactNode => (
+    <FolderBox key={n.folder.id} icon="📁" title={n.folder.title} count={n.total}>
+      {n.videos.length > 0 && <div className="cv-grid cv-grid-videos">{cards(n.videos)}</div>}
+      {n.children.filter((ch) => ch.total > 0).map(renderNode)}
+    </FolderBox>
+  );
 
   return (
     <>
@@ -97,11 +105,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
         <EmptyState icon="🎬" title="अभी कोई Video नहीं है" text="Admin जैसे ही Videos जोड़ेगा, यहाँ दिखेंगे।" />
       ) : (
         <div className="cv-sections">
-          {shown.map((g) => (
-            <FolderBox key={g.folder.id} icon="📁" title={g.folder.title} count={g.videos.length}>
-              <div className="cv-grid cv-grid-videos">{cards(g.videos)}</div>
-            </FolderBox>
-          ))}
+          {shown.map(renderNode)}
           {loose.length > 0 &&
             (shown.length > 0 ? (
               <FolderBox icon="📄" title="अन्य Videos" count={loose.length}>

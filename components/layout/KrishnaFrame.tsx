@@ -5,8 +5,9 @@ import HeroSection from "@/components/home/HeroSection";
 import KrishnaStrip from "@/components/home/KrishnaStrip";
 
 // Upar wala aur neeche wala Krishna box: Home, Books, Profile, Results... sab pages par.
-// Ye pages isse bahar hain: Admin aur Test dene ka page (dhyan na bante).
-const HIDE = ["/admin", "/auth", "/mock-tests/"];
+// Ye pages isse bahar hain: Admin, Test dene ka page, aur Course/Folder/Video kholne ke baad ke pages (dhyan na bante).
+// "/courses/" ka matlab: Courses ki list par box dikhenge, par kisi Course/Folder/Video ke andar jaate hi nahi.
+const HIDE = ["/admin", "/auth", "/mock-tests/", "/courses/"];
 // Login/Signup card ke andar apna Krishna box hai, isliye yahan dono box nahi. Wapas dikhana ho to list se hata do.
 const HIDE_ALL = ["/login", "/signup", "/forgot-password"];
 
