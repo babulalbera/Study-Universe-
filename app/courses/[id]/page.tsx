@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { videoThumbUrl } from "@/lib/course-thumbs";
 import { VIDEO_SOURCE_LABEL } from "@/lib/video-links";
+import DoneTick from "@/components/courses/DoneTick";
 import { orderContent, type CourseFolder, type CourseVideo, type FolderNode } from "@/types/course-content";
 import type { Course } from "@/types/database";
 import "../courses.css";
@@ -36,6 +37,7 @@ function VideoCard({ courseId, v, n }: { courseId: string; v: VideoRow; n: numbe
         <span className="cv-vscrim" aria-hidden="true" />
         <span className="cv-play" aria-hidden="true">▶</span>
       </Link>
+      <DoneTick courseId={courseId} videoId={v.id} title={v.title} />
       <div className="cv-vbody">
         <div className="cv-vmeta">
           <span className="cv-lec">Lecture {String(n).padStart(2, "0")}</span>
