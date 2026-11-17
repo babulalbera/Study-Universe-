@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import CustomVideo from "./CustomVideo";
 import { useYouTube } from "./useYouTube";
-import { clearPos, getAutoNext, getDone, getPos, getRate, nextRate, onDoneChange, saveAutoNext, savePos, saveRate, setDone } from "@/lib/course-progress";
+import { clearPos, getAutoNext, getDone, getPos, getRate, onDoneChange, saveAutoNext, savePos, saveRate, setDone } from "@/lib/course-progress";
 import "./player.css";
+import "./player-settings.css";
 
 type Mode = "auto" | "wide" | "std" | "tall";
 type Props = {
@@ -26,6 +28,7 @@ const MODES: { id: Mode; label: string }[] = [
   { id: "std", label: "4:3" },
   { id: "tall", label: "9:16" },
 ];
+const RATES = [0.75, 1, 1.25, 1.5, 2];
 const clampRatio = (n: number) => Math.min(2.4, Math.max(0.4, n));
 const SLOW_MS = 10_000; // itni der load na ho to "dobara / bahar kholo" ka sujhav
 const NEXT_SECONDS = 5;
@@ -44,9 +47,17 @@ const IcFull = () => <svg {...sv}><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-
 const IcExit = () => <svg {...sv}><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /></svg>;
 const IcOpen = () => <svg {...sv}><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></svg>;
 const IcCheck = () => <svg {...sv}><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>;
+const IcBack = () => <svg {...sv}><path d="m15 5-7 7 7 7" /></svg>;
+const IcGear = () => (
+  <svg {...sv} width={20} height={20}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+  </svg>
+);
 
 // Video ka dabba: shape apne aap, dheema load ho to madad, "complete" ka hisaab, auto-next.
 // Seedhe video me apna player, YouTube me speed/resume (agar YouTube jawab de), Drive/MEGA me unka apna player.
+// Saare control ab ek Settings (gear) sheet me hain, aur upar "Wapas" button.
 export default function PlayerStage({ kind, src, title, videoId, courseId, source, portraitHint = false, openUrl = null, nextHref = null }: Props) {
   const router = useRouter();
   const box = useRef<HTMLDivElement>(null);
@@ -55,6 +66,7 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
   const doneRef = useRef(false);
   const ytInit = useRef(false);
   const ytEnded = useRef(false);
+  const wake = useRef<WakeLockSentinel | null>(null);
   const [mode, setMode] = useState<Mode>("auto");
   const [ratio, setRatio] = useState<number | null>(null);
   const [fs, setFs] = useState(false);
@@ -68,6 +80,10 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
   const [autoNext, setAutoNextState] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [touched, setTouched] = useState(false); // Drive/MEGA: user ne video ko chhua ya nahi
+  const [menu, setMenu] = useState(false); // Settings sheet khuli hai ya nahi
+  const [canWake, setCanWake] = useState(false);
+  const [awake, setAwake] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const isYt = source === "youtube" && kind === "iframe";
   const yt = useYouTube(iframeRef, isYt, loaded, nonce);
@@ -78,6 +94,7 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
     setRate(getRate());
     setAutoNextState(getAutoNext());
     setCanFs(typeof document !== "undefined" && !!document.fullscreenEnabled);
+    setCanWake(typeof navigator !== "undefined" && "wakeLock" in navigator);
     const onChange = () => {
       const on = document.fullscreenElement === box.current;
       setFs(on);
@@ -86,8 +103,21 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
       }
     };
     document.addEventListener("fullscreenchange", onChange);
-    return () => document.removeEventListener("fullscreenchange", onChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      void wake.current?.release().catch(() => undefined); // page chhodte hi screen-on band
+    };
   }, []);
+
+  // Settings sheet: Esc dabane par band
+  useEffect(() => {
+    if (!menu) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenu(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menu]);
 
   // "Complete" ka hisaab (doosre tab me badle to bhi yahan dikhe)
   useEffect(() => {
@@ -196,6 +226,42 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
     if (!on) setCountdown(null);
   };
 
+  // Wapas: hamesha is course ke page par (auto-next ke baad bhi seedha sahi jagah)
+  const goBack = () => router.push(`/courses/${courseId}`);
+
+  // Padhte waqt screen band na ho
+  const toggleAwake = async () => {
+    try {
+      if (wake.current) {
+        await wake.current.release();
+        wake.current = null;
+        setAwake(false);
+        return;
+      }
+      const lock = await navigator.wakeLock.request("screen");
+      wake.current = lock;
+      setAwake(true);
+      lock.addEventListener("release", () => {
+        wake.current = null;
+        setAwake(false);
+      });
+    } catch { /* browser ne allow nahi kiya */ }
+  };
+
+  // Is video ka link share / copy
+  const shareLink = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch { /* user ne cancel kiya ya browser ne roka */ }
+  };
+
   const r = mode === "auto" ? clampRatio(ratio ?? (portraitHint ? RATIO.tall : RATIO.wide)) : RATIO[mode];
 
   const goFs = async () => {
@@ -215,11 +281,21 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
     } catch { /* browser ne allow nahi kiya */ }
   };
 
+  const close = () => setMenu(false);
   const style: CSSProperties | undefined = fs ? undefined : { aspectRatio: String(r), width: `min(100%, calc(78vh * ${r}))` };
   const ytTools = isYt && yt.info;
 
   return (
     <div className="cvp">
+      <div className="cvp-topbar">
+        <button type="button" className="cvp-ib cvp-back" onClick={goBack} aria-label="Course page par wapas jao">
+          <IcBack /> Wapas
+        </button>
+        <button type="button" className={`cvp-ib cvp-gear${menu ? " on" : ""}`} onClick={() => setMenu(true)} aria-label="Settings" aria-haspopup="dialog" aria-expanded={menu}>
+          <IcGear />
+        </button>
+      </div>
+
       <div ref={box} className={`cvp-frame${fs ? " fs" : ""}`} style={style}>
         {kind === "iframe" ? (
           <iframe
@@ -290,41 +366,88 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
         )}
       </div>
 
-      <div className="cvp-bar">
-        <div className="cvp-seg" role="group" aria-label="Player ka size">
-          {MODES.map((m) => (
-            <button key={m.id} type="button" className={mode === m.id ? "on" : ""} aria-pressed={mode === m.id} onClick={() => pick(m.id)}>
-              {m.label}
-            </button>
-          ))}
-        </div>
-        <div className="cvp-tools">
-          {ytTools && (
-            <>
-              <button type="button" className="cvp-ib" onClick={() => yt.seek(yt.info!.time - 10)} aria-label="10 second peeche">−10s</button>
-              <button type="button" className="cvp-ib" onClick={() => changeRate(nextRate(rate))} aria-label={`Speed ${rate}x, badalne ke liye dabao`}>{rate}x</button>
-              <button type="button" className="cvp-ib" onClick={() => yt.seek(yt.info!.time + 10)} aria-label="10 second aage">+10s</button>
-            </>
-          )}
-          <button type="button" className={`cvp-ib cvp-done${done ? " on" : ""}`} onClick={() => markDone(!done)} aria-pressed={done}>
-            <IcCheck /> {done ? "Complete" : "Mark complete"}
-          </button>
-          {nextHref && (
-            <button type="button" className={`cvp-ib${autoNext ? " on" : ""}`} onClick={toggleAutoNext} aria-pressed={autoNext} title="Video khatam hone par agla apne aap chale (sirf YouTube aur seedhe video me)">
-              Auto-next {autoNext ? "ON" : "OFF"}
-            </button>
-          )}
-          <button type="button" className="cvp-ib" onClick={reload} aria-label="Player dobara chalao"><IcReload /></button>
-          {canFs && kind === "iframe" && (
-            <button type="button" className="cvp-ib" onClick={() => void goFs()} aria-label={fs ? "Full screen band" : "Full screen"}>
-              {fs ? <IcExit /> : <IcFull />}
-            </button>
-          )}
-          {openUrl && (
-            <a className="cvp-ib" href={openUrl} target="_blank" rel="noopener noreferrer" aria-label="Video ko bahar kholo"><IcOpen /></a>
-          )}
-        </div>
-      </div>
+      {menu &&
+        createPortal(
+          <>
+            <div className="cvs-back" onClick={close} />
+            <div className="cvs" role="dialog" aria-modal="true" aria-label="Player settings">
+              <div className="cvs-head">
+                <h3>Settings</h3>
+                <button type="button" className="cvp-ib" onClick={close} aria-label="Settings band karo">✕</button>
+              </div>
+
+              <div className="cvs-sec">
+                <p className="cvs-h">Player size</p>
+                <div className="cvp-seg" role="group" aria-label="Player ka size">
+                  {MODES.map((m) => (
+                    <button key={m.id} type="button" className={mode === m.id ? "on" : ""} aria-pressed={mode === m.id} onClick={() => pick(m.id)}>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {(kind === "video" || ytTools) && (
+                <div className="cvs-sec">
+                  <p className="cvs-h">Speed</p>
+                  <div className="cvs-row cvs-chips">
+                    {RATES.map((x) => (
+                      <button key={x} type="button" className={`cvp-ib${rate === x ? " on" : ""}`} aria-pressed={rate === x} onClick={() => changeRate(x)}>
+                        {x}x
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {ytTools && (
+                <div className="cvs-sec">
+                  <p className="cvs-h">Aage / peeche</p>
+                  <div className="cvs-row">
+                    <button type="button" className="cvp-ib" onClick={() => yt.seek(yt.info!.time - 10)}>−10s</button>
+                    <button type="button" className="cvp-ib" onClick={() => yt.seek(yt.info!.time + 10)}>+10s</button>
+                  </div>
+                </div>
+              )}
+
+              <div className="cvs-sec">
+                <p className="cvs-h">Padhai</p>
+                <div className="cvs-row">
+                  <button type="button" className={`cvp-ib cvp-done${done ? " on" : ""}`} onClick={() => markDone(!done)} aria-pressed={done}>
+                    <IcCheck /> {done ? "Complete" : "Mark complete"}
+                  </button>
+                  {nextHref && (
+                    <button type="button" className={`cvp-ib${autoNext ? " on" : ""}`} onClick={toggleAutoNext} aria-pressed={autoNext} title="Video khatam hone par agla apne aap chale (sirf YouTube aur seedhe video me)">
+                      Auto-next {autoNext ? "ON" : "OFF"}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="cvs-sec">
+                <p className="cvs-h">Aur options</p>
+                <div className="cvs-row">
+                  {canWake && (
+                    <button type="button" className={`cvp-ib${awake ? " on" : ""}`} onClick={() => void toggleAwake()} aria-pressed={awake}>
+                      Screen ON {awake ? "✓" : ""}
+                    </button>
+                  )}
+                  <button type="button" className="cvp-ib" onClick={() => void shareLink()}>{copied ? "Link copy ho gaya ✓" : "Link share"}</button>
+                  <button type="button" className="cvp-ib" onClick={() => { close(); reload(); }}><IcReload /> Dobara chalao</button>
+                  {canFs && kind === "iframe" && (
+                    <button type="button" className="cvp-ib" onClick={() => { close(); void goFs(); }}>
+                      {fs ? <IcExit /> : <IcFull />} Full screen
+                    </button>
+                  )}
+                  {openUrl && (
+                    <a className="cvp-ib" href={openUrl} target="_blank" rel="noopener noreferrer" onClick={close}><IcOpen /> बाहर खोलो</a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>,
+          document.body,
+        )}
     </div>
   );
 }
