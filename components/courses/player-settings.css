@@ -1,22 +1,40 @@
-/* Upar ki patti (Wapas + Settings) aur Settings ki neeche se khulne wali sheet */
+/* Upar ki patti (Wapas + Settings) aur Settings ka box (screen ke bilkul beech me) */
 .cvp-topbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .cvp-back { padding: 0 14px 0 9px; }
 .cvp-gear { min-width: 42px; height: 42px; padding: 0; border-radius: 50%; }
-.cvs-back { position: fixed; inset: 0; z-index: 1000; background: rgba(4, 3, 8, 0.6); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
-.cvs {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 1001; width: min(100%, 480px); max-height: 85vh; margin-inline: auto; overflow-y: auto;
-  padding: 14px 16px calc(18px + env(safe-area-inset-bottom, 0px)); border-radius: 22px 22px 0 0; color: #fff;
-  background: rgba(16, 12, 26, 0.98); border: 1px solid rgba(245, 196, 81, 0.35); border-bottom: 0; box-shadow: 0 -16px 50px rgba(0, 0, 0, 0.6);
-  animation: cvs-up 0.22s ease;
+.cvp-mid { flex: 1; display: flex; justify-content: center; min-width: 0; }
+.cvp-chip {
+  display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 999px; font: inherit; font-size: 12px; font-weight: 700;
+  color: #f6dc8c; border: 1px solid rgba(245, 196, 81, 0.55); background: rgba(245, 196, 81, 0.1); font-variant-numeric: tabular-nums;
 }
-@keyframes cvs-up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.cvp-chip-done { cursor: pointer; }
+
+/* Box ko beech me rakhne ke liye peeche wali parat hi grid hai */
+.cvs-back {
+  position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 16px;
+  background: rgba(4, 3, 8, 0.68); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.cvs {
+  width: min(100%, 440px); max-height: min(86vh, 680px); max-height: min(86dvh, 680px); overflow-y: auto; overscroll-behavior: contain;
+  padding: 16px; border-radius: 22px; color: #fff; background: rgba(16, 12, 26, 0.98); border: 1px solid rgba(245, 196, 81, 0.4);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65), 0 0 40px rgba(245, 196, 81, 0.1); animation: cvs-pop 0.2s ease;
+}
+@keyframes cvs-pop { from { transform: scale(0.94); opacity: 0; } to { transform: none; opacity: 1; } }
 .cvs-head { display: flex; align-items: center; justify-content: space-between; }
 .cvs-head h3 { margin: 0; font-size: 16px; }
 .cvs-sec { margin-top: 14px; }
 .cvs-h { margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
+.cvs-pro { opacity: 1; color: #f6dc8c; }
 .cvs-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .cvs-row .cvp-ib { flex: 1 1 calc(50% - 8px); }
 .cvs-chips .cvp-ib { flex: 1 1 52px; }
 .cvs .cvp-seg { display: flex; }
 .cvs .cvp-seg button { flex: 1; }
+.cvs-card { display: grid; gap: 8px; margin-top: 8px; padding: 10px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.04); }
+.cvs-sub { margin: 0; font-size: 13px; font-weight: 600; }
+.cvs-note {
+  width: 100%; min-height: 84px; padding: 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06);
+  color: #fff; font: inherit; font-size: 13px; resize: vertical;
+}
+.cvs-note:focus-visible { outline: 2px solid var(--gold, #f5c451); outline-offset: 1px; }
 @media (prefers-reduced-motion: reduce) { .cvs { animation: none; } }

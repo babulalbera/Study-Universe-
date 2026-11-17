@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CustomVideo from "./CustomVideo";
 import { useYouTube } from "./useYouTube";
@@ -29,6 +30,8 @@ const MODES: { id: Mode; label: string }[] = [
   { id: "tall", label: "9:16" },
 ];
 const RATES = [0.75, 1, 1.25, 1.5, 2];
+const TIMERS = [15, 25, 45, 60]; // Study timer (minute)
+const mmss = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 const clampRatio = (n: number) => Math.min(2.4, Math.max(0.4, n));
 const SLOW_MS = 10_000; // itni der load na ho to "dobara / bahar kholo" ka sujhav
 const NEXT_SECONDS = 5;
@@ -84,6 +87,11 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
   const [canWake, setCanWake] = useState(false);
   const [awake, setAwake] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [note, setNote] = useState(""); // is video ke notes (sirf isi phone/browser me save)
+  const [timerMin, setTimerMin] = useState(25);
+  const [timerEnd, setTimerEnd] = useState<number | null>(null); // timer kab khatam hoga (samay)
+  const [now, setNow] = useState(0);
+  const [timerDone, setTimerDone] = useState(false);
 
   const isYt = source === "youtube" && kind === "iframe";
   const yt = useYouTube(iframeRef, isYt, loaded, nonce);
@@ -118,6 +126,33 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [menu]);
+
+  // Is video ke notes wapas laao
+  useEffect(() => {
+    setNote(lsGet(`cv-note-${videoId}`) ?? "");
+  }, [videoId]);
+
+  // Study timer: agle video par jaane / page badalne par bhi chalta rahe
+  useEffect(() => {
+    const e = Number(lsGet("cv-timer-end"));
+    if (e > Date.now()) setTimerEnd(e);
+  }, []);
+  useEffect(() => {
+    if (!timerEnd) return;
+    const tick = () => {
+      const t = Date.now();
+      setNow(t);
+      if (t >= timerEnd) {
+        setTimerEnd(null);
+        lsSet("cv-timer-end", "");
+        setTimerDone(true);
+        try { navigator.vibrate?.([250, 120, 250]); } catch { /* chalta hai */ }
+      }
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [timerEnd]);
 
   // "Complete" ka hisaab (doosre tab me badle to bhi yahan dikhe)
   useEffect(() => {
@@ -226,6 +261,27 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
     if (!on) setCountdown(null);
   };
 
+  const left = timerEnd ? Math.max(0, Math.ceil((timerEnd - now) / 1000)) : 0;
+  const startTimer = () => {
+    const end = Date.now() + timerMin * 60_000;
+    lsSet("cv-timer-end", String(end));
+    setTimerDone(false);
+    setNow(Date.now());
+    setTimerEnd(end);
+  };
+  const stopTimer = () => {
+    lsSet("cv-timer-end", "");
+    setTimerEnd(null);
+  };
+  const saveNote = (v: string) => {
+    setNote(v);
+    lsSet(`cv-note-${videoId}`, v);
+  };
+  const addStamp = () => {
+    const t = Math.floor(yt.info?.time ?? 0);
+    saveNote(`${note}${note && !note.endsWith("\n") ? "\n" : ""}[${mmss(t)}] `);
+  };
+
   // Wapas: hamesha is course ke page par (auto-next ke baad bhi seedha sahi jagah)
   const goBack = () => router.push(`/courses/${courseId}`);
 
@@ -291,6 +347,13 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
         <button type="button" className="cvp-ib cvp-back" onClick={goBack} aria-label="Course page par wapas jao">
           <IcBack /> Wapas
         </button>
+        <span className="cvp-mid">
+          {timerEnd ? (
+            <span className="cvp-chip">⏱ {mmss(left)}</span>
+          ) : timerDone ? (
+            <button type="button" className="cvp-chip cvp-chip-done" onClick={() => setTimerDone(false)}>☕ Timer khatam, break lo! ✕</button>
+          ) : null}
+        </span>
         <button type="button" className={`cvp-ib cvp-gear${menu ? " on" : ""}`} onClick={() => setMenu(true)} aria-label="Settings" aria-haspopup="dialog" aria-expanded={menu}>
           <IcGear />
         </button>
@@ -368,11 +431,10 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
 
       {menu &&
         createPortal(
-          <>
-            <div className="cvs-back" onClick={close} />
-            <div className="cvs" role="dialog" aria-modal="true" aria-label="Player settings">
+          <div className="cvs-back" onClick={close}>
+            <div className="cvs" role="dialog" aria-modal="true" aria-label="Player settings" onClick={(e) => e.stopPropagation()}>
               <div className="cvs-head">
-                <h3>Settings</h3>
+                <h3>⚙ Settings</h3>
                 <button type="button" className="cvp-ib" onClick={close} aria-label="Settings band karo">✕</button>
               </div>
 
@@ -400,16 +462,6 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
                 </div>
               )}
 
-              {ytTools && (
-                <div className="cvs-sec">
-                  <p className="cvs-h">Aage / peeche</p>
-                  <div className="cvs-row">
-                    <button type="button" className="cvp-ib" onClick={() => yt.seek(yt.info!.time - 10)}>−10s</button>
-                    <button type="button" className="cvp-ib" onClick={() => yt.seek(yt.info!.time + 10)}>+10s</button>
-                  </div>
-                </div>
-              )}
-
               <div className="cvs-sec">
                 <p className="cvs-h">Padhai</p>
                 <div className="cvs-row">
@@ -421,6 +473,39 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
                       Auto-next {autoNext ? "ON" : "OFF"}
                     </button>
                   )}
+                </div>
+              </div>
+
+              <div className="cvs-sec">
+                <p className="cvs-h cvs-pro">★ Premium tools</p>
+                <div className="cvs-card">
+                  <p className="cvs-sub">⏱ Study timer {timerEnd ? `· ${mmss(left)} baaki` : ""}</p>
+                  {timerEnd ? (
+                    <button type="button" className="cvp-ib" onClick={stopTimer}>Timer band karo</button>
+                  ) : (
+                    <>
+                      <div className="cvs-row cvs-chips">
+                        {TIMERS.map((m) => (
+                          <button key={m} type="button" className={`cvp-ib${timerMin === m ? " on" : ""}`} aria-pressed={timerMin === m} onClick={() => setTimerMin(m)}>
+                            {m} min
+                          </button>
+                        ))}
+                      </div>
+                      <button type="button" className="cvp-ib cvp-ib-gold" onClick={startTimer}>▶ Timer shuru karo</button>
+                    </>
+                  )}
+                </div>
+                <div className="cvs-card">
+                  <p className="cvs-sub">📝 Is video ke Notes</p>
+                  <textarea
+                    className="cvs-note"
+                    rows={4}
+                    maxLength={2000}
+                    value={note}
+                    onChange={(e) => saveNote(e.target.value)}
+                    placeholder="Yahan likho, apne aap save hota hai…"
+                  />
+                  {ytTools && <button type="button" className="cvp-ib" onClick={addStamp}>⏱ Abhi ka time jodo</button>}
                 </div>
               </div>
 
@@ -442,10 +527,11 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
                   {openUrl && (
                     <a className="cvp-ib" href={openUrl} target="_blank" rel="noopener noreferrer" onClick={close}><IcOpen /> बाहर खोलो</a>
                   )}
+                  <Link className="cvp-ib" href="/contact" onClick={close}>🛟 Problem batao</Link>
                 </div>
               </div>
             </div>
-          </>,
+          </div>,
           document.body,
         )}
     </div>
