@@ -30,6 +30,7 @@ function FolderFields({ courseId, f, parents }: { courseId: string; f?: CourseFo
       <input type="hidden" name="course_id" value={courseId} />
       {f && <input type="hidden" name="id" value={f.id} />}
       <Field label="Folder का नाम (जैसे Maths, Reasoning)" name="title" defaultValue={f?.title} required />
+      <Field label="छोटा विवरण (Folder card पर दिखेगा)" name="description" rows={2} defaultValue={f?.description ?? ""} />
       <label className="su-field"><span>किस Folder के अंदर (खाली = सबसे ऊपर)</span>
         <select name="parent_id" defaultValue={f?.parent_id ?? ""}>
           <option value="">— सबसे ऊपर (Main) —</option>
@@ -139,6 +140,7 @@ export default async function AdminCourseContentPage({ params, searchParams }: {
               <span className={`adm-tag ${f.is_published ? "" : "off"}`}>{f.is_published ? "दिख रहा" : "छिपा"}</span>
             </summary>
             <form action={saveFolder}><FolderFields courseId={id} f={f} parents={opts.filter((o) => !banned.has(o.id))} /></form>
+            <CoverPicker kind="folder" courseId={id} folderId={f.id} current={f.cover_path ?? null} label="🖼️ Folder की Photo (Folder card पर दिखेगी)" />
 
             <form action={saveFolder} className="grid gap-3">
               <input type="hidden" name="course_id" value={id} />

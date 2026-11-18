@@ -20,6 +20,7 @@ type Props = {
   portraitHint?: boolean;
   openUrl?: string | null; // asli link: "बाहर खोलो" ke liye
   nextHref?: string | null; // video khatam hone par agla video
+  backHref?: string | null; // "Wapas" kahan le jaye (video ka Folder)
 };
 
 const RATIO = { wide: 16 / 9, std: 4 / 3, tall: 9 / 16 } as const;
@@ -61,7 +62,7 @@ const IcGear = () => (
 // Video ka dabba: shape apne aap, dheema load ho to madad, "complete" ka hisaab, auto-next.
 // Seedhe video me apna player, YouTube me speed/resume (agar YouTube jawab de), Drive/MEGA me unka apna player.
 // Saare control ab ek Settings (gear) sheet me hain, aur upar "Wapas" button.
-export default function PlayerStage({ kind, src, title, videoId, courseId, source, portraitHint = false, openUrl = null, nextHref = null }: Props) {
+export default function PlayerStage({ kind, src, title, videoId, courseId, source, portraitHint = false, openUrl = null, nextHref = null, backHref = null }: Props) {
   const router = useRouter();
   const box = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -284,7 +285,7 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
   };
 
   // Wapas: hamesha is course ke page par (auto-next ke baad bhi seedha sahi jagah)
-  const goBack = () => router.push(`/courses/${courseId}`);
+  const goBack = () => router.push(backHref ?? `/courses/${courseId}`);
 
   // Padhte waqt screen band na ho
   const toggleAwake = async () => {

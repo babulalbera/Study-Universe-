@@ -1,26 +1,30 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
-import { createClient } from "@/lib/supabase/server";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { videoThumbUrl } from "@/lib/course-thumbs";
-import { VIDEO_SOURCE_LABEL } from "@/lib/video-links";
 import DoneTick from "@/components/courses/DoneTick";
 import CourseProgress from "@/components/courses/CourseProgress";
+import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { coverUrl } from "@/lib/book-meta";
+import { videoThumbUrl } from "@/lib/course-thumbs";
+import { VIDEO_SOURCE_LABEL } from "@/lib/video-links";
 import { orderContent, type CourseFolder, type CourseVideo, type FolderNode } from "@/types/course-content";
 import type { Course } from "@/types/database";
 import "../courses.css";
-import "./detail.css"; // Videos ka 1/2 column grid, folder box aur video card (sirf is page ke liye)
-import "./nested.css"; // Folder ke andar Folder
+import "./detail.css"; // Videos ka 1/2 column grid aur video card (sirf is page ke liye)
+import "./folders.css"; // Folder cards
 
 export const metadata: Metadata = { title: "Course" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type VideoRow = CourseVideo & { thumb_path?: string | null };
+
+// Folder ke andar (uske andar ke Folders samet) saare Videos, usi kram me jisme student ko dikhte hain
+const collect = (n: FolderNode): CourseVideo[] => [...n.videos, ...n.children.flatMap(collect)];
 
 function VideoCard({ courseId, v, n }: { courseId: string; v: VideoRow; n: number }) {
   const img = videoThumbUrl(v);
@@ -53,25 +57,39 @@ function VideoCard({ courseId, v, n }: { courseId: string; v: VideoRow; n: numbe
   );
 }
 
-// Folder ka dabba: band/khol sakte ho (bahut saare Folders hon to aasaani rehti hai)
-function FolderBox({ icon, title, count, children }: { icon: string; title: string; count: number; children: ReactNode }) {
+// Folder ka card: cover photo, naam, vivaran. Dabane par sirf usi Folder ke andar ka saaman khulta hai.
+function FolderCard({ courseId, n, i }: { courseId: string; n: FolderNode; i: number }) {
+  const f = n.folder;
+  const first = collect(n)[0];
+  const img = coverUrl(f.cover_path ?? null) || (first ? videoThumbUrl(first as VideoRow) : null); // photo na ho to pehle video ki thumbnail
+  const subs = n.children.filter((c) => c.total > 0).length;
   return (
-    <details className="cv-fbox" open>
-      <summary className="cv-fhead">
-        <span className="cv-ficon" aria-hidden="true">{icon}</span>
-        <span className="cv-ftext">
-          <b className="cv-ftitle">{title}</b>
-          <small>{count} Videos</small>
-        </span>
-        <span className="cv-fchev" aria-hidden="true">›</span>
-      </summary>
-      <div className="cv-fbody">{children}</div>
-    </details>
+    <Link href={`/courses/${courseId}?folder=${f.id}`} className="cvf-card" style={{ "--i": i } as CSSProperties}>
+      <div className="cvf-thumb">
+        {img ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={img} alt="" loading="lazy" referrerPolicy="no-referrer" />
+        ) : (
+          <span className="cvf-ph" aria-hidden="true">📁</span>
+        )}
+        <span className="cvf-scrim" aria-hidden="true" />
+        <span className="cvf-badge">▶ {n.total} Videos</span>
+      </div>
+      <div className="cvf-body">
+        <h3 className="cvf-title">{f.title}</h3>
+        {f.description ? <p className="cvf-desc">{f.description}</p> : null}
+        <div className="cvf-foot">
+          {subs > 0 ? <span className="cvf-meta">📁 {subs} Folder</span> : null}
+          <span className="cvf-cta">खोलो ›</span>
+        </div>
+      </div>
+    </Link>
   );
 }
 
-export default async function CourseDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CourseDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ folder?: string }> }) {
   const { id } = await params;
+  const { folder: folderParam } = await searchParams;
   if (!UUID.test(id) || !isSupabaseConfigured()) notFound();
 
   const supabase = await createClient();
@@ -83,41 +101,62 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
     supabase.from("course_folders").select("*").eq("course_id", id).eq("is_published", true).order("sort_order").order("created_at").limit(200),
     supabase.from("course_videos").select("*").eq("course_id", id).eq("is_published", true).order("sort_order").order("created_at").limit(1000),
   ]);
-  const { tree, loose, flat } = orderContent((fd ?? []) as CourseFolder[], (vd ?? []) as VideoRow[]);
+  const { tree, groups, loose, flat } = orderContent((fd ?? []) as CourseFolder[], (vd ?? []) as VideoRow[]);
   const numberOf = (vid: string) => flat.findIndex((x) => x.id === vid) + 1;
-  const shown = tree.filter((n) => n.total > 0);
   const cards = (list: CourseVideo[]) => list.map((v) => <VideoCard key={v.id} courseId={id} v={v as VideoRow} n={numberOf(v.id)} />);
-  // Folder + uske Videos + uske andar ke Folders (khali Folder nahi dikhte)
-  const renderNode = (n: FolderNode): ReactNode => (
-    <FolderBox key={n.folder.id} icon="📁" title={n.folder.title} count={n.total}>
-      {n.videos.length > 0 && <div className="cv-grid cv-grid-videos">{cards(n.videos)}</div>}
-      {n.children.filter((ch) => ch.total > 0).map(renderNode)}
-    </FolderBox>
-  );
+  const folderCards = (list: FolderNode[]) => {
+    const shown = list.filter((n) => n.total > 0);
+    return shown.length > 0 ? <div className="cvf-grid">{shown.map((n, i) => <FolderCard key={n.folder.id} courseId={id} n={n} i={i} />)}</div> : null;
+  };
+
+  // Kaun sa Folder khula hai (?folder=...). Na mile ya chhipa ho to Course ka pehla (main) hissa dikhao.
+  const cur = folderParam && UUID.test(folderParam) ? groups.find((g) => g.folder.id === folderParam) ?? null : null;
+  const parent = cur?.folder.parent_id ? groups.find((g) => g.folder.id === cur.folder.parent_id) ?? null : null;
+  const backHref = cur ? (parent ? `/courses/${id}?folder=${parent.folder.id}` : `/courses/${id}`) : "/courses";
+  const backLabel = cur ? (parent ? `← ${parent.folder.title}` : "← सभी Folders") : "← सभी Courses";
+  const here = cur ? collect(cur) : flat;
+  const playFirst = here[0];
 
   return (
     <>
-      <PageHeader title={course.title} subtitle={`All Contents · ${flat.length} Lectures`} />
+      <PageHeader
+        title={cur ? cur.folder.title : course.title}
+        subtitle={cur ? `${course.title} · ${cur.total} Lectures` : `All Contents · ${flat.length} Lectures`}
+      />
       <div className="su-row" style={{ marginBottom: 12 }}>
-        <Link href="/courses" className="su-btn">← सभी Courses</Link>
-        {flat[0] && <Link href={`/courses/${id}/watch/${flat[0].id}`} className="su-btn su-btn-primary">▶ पहला Video चलाओ</Link>}
+        <Link href={backHref} className="su-btn">{backLabel}</Link>
+        {playFirst && <Link href={`/courses/${id}/watch/${playFirst.id}`} className="su-btn su-btn-primary">▶ पहला Video चलाओ</Link>}
       </div>
-      {flat.length > 0 && <CourseProgress courseId={id} total={flat.length} />}
-      {course.description && <p style={{ fontFamily: "var(--dev)", marginBottom: 12 }}>{course.description}</p>}
 
-      {flat.length === 0 ? (
+      {!cur && flat.length > 0 && <CourseProgress courseId={id} total={flat.length} />}
+      {!cur && course.description && <p style={{ fontFamily: "var(--dev)", marginBottom: 12 }}>{course.description}</p>}
+
+      {cur ? (
+        cur.total === 0 ? (
+          <EmptyState icon="📁" title="इस Folder में अभी कुछ नहीं है" text="Admin जैसे ही Videos जोड़ेगा, यहाँ दिखेंगे।" />
+        ) : (
+          <div className="cvf-wrap">
+            {cur.folder.description && <p className="cvf-intro">{cur.folder.description}</p>}
+            {folderCards(cur.children)}
+            {cur.videos.length > 0 && (
+              <>
+                {cur.children.some((c) => c.total > 0) && <h2 className="cvf-sec">🎬 Videos</h2>}
+                <div className="cv-grid cv-grid-videos">{cards(cur.videos)}</div>
+              </>
+            )}
+          </div>
+        )
+      ) : flat.length === 0 ? (
         <EmptyState icon="🎬" title="अभी कोई Video नहीं है" text="Admin जैसे ही Videos जोड़ेगा, यहाँ दिखेंगे।" />
       ) : (
-        <div className="cv-sections">
-          {shown.map(renderNode)}
-          {loose.length > 0 &&
-            (shown.length > 0 ? (
-              <FolderBox icon="📄" title="अन्य Videos" count={loose.length}>
-                <div className="cv-grid cv-grid-videos">{cards(loose)}</div>
-              </FolderBox>
-            ) : (
+        <div className="cvf-wrap">
+          {folderCards(tree)}
+          {loose.length > 0 && (
+            <>
+              {tree.some((n) => n.total > 0) && <h2 className="cvf-sec">📄 अन्य Videos</h2>}
               <div className="cv-grid cv-grid-videos">{cards(loose)}</div>
-            ))}
+            </>
+          )}
         </div>
       )}
     </>

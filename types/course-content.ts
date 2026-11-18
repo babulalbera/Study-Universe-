@@ -1,6 +1,6 @@
 import type { VideoSource } from "@/lib/video-links";
 
-export type CourseFolder = { id: string; course_id: string; parent_id?: string | null; title: string; sort_order: number; is_published: boolean };
+export type CourseFolder = { id: string; course_id: string; parent_id?: string | null; title: string; description?: string; cover_path?: string | null; sort_order: number; is_published: boolean };
 export type CourseVideo = {
   id: string; course_id: string; folder_id: string | null; title: string; description: string;
   source: VideoSource; url: string | null; storage_path: string | null; sort_order: number; is_published: boolean;

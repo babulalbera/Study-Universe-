@@ -36,6 +36,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
   const video = flat[idx];
   const next = idx < flat.length - 1 ? flat[idx + 1] : null;
   const nextHref = next ? `/courses/${id}/watch/${next.id}` : null; // video khatam hone par auto-next ke liye
+  const backHref = video.folder_id ? `/courses/${id}?folder=${video.folder_id}` : `/courses/${id}`; // Wapas: isi Folder me
   const folderName = video.folder_id ? groups.find((g) => g.folder.id === video.folder_id)?.trail ?? null : null;
 
   let player: Player | null = null;
@@ -79,6 +80,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
             portraitHint={!!video.url && video.url.includes("/shorts/")}
             openUrl={video.url}
             nextHref={nextHref}
+            backHref={backHref}
           />
         ) : (
           <div className="cvp-failbox">
@@ -90,7 +92,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
 
         <section className="cv-pinfo">
           <div className="cv-vtitlerow">
-            <Link href={`/courses/${id}`} className="cv-pbtn cv-pbtn-all" aria-label="सारे Videos">📚</Link>
+            <Link href={backHref} className="cv-pbtn cv-pbtn-all" aria-label="सारे Videos">📚</Link>
             <div className="cv-vtext">
               <h1 className="cv-vtitle">{video.title}</h1>
               <p className="cv-vcourse">{course.title}</p>

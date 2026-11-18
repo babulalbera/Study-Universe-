@@ -6,7 +6,7 @@ import { COVER_BUCKET, isCoverPath } from "@/lib/book-meta";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const BUCKET = "course-videos";
 const MAX_LEVEL = 6; // Folder ke andar Folder ke andar... itne level tak
-type Row = { id: string; parent_id: string | null };
+type Row = { id: string; parent_id: string | null; cover_path?: string | null };
 const paths = (courseId: string) => [`/admin/courses/${courseId}`, "/admin/courses", "/courses", `/courses/${courseId}`];
 
 export async function saveFolder(formData: FormData) {
@@ -19,6 +19,8 @@ export async function saveFolder(formData: FormData) {
   const title = s(formData, "title");
   if (title.length < 2) back(P, "error", "Folder ka naam likho");
   const row: Record<string, unknown> = { title: title.slice(0, 100), sort_order: num(formData, "sort_order"), is_published: on(formData, "is_published") };
+
+  if (formData.has("description")) row.description = s(formData, "description").slice(0, 500); // chhota vivaran (Folder card par)
 
   if (formData.has("parent_id")) {
     const parent = s(formData, "parent_id");
@@ -57,7 +59,7 @@ export async function deleteFolder(formData: FormData) {
   if (!UUID.test(courseId) || !UUID.test(id)) back("/admin/courses", "error", "Folder nahi mila");
   const P = `/admin/courses/${courseId}`;
   // Is Folder ke andar ke saare Folders (aur unke videos ki upload files) bhi hatenge
-  const { data: fs } = await c.supabase.from("course_folders").select("id, parent_id").eq("course_id", courseId).limit(500);
+  const { data: fs } = await c.supabase.from("course_folders").select("id, parent_id, cover_path").eq("course_id", courseId).limit(500);
   const all = (fs ?? []) as Row[];
   const ids = [id];
   for (let i = 0; i < ids.length; i++) for (const f of all) if (f.parent_id === ids[i] && !ids.includes(f.id)) ids.push(f.id);
@@ -67,9 +69,21 @@ export async function deleteFolder(formData: FormData) {
   const { error } = await c.supabase.from("course_folders").delete().eq("id", id).eq("course_id", courseId);
   if (error) back(P, "error", "Hata nahi paya");
   if (files.length) await c.supabase.storage.from(BUCKET).remove(files);
-  const covers = rows.map((v) => v.thumb_path).filter((p): p is string => !!p && isCoverPath(p));
+  const covers = [...rows.map((v) => v.thumb_path), ...all.filter((f) => ids.includes(f.id)).map((f) => f.cover_path)].filter((p): p is string => !!p && isCoverPath(p));
   if (covers.length) await c.supabase.storage.from(COVER_BUCKET).remove(covers);
   await audit(c, "delete", "course_folders", id);
   refresh(paths(courseId));
   back(P, "ok", "Folder, uske andar ke Folders aur saare Videos hata diye ✓");
+}
+
+// Folder ki photo: browser se pehle hi bucket me upload ho chuki hoti hai. path=null matlab photo hatao.
+export async function setFolderCover(courseId: string, folderId: string, path: string | null): Promise<{ error?: string }> {
+  const c = await ctx();
+  if (!UUID.test(courseId) || !UUID.test(folderId)) return { error: "Folder nahi mila" };
+  if (path !== null && !isCoverPath(path)) return { error: "Photo ka path galat hai" };
+  const { error } = await c.supabase.from("course_folders").update({ cover_path: path }).eq("id", folderId).eq("course_id", courseId);
+  if (error) return { error: `Save nahi hua: ${error.message}` };
+  await audit(c, "update", "course_folders", folderId, { cover: path ? "set" : "removed" });
+  refresh(paths(courseId));
+  return {};
 }
