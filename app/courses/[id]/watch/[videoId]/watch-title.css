@@ -1,0 +1,6 @@
+/* Video ke theek neeche: Video ka naam (pehle yahan Pichla / Agla buttons the) */
+.cv-vtitlerow { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.cv-vtitlerow .cv-pbtn-all { flex: none; min-width: 48px; }
+.cv-vtext { min-width: 0; flex: 1; }
+.cv-vtitle { margin: 0; font-size: clamp(17px, 4.6vw, 22px); line-height: 1.3; font-weight: 700; overflow-wrap: anywhere; }
+.cv-vcourse { margin: 4px 0 0; font-size: 12.5px; opacity: 0.65; }

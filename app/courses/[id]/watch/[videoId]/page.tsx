@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import PageHeader from "@/components/ui/PageHeader";
 import PlayerStage from "@/components/courses/PlayerStage";
 import PlaylistPanel, { type PlaylistSection } from "@/components/courses/PlaylistPanel";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { VIDEO_SOURCE_LABEL, playerFor, type Player } from "@/lib/video-links";
+import { playerFor, type Player } from "@/lib/video-links";
 import { orderContent, type CourseFolder, type CourseVideo } from "@/types/course-content";
 import type { Course } from "@/types/database";
 import "../../../courses.css";
 import "./watch.css"; // Watch page ka layout (1 column, bade screen par 2) aur premium Playlist
+import "./watch-title.css"; // Video ke neeche naam wali patti
 
 export const metadata: Metadata = { title: "Lecture" };
 
@@ -34,11 +34,9 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
   const idx = flat.findIndex((v) => v.id === videoId);
   if (idx < 0) notFound(); // video nahi mila, chhipa hai, ya uska Folder chhipa hai
   const video = flat[idx];
-  const prev = idx > 0 ? flat[idx - 1] : null;
   const next = idx < flat.length - 1 ? flat[idx + 1] : null;
-  const prevHref = prev ? `/courses/${id}/watch/${prev.id}` : null;
-  const nextHref = next ? `/courses/${id}/watch/${next.id}` : null;
-  const folderName = video.folder_id ? groups.find((g) => g.folder.id === video.folder_id)?.folder.title ?? null : null;
+  const nextHref = next ? `/courses/${id}/watch/${next.id}` : null; // video khatam hone par auto-next ke liye
+  const folderName = video.folder_id ? groups.find((g) => g.folder.id === video.folder_id)?.trail ?? null : null;
 
   let player: Player | null = null;
   if (video.source === "upload" && video.storage_path) {
@@ -57,7 +55,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
   const items = (list: CourseVideo[]) => list.map((v) => ({ id: v.id, title: v.title, n: numOf.get(v.id) ?? 0 }));
   const withVideos = groups.filter((g) => g.videos.length > 0);
   const sections: PlaylistSection[] = [
-    ...withVideos.map((g) => ({ key: g.folder.id, title: `📁 ${g.folder.title}`, items: items(g.videos) })),
+    ...withVideos.map((g) => ({ key: g.folder.id, title: `📁 ${g.trail}`, items: items(g.videos) })),
     ...(loose.length > 0 ? [{ key: "loose", title: withVideos.length > 0 ? "📄 अन्य Videos" : null, items: items(loose) }] : []),
   ];
 
@@ -67,50 +65,47 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
       : null;
 
   return (
-    <>
-      <PageHeader title={video.title} subtitle={course.title} />
-      <div className="cv-wrap cv-wrap-watch">
-        <div className="cv-main">
-          {player ? (
-            <PlayerStage
-              key={video.id}
-              kind={player.kind}
-              src={player.src}
-              title={video.title}
-              videoId={video.id}
-              courseId={id}
-              source={video.source}
-              portraitHint={!!video.url && video.url.includes("/shorts/")}
-              openUrl={video.url}
-              nextHref={nextHref}
-            />
-          ) : (
-            <div className="cvp-failbox">
-              <span aria-hidden="true">🎬</span>
-              <p>Video यहाँ नहीं चल पाया।</p>
-              {video.url && <a className="cv-pbtn cv-pbtn-main" href={video.url} target="_blank" rel="noopener noreferrer">🔗 बाहर खोलो</a>}
+    <div className="cv-wrap cv-wrap-watch">
+      <div className="cv-main">
+        {player ? (
+          <PlayerStage
+            key={video.id}
+            kind={player.kind}
+            src={player.src}
+            title={video.title}
+            videoId={video.id}
+            courseId={id}
+            source={video.source}
+            portraitHint={!!video.url && video.url.includes("/shorts/")}
+            openUrl={video.url}
+            nextHref={nextHref}
+          />
+        ) : (
+          <div className="cvp-failbox">
+            <span aria-hidden="true">🎬</span>
+            <p>Video यहाँ नहीं चल पाया।</p>
+            {video.url && <a className="cv-pbtn cv-pbtn-main" href={video.url} target="_blank" rel="noopener noreferrer">🔗 बाहर खोलो</a>}
+          </div>
+        )}
+
+        <section className="cv-pinfo">
+          <div className="cv-vtitlerow">
+            <Link href={`/courses/${id}`} className="cv-pbtn cv-pbtn-all" aria-label="सारे Videos">📚</Link>
+            <div className="cv-vtext">
+              <h1 className="cv-vtitle">{video.title}</h1>
+              <p className="cv-vcourse">{course.title}</p>
             </div>
-          )}
-
-          <nav className="cv-pnav" aria-label="Video badlo">
-            <Link href={`/courses/${id}`} className="cv-pbtn cv-pbtn-all" aria-label="सारे Videos">📚<span className="cv-hide-sm"> सारे Videos</span></Link>
-            {prevHref ? <Link href={prevHref} className="cv-pbtn">← पिछला</Link> : <span className="cv-pbtn is-off" aria-disabled="true">← पिछला</span>}
-            {nextHref ? <Link href={nextHref} className="cv-pbtn cv-pbtn-main">अगला →</Link> : <span className="cv-pbtn is-off" aria-disabled="true">अगला →</span>}
-          </nav>
-
-          <section className="cv-pinfo">
-            <div className="cv-pchips">
-              <span className="cv-chip cv-chip-gold">Lecture {idx + 1} / {flat.length}</span>
-              <span className="cv-chip">{VIDEO_SOURCE_LABEL[video.source]}</span>
-              {folderName && <span className="cv-chip">📁 {folderName}</span>}
-            </div>
-            {video.description && <p className="cv-pdesc">{video.description}</p>}
-            {tip && <p className="cv-tip">{tip}</p>}
-          </section>
-        </div>
-
-        <PlaylistPanel courseId={id} currentId={video.id} total={flat.length} sections={sections} />
+          </div>
+          <div className="cv-pchips">
+            <span className="cv-chip cv-chip-gold">Lecture {idx + 1} / {flat.length}</span>
+            {folderName && <span className="cv-chip">📁 {folderName}</span>}
+          </div>
+          {video.description && <p className="cv-pdesc">{video.description}</p>}
+          {tip && <p className="cv-tip">{tip}</p>}
+        </section>
       </div>
-    </>
+
+      <PlaylistPanel courseId={id} currentId={video.id} total={flat.length} sections={sections} />
+    </div>
   );
 }
