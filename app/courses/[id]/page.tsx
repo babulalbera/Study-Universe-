@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
 import DoneTick from "@/components/courses/DoneTick";
-import CourseProgress from "@/components/courses/CourseProgress";
+import FolderCardShell from "@/components/courses/FolderCardShell";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { coverUrl } from "@/lib/book-meta";
@@ -64,6 +64,7 @@ function FolderCard({ courseId, n, i }: { courseId: string; n: FolderNode; i: nu
   const img = coverUrl(f.cover_path ?? null) || (first ? videoThumbUrl(first as VideoRow) : null); // photo na ho to pehle video ki thumbnail
   const subs = n.children.filter((c) => c.total > 0).length;
   return (
+    <FolderCardShell courseId={courseId} folderId={f.id} title={f.title} index={i}>
     <Link href={`/courses/${courseId}?folder=${f.id}`} className="cvf-card" style={{ "--i": i } as CSSProperties}>
       <div className="cvf-thumb">
         {img ? (
@@ -84,6 +85,7 @@ function FolderCard({ courseId, n, i }: { courseId: string; n: FolderNode; i: nu
         </div>
       </div>
     </Link>
+    </FolderCardShell>
   );
 }
 
@@ -113,8 +115,6 @@ export default async function CourseDetailPage({ params, searchParams }: { param
   const parent = cur?.folder.parent_id ? groups.find((g) => g.folder.id === cur.folder.parent_id) ?? null : null;
   const backHref = cur ? (parent ? `/courses/${id}?folder=${parent.folder.id}` : `/courses/${id}`) : "/courses";
   const backLabel = cur ? (parent ? `← ${parent.folder.title}` : "← सभी Folders") : "← सभी Courses";
-  const here = cur ? collect(cur) : flat;
-  const playFirst = here[0];
 
   return (
     <>
@@ -124,10 +124,8 @@ export default async function CourseDetailPage({ params, searchParams }: { param
       />
       <div className="su-row" style={{ marginBottom: 12 }}>
         <Link href={backHref} className="su-btn">{backLabel}</Link>
-        {playFirst && <Link href={`/courses/${id}/watch/${playFirst.id}`} className="su-btn su-btn-primary">▶ पहला Video चलाओ</Link>}
       </div>
 
-      {!cur && flat.length > 0 && <CourseProgress courseId={id} total={flat.length} />}
       {!cur && course.description && <p style={{ fontFamily: "var(--dev)", marginBottom: 12 }}>{course.description}</p>}
 
       {cur ? (
