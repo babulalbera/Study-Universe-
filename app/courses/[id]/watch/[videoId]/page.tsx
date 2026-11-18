@@ -34,7 +34,11 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
   const idx = flat.findIndex((v) => v.id === videoId);
   if (idx < 0) notFound(); // video nahi mila, chhipa hai, ya uska Folder chhipa hai
   const video = flat[idx];
-  const next = idx < flat.length - 1 ? flat[idx + 1] : null;
+  // Playlist, Lecture number aur auto-next: sirf isi Folder ke Videos me (bina Folder wala ho to bina-Folder wale Videos me)
+  const group = video.folder_id ? groups.find((g) => g.folder.id === video.folder_id) ?? null : null;
+  const siblings: CourseVideo[] = group ? group.videos : loose;
+  const pos = Math.max(0, siblings.findIndex((v) => v.id === videoId));
+  const next = pos < siblings.length - 1 ? siblings[pos + 1] : null;
   const nextHref = next ? `/courses/${id}/watch/${next.id}` : null; // video khatam hone par auto-next ke liye
   const backHref = video.folder_id ? `/courses/${id}?folder=${video.folder_id}` : `/courses/${id}`; // Wapas: isi Folder me
   const folderName = video.folder_id ? groups.find((g) => g.folder.id === video.folder_id)?.trail ?? null : null;
@@ -52,12 +56,12 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
   }
 
   // Playlist (client component) ko sirf zaroori jaankari do
-  const numOf = new Map(flat.map((v, i) => [v.id, i + 1]));
-  const items = (list: CourseVideo[]) => list.map((v) => ({ id: v.id, title: v.title, n: numOf.get(v.id) ?? 0 }));
-  const withVideos = groups.filter((g) => g.videos.length > 0);
   const sections: PlaylistSection[] = [
-    ...withVideos.map((g) => ({ key: g.folder.id, title: `📁 ${g.trail}`, items: items(g.videos) })),
-    ...(loose.length > 0 ? [{ key: "loose", title: withVideos.length > 0 ? "📄 अन्य Videos" : null, items: items(loose) }] : []),
+    {
+      key: group?.folder.id ?? "loose",
+      title: group ? `📁 ${group.trail}` : "📄 अन्य Videos",
+      items: siblings.map((v, i) => ({ id: v.id, title: v.title, n: i + 1 })),
+    },
   ];
 
   const tip =
@@ -99,7 +103,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
           <div className="cv-pchips">
-            <span className="cv-chip cv-chip-gold">Lecture {idx + 1} / {flat.length}</span>
+            <span className="cv-chip cv-chip-gold">Lecture {pos + 1} / {siblings.length}</span>
             {folderName && <span className="cv-chip">📁 {folderName}</span>}
           </div>
           {video.description && <p className="cv-pdesc">{video.description}</p>}
@@ -107,7 +111,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
         </section>
       </div>
 
-      <PlaylistPanel courseId={id} currentId={video.id} total={flat.length} sections={sections} />
+      <PlaylistPanel courseId={id} currentId={video.id} total={siblings.length} sections={sections} />
     </div>
   );
 }

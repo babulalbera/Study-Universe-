@@ -102,8 +102,7 @@ export default async function CourseDetailPage({ params, searchParams }: { param
     supabase.from("course_videos").select("*").eq("course_id", id).eq("is_published", true).order("sort_order").order("created_at").limit(1000),
   ]);
   const { tree, groups, loose, flat } = orderContent((fd ?? []) as CourseFolder[], (vd ?? []) as VideoRow[]);
-  const numberOf = (vid: string) => flat.findIndex((x) => x.id === vid) + 1;
-  const cards = (list: CourseVideo[]) => list.map((v) => <VideoCard key={v.id} courseId={id} v={v as VideoRow} n={numberOf(v.id)} />);
+  const cards = (list: CourseVideo[]) => list.map((v, i) => <VideoCard key={v.id} courseId={id} v={v as VideoRow} n={i + 1} />); // Lecture number isi Folder ke hisaab se
   const folderCards = (list: FolderNode[]) => {
     const shown = list.filter((n) => n.total > 0);
     return shown.length > 0 ? <div className="cvf-grid">{shown.map((n, i) => <FolderCard key={n.folder.id} courseId={id} n={n} i={i} />)}</div> : null;
