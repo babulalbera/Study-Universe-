@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CustomVideo from "./CustomVideo";
 import { useYouTube } from "./useYouTube";
-import { clearPos, getAutoNext, getDone, getPos, getRate, onDoneChange, saveAutoNext, savePos, saveRate, setDone } from "@/lib/course-progress";
+import { clearPos, getAutoNext, getDone, getPos, getRate, onDoneChange, saveAutoNext, savePos, saveRate, setDone, syncDone } from "@/lib/course-progress";
 import "./player.css";
 import "./player-settings.css";
 
@@ -162,6 +162,7 @@ export default function PlayerStage({ kind, src, title, videoId, courseId, sourc
       setDoneState(on);
     };
     sync();
+    void syncDone(courseId); // login ho to kisi bhi mobile ka hisaab yahan aa jaye
     return onDoneChange(courseId, sync);
   }, [courseId, videoId]);
 

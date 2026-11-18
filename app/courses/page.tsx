@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
+import CourseProgress from "@/components/courses/CourseProgress";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { coverUrl } from "@/lib/book-meta";
@@ -36,6 +37,7 @@ function Card({ c, count, i }: { c: CourseRow; count: number; i: number }) {
         {c.category && <span className="cv-cat">{c.category}</span>}
         <h3 className="cv-ctitle">{c.title}</h3>
         {c.description && <p className="cv-desc">{c.description}</p>}
+        {count > 0 && <CourseProgress courseId={c.id} total={count} compact />}
         <div className="cv-cfoot">
           <span className="cv-kind">{count > 0 ? "Batch Collection" : "Course"}</span>
           <span className="cv-cta">{count > 0 ? "खोलो ›" : c.url ? "Link खोलो ›" : "जल्द आएगा"}</span>

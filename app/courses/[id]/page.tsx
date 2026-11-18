@@ -9,6 +9,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { videoThumbUrl } from "@/lib/course-thumbs";
 import { VIDEO_SOURCE_LABEL } from "@/lib/video-links";
 import DoneTick from "@/components/courses/DoneTick";
+import CourseProgress from "@/components/courses/CourseProgress";
 import { orderContent, type CourseFolder, type CourseVideo, type FolderNode } from "@/types/course-content";
 import type { Course } from "@/types/database";
 import "../courses.css";
@@ -101,6 +102,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
         <Link href="/courses" className="su-btn">← सभी Courses</Link>
         {flat[0] && <Link href={`/courses/${id}/watch/${flat[0].id}`} className="su-btn su-btn-primary">▶ पहला Video चलाओ</Link>}
       </div>
+      {flat.length > 0 && <CourseProgress courseId={id} total={flat.length} />}
       {course.description && <p style={{ fontFamily: "var(--dev)", marginBottom: 12 }}>{course.description}</p>}
 
       {flat.length === 0 ? (
