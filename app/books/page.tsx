@@ -41,7 +41,7 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
               <div key={b.id} className="su-item bk-card">
                 <BookCover path={b.cover_path} title={b.title} width={84} />
                 <div className="bk-body">
-                  <h3>{b.title}</h3>
+                  <h3><a href={`/books/${b.id}/read`}>{b.title}</a></h3>
                   {b.author && <p>👤 {b.author}</p>}
                   {b.description && <p className="bk-clamp">{b.description}</p>}
                   {extra && <p>{extra}</p>}
