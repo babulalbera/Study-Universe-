@@ -8,7 +8,8 @@ import { UPLOAD_MAX_MB, UPLOAD_TYPES, VIDEO_SOURCE_LABEL, parseVideoLink } from 
 
 const EXT: Record<string, string> = { "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov", "video/x-m4v": "m4v" };
 
-export default function CourseVideoAdd({ courseId, folders }: { courseId: string; folders: { id: string; title: string }[] }) {
+// defaultFolderId: jis Folder ke andar abhi ho, Video usi me jud jaye (chaho to select se badal sakte ho)
+export default function CourseVideoAdd({ courseId, folders, defaultFolderId = "" }: { courseId: string; folders: { id: string; title: string }[]; defaultFolderId?: string }) {
   const router = useRouter();
   const [mode, setMode] = useState<"link" | "file">("link");
   const [busy, setBusy] = useState(false);
@@ -29,7 +30,7 @@ export default function CourseVideoAdd({ courseId, folders }: { courseId: string
     const hasThumb = thumbFile instanceof File && thumbFile.size > 0;
 
     if (mode === "link") {
-      if (!parseVideoLink(linkText)) return setMsg({ ok: false, text: "सही Link डालो: YouTube, Google Drive, MEGA या सीधा .mp4 (https://...)" });
+      if (!parseVideoLink(linkText)) return setMsg({ ok: false, text: "सही Link डालो: YouTube, Google Drive, MEGA, Telegram या सीधा .mp4 (https://...)" });
       setBusy(true);
       let thumbPath: string | undefined;
       if (hasThumb) {
@@ -91,14 +92,14 @@ export default function CourseVideoAdd({ courseId, folders }: { courseId: string
       <label className="su-field"><span>Video का Title</span><input name="title" required maxLength={150} /></label>
       <label className="su-field"><span>छोटा विवरण (ज़रूरी नहीं, अधिकतम 500 अक्षर)</span><textarea name="description" rows={2} maxLength={500} /></label>
       <label className="su-field"><span>Folder</span>
-        <select name="folder_id" defaultValue="">
+        <select name="folder_id" defaultValue={defaultFolderId}>
           <option value="">— बिना Folder —</option>
           {folders.map((f) => <option key={f.id} value={f.id}>{f.title}</option>)}
         </select>
       </label>
       {mode === "link" ? (
         <label className="su-field">
-          <span>Video का Link (YouTube, Google Drive, MEGA, सीधा .mp4)</span>
+          <span>Video का Link (YouTube, Google Drive, MEGA, Telegram, सीधा .mp4)</span>
           <input name="url" type="url" inputMode="url" placeholder="https://..." value={linkText} onChange={(e) => setLinkText(e.target.value)} required />
           {detected && <small style={{ color: "var(--mint, #a7f3d0)" }}>✓ {VIDEO_SOURCE_LABEL[detected.source]} Link पहचाना गया</small>}
           {linkText && !detected && <small style={{ color: "#fca5a5" }}>ये Link Player में नहीं चलेगा (Folder Link या अनजान साइट)</small>}
