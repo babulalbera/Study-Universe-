@@ -13,7 +13,7 @@ export default function CoverPicker({ kind, courseId, videoId, folderId, current
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const preview = coverUrl(current);
 
   const save = (path: string | null) =>
@@ -28,16 +28,17 @@ export default function CoverPicker({ kind, courseId, videoId, folderId, current
     const up = await uploadCover(file);
     if (!up.path) {
       setBusy(false);
-      return setMsg(up.error ?? "Upload nahi hua");
+      return setMsg({ ok: false, text: up.error ?? "Upload nahi hua" });
     }
     const res = await save(up.path);
     if (res.error) {
       await removeCover(up.path); // adhoori photo saaf
       setBusy(false);
-      return setMsg(res.error);
+      return setMsg({ ok: false, text: res.error });
     }
     if (current) await removeCover(current); // purani photo hatao
     setBusy(false);
+    setMsg({ ok: true, text: "Photo lag gayi ✓" });
     router.refresh();
   }
 
@@ -47,10 +48,11 @@ export default function CoverPicker({ kind, courseId, videoId, folderId, current
     const res = await save(null);
     if (res.error) {
       setBusy(false);
-      return setMsg(res.error);
+      return setMsg({ ok: false, text: res.error });
     }
     if (current) await removeCover(current);
     setBusy(false);
+    setMsg({ ok: true, text: "Photo hat gayi ✓" });
     router.refresh();
   }
 
@@ -73,7 +75,7 @@ export default function CoverPicker({ kind, courseId, videoId, folderId, current
         </div>
       </div>
       <small className="su-muted">JPG, PNG या WebP, अधिकतम 2MB। 16:9 (चौड़ी) Photo सबसे अच्छी दिखती है।{kind === "folder" ? " Photo न लगाओ तो Folder के पहले Video की thumbnail अपने आप दिखेगी।" : ""}</small>
-      {msg && <p role="alert" className="text-[13px]" style={{ color: "#fca5a5" }}>{msg}</p>}
+      {msg && <p role={msg.ok ? "status" : "alert"} className="text-[13px]" style={{ color: msg.ok ? "var(--mint, #a7f3d0)" : "#fca5a5" }}>{msg.text}</p>}
     </div>
   );
 }

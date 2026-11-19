@@ -1,8 +1,5 @@
-export default function Flash({ ok, error }: { ok?: string; error?: string }) {
-  if (!ok && !error) return null;
-  return (
-    <p role={error ? "alert" : "status"} className="glass text-[13.5px]" style={{ color: error ? "#fca5a5" : "var(--mint, #a7f3d0)" }}>
-      {error ?? ok}
-    </p>
-  );
+// Save / Delete ka sandesh ab AdminFeedback (admin layout me) screen ke upar patti me dikhata hai,
+// isliye yahan kuch nahi banta. Purane pages me <Flash /> likha hai, wo chalte rahenge.
+export default function Flash(_props: { ok?: string; error?: string }) {
+  return null;
 }

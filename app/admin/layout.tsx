@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminFeedback from "@/components/admin/AdminFeedback";
 import { getUser, requireAdmin } from "@/lib/auth";
 
 // Asli suraksha: Server par database ke role se jaanch. Admin nahi to 404.
@@ -11,6 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="adm">
       <AdminSidebar />
       <div className="grid gap-4 content-start min-w-0">{children}</div>
+      <AdminFeedback />
     </div>
   );
 }
