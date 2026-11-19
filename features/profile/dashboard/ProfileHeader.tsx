@@ -1,35 +1,26 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { streaks, totalDone, type StudyInput } from "@/lib/study-stats";
+import { streaks, type StudyInput } from "@/lib/study-stats";
 import { P, type Lang } from "@/lib/i18n";
 import type { FullProfile } from "./queries";
 
-type Props = { p: FullProfile; bio: string; input: StudyInput; points: number; level: number; rank: number | null; lang: Lang };
+type Props = { p: FullProfile; bio: string; input: StudyInput; lang: Lang };
 
 const svg = { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
-const IcCheck = () => <svg {...svg}><circle cx="12" cy="12" r="9" /><path d="m8 12.5 2.8 2.8L16 9.5" /></svg>;
 const IcFlame = () => <svg {...svg}><path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.2 2-4.2.3 1.2 1 1.8 1.8 2C10.5 8 10.8 5.5 12 3Z" /></svg>;
-const IcBars = () => <svg {...svg}><path d="M5 20V10M12 20V4M19 20v-7" /></svg>;
-const IcCap = () => <svg {...svg}><path d="m2 9 10-5 10 5-10 5L2 9Z" /><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5" /></svg>;
 const IcPencil = () => <svg {...svg}><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3Z" /></svg>;
 const IcUser = () => <svg {...svg}><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>;
 
-export default function ProfileHeader({ p, bio, input, points, level, rank, lang }: Props) {
+export default function ProfileHeader({ p, bio, input, lang }: Props) {
   const t = P[lang].hdr;
-  // Streak aur Tasks user ke apne "aaj" ke hisaab se (browser me) nikalte hain
+  // Streak user ke apne "aaj" ke hisaab se (browser me) nikalta hai
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => setNow(new Date()), []);
-  const s = useMemo(() => (now ? { streak: streaks(input, now).current, done: totalDone(input, now) } : null), [now, input]);
+  const streak = useMemo(() => (now ? streaks(input, now).current : null), [now, input]);
 
   const name = p.fullName || t.defaultName;
   const initial = name.charAt(0).toUpperCase();
-  const stats = [
-    { key: "tasks", label: t.tasks, value: s ? String(s.done) : "—", icon: <IcCheck /> },
-    { key: "streak", label: t.streak, value: s ? `${s.streak}${lang === "hi" ? " दिन" : "d"}` : "—", icon: <IcFlame /> },
-    { key: "rank", label: t.rank, value: rank ? `#${rank}` : "—", icon: <IcBars /> },
-    { key: "points", label: t.points, value: String(points), icon: <IcCap /> },
-  ];
 
   return (
     <section id="profile" className="pr-card">
@@ -45,7 +36,7 @@ export default function ProfileHeader({ p, bio, input, points, level, rank, lang
           <h1>{name}</h1>
           <div className="pr-pills">
             <span className="pr-pill"><IcUser /> {p.role === "admin" ? t.admin : t.student}</span>
-            <span className="pr-streak"><IcFlame /> {t.streakPill(s ? s.streak : "—")}</span>
+            <span className="pr-streak"><IcFlame /> {t.streakPill(streak ?? "—")}</span>
           </div>
           <p className="pr-bio">“{bio || t.defaultBio}”</p>
         </div>
@@ -53,17 +44,6 @@ export default function ProfileHeader({ p, bio, input, points, level, rank, lang
 
       <div className="pr-editrow">
         <Link href="/profile/settings" className="pr-edit"><IcPencil /> {t.edit}</Link>
-        <span className="pr-lvl"><i aria-hidden="true" /> {t.lvl(level)}</span>
-      </div>
-
-      <div className="pr-stats">
-        {stats.map((x) => (
-          <div key={x.key} className="pr-stat">
-            <span className="pr-sic">{x.icon}</span>
-            <b>{x.value}</b>
-            <small>{x.label}</small>
-          </div>
-        ))}
       </div>
     </section>
   );

@@ -1,13 +1,15 @@
 "use client";
 import Link from "next/link";
-import { useState, useTransition, type FormEvent } from "react";
+import { useState, useTransition, type CSSProperties, type FormEvent } from "react";
 import { useToast } from "@/components/ui/Toast";
+import BookCover from "@/components/books/BookCover";
+import { coverUrl } from "@/lib/book-meta";
 import { P, type Lang } from "@/lib/i18n";
 import { saveBookProgress } from "./progress-actions";
 import type { ContinueBook } from "./continue-queries";
+import "./continue-premium.css";
 
 const sv = { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
-const IcBook = () => <svg {...sv} width={26} height={26}><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z" /><path d="M4 19a2 2 0 0 1 2-2h13" /></svg>;
 const IcPlay = () => <svg {...sv} fill="currentColor" stroke="none"><path d="M7 4.5v15l13-7.5-13-7.5Z" /></svg>;
 const IcEdit = () => <svg {...sv}><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3Z" /></svg>;
 const IcClock = () => <svg {...sv} width={13} height={13}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>;
@@ -27,8 +29,8 @@ export default function ContinueLearning({ book, lang }: { book: ContinueBook | 
     return (
       <section id="continue" className="pr-cl-wrap">
         {head}
-        <div className="pr-cl pr-cl-empty">
-          <span className="pr-cl-cover"><IcBook /></span>
+        <div className="pr-cl pr-cl-prem pr-cl-empty">
+          <span className="pr-cl-bk"><BookCover path={null} title="" width={72} /></span>
           <div className="pr-cl-body">
             <b>{t.emptyTitle}</b>
             <small>{t.emptyText}</small>
@@ -41,6 +43,10 @@ export default function ContinueLearning({ book, lang }: { book: ContinueBook | 
 
   const label = pct >= 100 ? t.completed : pct > 0 ? t.inProgress : t.opened;
   const ago = book.agoDays == null ? "" : book.agoDays <= 0 ? t.today : book.agoDays === 1 ? t.yesterday : t.daysAgo(book.agoDays);
+  const img = coverUrl(book.coverPath);
+  const bg = img ? ({ "--cl-img": `url("${img.replace(/"/g, "%22")}")` } as CSSProperties) : undefined; // cover ki dhundhli roshni peeche
+  const openHref = `/books/${book.id}/open`;
+  const pageLine = book.pages && book.lastPage > 0 ? (lang === "hi" ? `पेज ${book.lastPage} / ${book.pages}` : `Page ${book.lastPage} / ${book.pages}`) : null;
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -59,9 +65,11 @@ export default function ContinueLearning({ book, lang }: { book: ContinueBook | 
   return (
     <section id="continue" className="pr-cl-wrap">
       {head}
-      <div className="pr-cl">
+      <div className="pr-cl pr-cl-prem" style={bg}>
         <div className="pr-cl-row">
-          <span className="pr-cl-cover"><IcBook /></span>
+          <a href={openHref} target="_blank" rel="noopener noreferrer" className="pr-cl-bk" aria-label={book.title}>
+            <BookCover path={book.coverPath} title={book.title} width={92} />
+          </a>
           <div className="pr-cl-body">
             <div className="pr-cl-meta">
               <span className={`pr-cl-pill${pct >= 100 ? " done" : ""}`}>{label}</span>
@@ -69,14 +77,17 @@ export default function ContinueLearning({ book, lang }: { book: ContinueBook | 
             </div>
             <b className="pr-cl-title">{book.title}</b>
             <small className="pr-cl-sub">{book.author || t.pdf}{book.pages ? ` • ${t.pages(book.pages)}` : ""}</small>
-            <div className="pr-cl-prog">
-              <div className="ov-bar"><i style={{ width: `${pct}%` }} /></div>
-              <span>{pct}%</span>
-            </div>
+            {pageLine ? <span className="pr-cl-page">📖 {pageLine}</span> : null}
           </div>
         </div>
+
+        <div className="pr-cl-prog">
+          <div className="ov-bar"><i style={{ width: `${pct}%` }} /></div>
+          <span>{pct}%</span>
+        </div>
+
         <div className="pr-cl-btns">
-          <a href={`/books/${book.id}/open`} target="_blank" rel="noopener noreferrer" className="pr-cl-resume"><IcPlay /> {t.resume}</a>
+          <a href={openHref} target="_blank" rel="noopener noreferrer" className="pr-cl-resume"><IcPlay /> {t.resume}</a>
           <button type="button" className="pr-cl-upd" onClick={() => setOpen((v) => !v)} aria-expanded={open}><IcEdit /> {t.update}</button>
         </div>
 

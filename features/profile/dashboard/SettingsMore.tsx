@@ -31,6 +31,17 @@ export default function SettingsMore({ lang: initialLang, favCount, notifyOn: in
   const [aboutOpen, setAboutOpen] = useState(false);
   const t = T[lang];
 
+  // Favorites me ab Books, Tests aur Folders teeno gine jate hain
+  const favSub = lang === "hi" ? `${favCount} आइटम • किताबें, टेस्ट और फोल्डर` : `${favCount} items • Books, Tests & Folders`;
+  const appearSub = lang === "hi" ? "रंग थीम • बदलने के लिए दबाओ" : "Colour themes • Tap to change";
+
+  // Appearance dabane par upar ke 🎨 Colour theme wala panel khul jata hai (wahi feature)
+  function openTheme() {
+    const fab = document.querySelector<HTMLButtonElement>(".td .td-fab");
+    if (!fab) { toast(lang === "hi" ? "थीम का बटन ऊपर 🎨 में है" : "The theme button is the 🎨 at the top"); return; }
+    if (fab.getAttribute("aria-expanded") !== "true") fab.click();
+  }
+
   function pickLang(next: Lang) {
     if (next === lang) { setLangOpen(false); return; }
     const prev = lang;
@@ -60,15 +71,15 @@ export default function SettingsMore({ lang: initialLang, favCount, notifyOn: in
         <div className="pr-item">
           <Link href="/profile/favorites" className="pr-row">
             <span className="pr-ric" style={{ ["--c" as string]: "#fb7185" }}><IcHeart /></span>
-            <span className="pr-rt"><b>{t.fav}</b><small>{t.favSub(favCount)}</small></span>
+            <span className="pr-rt"><b>{t.fav}</b><small>{favSub}</small></span>
             <span className="pr-rc"><Chev /></span>
           </Link>
         </div>
 
         <div className="pr-item">
-          <button type="button" className="pr-row" onClick={() => toast(t.appearanceNote)}>
+          <button type="button" className="pr-row" onClick={openTheme}>
             <span className="pr-ric" style={{ ["--c" as string]: "#a78bfa" }}><IcPalette /></span>
-            <span className="pr-rt"><b>{t.appearance}</b><small>{t.appearanceSub}</small></span>
+            <span className="pr-rt"><b>{t.appearance}</b><small>{appearSub}</small></span>
             <span className="pr-rc"><Chev /></span>
           </button>
         </div>

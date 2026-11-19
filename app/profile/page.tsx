@@ -17,7 +17,7 @@ import "@/features/profile/dashboard/profile-redesign.css";
 
 export const metadata: Metadata = { title: "Meri Profile" };
 
-// Profile: Profile card (Points/Rank), Quick Access, Study Overview, Continue Learning, Settings & More,
+// Profile: Profile card, Quick Access, Study Overview, Continue Learning, Settings & More,
 // My Learning, Community.
 // Sab kuch ek bhasha (English / हिन्दी) me, jo user ne Settings & More > Language me chuni hai.
 export default async function ProfilePage() {
@@ -42,11 +42,12 @@ export default async function ProfilePage() {
     getHomeSocials(), getSiteSettings(), getStudyData(p.id), getTestsOverview(), getProfileExtras(p.id), getFavorites(), getContinueBook(),
   ]);
   const lang = extras.lang;
-  const favCount = favs.books.length + favs.tests.length;
+  // Favorites = saved Books + Tests + Folders (jo Favorites page par dikhte hain, wahi gine jate hain)
+  const favCount = favs.books.length + favs.tests.length + favs.folders.length;
 
   return (
     <div className="pd" data-lang={lang}>
-      <ProfileHeader p={p} bio={extras.bio} input={study} points={extras.pr.points} level={extras.pr.level} rank={extras.pr.rank} lang={lang} />
+      <ProfileHeader p={p} bio={extras.bio} input={study} lang={lang} />
       <QuickAccess courseHref={settings.course_url || null} isAdmin={p.role === "admin"} favCount={favCount} bookCount={favs.books.length} lang={lang} />
       <StudyOverview input={study} mockCount={tests.submitted.length} lang={lang} />
       <ContinueLearning book={cont} lang={lang} />
