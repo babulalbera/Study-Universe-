@@ -3,6 +3,7 @@ import Link from "next/link";
 import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
 import BookmarkButton from "@/features/bookmarks/BookmarkButton";
+import FolderFavButton from "@/features/bookmarks/FolderFavButton";
 import { getFavorites } from "@/features/bookmarks/queries";
 import { getUser } from "@/lib/auth";
 import "@/features/bookmarks/bookmarks.css";
@@ -14,7 +15,7 @@ export default async function FavoritesPage() {
   if (!user) {
     return (
       <>
-        <PageHeader title="❤ Meri Favorites" subtitle="Login karne par yahan tumhari saved Books aur Tests dikhengi." />
+        <PageHeader title="❤ Meri Favorites" subtitle="Login karne par yahan tumhari saved Books, Tests aur Folders dikhenge." />
         <div className="su-row">
           <Link className="su-btn su-btn-primary" href="/login?next=/profile/favorites">Login</Link>
         </div>
@@ -22,17 +23,37 @@ export default async function FavoritesPage() {
     );
   }
 
-  const { books, tests } = await getFavorites();
+  const { books, tests, folders } = await getFavorites();
 
   return (
     <>
-      <PageHeader title="❤ Meri Favorites" subtitle="Jo Books aur Tests tumne save kiye, sab yahan hain." />
+      <PageHeader title="❤ Meri Favorites" subtitle="Jo Books, Tests aur Folders tumne save kiye, sab yahan hain." />
       <div className="su-row" style={{ marginTop: 0 }}>
         <Link className="su-btn su-btn-ghost" href="/profile">← Profile</Link>
       </div>
 
-      {books.length === 0 && tests.length === 0 ? (
-        <EmptyState icon="🤍" title="Abhi kuch save nahi hai" text="Books page par kisi book ke ❤ ko dabao, wo yahan aa jayegi." />
+      {books.length === 0 && tests.length === 0 && folders.length === 0 ? (
+        <EmptyState icon="🤍" title="Abhi kuch save nahi hai" text="Books page par kisi book ke ❤ ko dabao, ya Courses me kisi Folder ke ❤ ko dabao, wo yahan aa jayega." />
+      ) : null}
+
+      {folders.length > 0 ? (
+        <section id="folders" style={{ scrollMarginTop: 72 }}>
+          <h3 style={{ margin: "16px 0 10px" }}>📁 Saved Folders ({folders.length})</h3>
+          <div className="su-list">
+            {folders.map((f) => (
+              <div key={f.id} className="su-item">
+                <div style={{ minWidth: 0 }}>
+                  <h3>{f.title}</h3>
+                  <p>{f.course_title}</p>
+                </div>
+                <div className="pr-act">
+                  <FolderFavButton folderId={f.id} initialSaved />
+                  <Link className="su-btn su-btn-primary" href={`/courses/${f.course_id}?folder=${f.id}`}>📁 Kholo</Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       ) : null}
 
       {books.length > 0 ? (

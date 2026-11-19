@@ -1,47 +1,31 @@
 "use client";
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useState, useTransition, type CSSProperties, type ReactNode } from "react";
 import { useToast } from "@/components/ui/Toast";
+import { toggleFolderFav } from "@/features/bookmarks/folder-actions";
 
-// Folder card ke upar: cover ke daayen-upar ❤ Favourite, neeche bayen ↗ Share.
-// Favourite Folder list me sabse pehle aate hain. Favourite sirf isi phone/browser me save hota hai.
-const KEY = "cv-fav-folders";
-const EVT = "cv-fav-folders-change";
+// Folder card ke upar: cover ke daayen-upar ❤ Favourite (tumhare account me save, Profile > Favorites me dikhta hai), neeche bayen ↗ Share.
+// Favourite Folder list me sabse pehle aate hain.
+type Props = { courseId: string; folderId: string; title: string; index: number; initialSaved: boolean; children: ReactNode };
 
-const read = (): string[] => {
-  try {
-    const raw: unknown = JSON.parse(localStorage.getItem(KEY) ?? "[]");
-    return Array.isArray(raw) ? raw.filter((x): x is string => typeof x === "string") : [];
-  } catch {
-    return [];
-  }
-};
-const write = (ids: string[]) => {
-  try { localStorage.setItem(KEY, JSON.stringify(ids)); } catch { /* storage band ho to chalta hai */ }
-  window.dispatchEvent(new Event(EVT));
-};
-
-type Props = { courseId: string; folderId: string; title: string; index: number; children: ReactNode };
-
-export default function FolderCardShell({ courseId, folderId, title, index, children }: Props) {
+export default function FolderCardShell({ courseId, folderId, title, index, initialSaved, children }: Props) {
   const toast = useToast();
-  const [fav, setFav] = useState(false);
-
-  useEffect(() => {
-    const sync = () => setFav(read().includes(folderId));
-    sync();
-    window.addEventListener(EVT, sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener(EVT, sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, [folderId]);
+  const [fav, setFav] = useState(initialSaved);
+  const [pending, start] = useTransition();
+  useEffect(() => setFav(initialSaved), [initialSaved]);
 
   const toggle = () => {
-    const cur = read();
-    const on = !cur.includes(folderId);
-    write((on ? [...cur, folderId] : cur.filter((x) => x !== folderId)).slice(-200));
-    toast(on ? "Favourite me jod diya ❤" : "Favourite se hata diya");
+    const next = !fav;
+    setFav(next); // turant dikhao, fail hua to wapas
+    start(async () => {
+      const r = await toggleFolderFav(folderId);
+      if (!r.ok) {
+        setFav(!next);
+        toast(r.error ?? "Kuch gadbad hui");
+        return;
+      }
+      setFav(Boolean(r.saved));
+      toast(r.saved ? "Favorites me jod diya ❤" : "Favorites se hata diya");
+    });
   };
 
   const share = async () => {
@@ -64,7 +48,7 @@ export default function FolderCardShell({ courseId, folderId, title, index, chil
   return (
     <div className={`cvf-item${fav ? " fav" : ""}`} style={style}>
       {children}
-      <button type="button" className={`cvf-fav${fav ? " on" : ""}`} onClick={toggle} aria-pressed={fav} aria-label={fav ? `${title}: Favourite se hatao` : `${title}: Favourite me jodo`}>
+      <button type="button" className={`cvf-fav${fav ? " on" : ""}`} onClick={toggle} disabled={pending} aria-pressed={fav} aria-label={fav ? `${title}: Favourite se hatao` : `${title}: Favourite me jodo`}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M12 21s-7-4.6-9.2-9.1C1.2 8.6 3 5 6.5 5c2 0 3.5 1.1 5.5 3.2C14 6.1 15.5 5 17.5 5 21 5 22.8 8.6 21.2 11.9 19 16.4 12 21 12 21Z" />
         </svg>

@@ -6,6 +6,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
 import DoneTick from "@/components/courses/DoneTick";
 import FolderCardShell from "@/components/courses/FolderCardShell";
+import { getBookmarkedFolderIds } from "@/features/bookmarks/queries";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { coverUrl } from "@/lib/book-meta";
@@ -58,13 +59,13 @@ function VideoCard({ courseId, v, n }: { courseId: string; v: VideoRow; n: numbe
 }
 
 // Folder ka card: cover photo, naam, vivaran. Dabane par sirf usi Folder ke andar ka saaman khulta hai.
-function FolderCard({ courseId, n, i }: { courseId: string; n: FolderNode; i: number }) {
+function FolderCard({ courseId, n, i, fav }: { courseId: string; n: FolderNode; i: number; fav: boolean }) {
   const f = n.folder;
   const first = collect(n)[0];
   const img = coverUrl(f.cover_path ?? null) || (first ? videoThumbUrl(first as VideoRow) : null); // photo na ho to pehle video ki thumbnail
   const subs = n.children.filter((c) => c.total > 0).length;
   return (
-    <FolderCardShell courseId={courseId} folderId={f.id} title={f.title} index={i}>
+    <FolderCardShell courseId={courseId} folderId={f.id} title={f.title} index={i} initialSaved={fav}>
     <Link href={`/courses/${courseId}?folder=${f.id}`} className="cvf-card" style={{ "--i": i } as CSSProperties}>
       <div className="cvf-thumb">
         {img ? (
@@ -98,6 +99,7 @@ export default async function CourseDetailPage({ params, searchParams }: { param
   const { data: cd } = await supabase.from("courses").select("*").eq("id", id).eq("is_published", true).maybeSingle();
   if (!cd) notFound();
   const course = cd as Course;
+  const favIds = await getBookmarkedFolderIds(); // login ho to jo Folders Favorites me hain
 
   const [{ data: fd }, { data: vd }] = await Promise.all([
     supabase.from("course_folders").select("*").eq("course_id", id).eq("is_published", true).order("sort_order").order("created_at").limit(200),
@@ -107,7 +109,7 @@ export default async function CourseDetailPage({ params, searchParams }: { param
   const cards = (list: CourseVideo[]) => list.map((v, i) => <VideoCard key={v.id} courseId={id} v={v as VideoRow} n={i + 1} />); // Lecture number isi Folder ke hisaab se
   const folderCards = (list: FolderNode[]) => {
     const shown = list.filter((n) => n.total > 0);
-    return shown.length > 0 ? <div className="cvf-grid">{shown.map((n, i) => <FolderCard key={n.folder.id} courseId={id} n={n} i={i} />)}</div> : null;
+    return shown.length > 0 ? <div className="cvf-grid">{shown.map((n, i) => <FolderCard key={n.folder.id} courseId={id} n={n} i={i} fav={favIds.has(n.folder.id)} />)}</div> : null;
   };
 
   // Kaun sa Folder khula hai (?folder=...). Na mile ya chhipa ho to Course ka pehla (main) hissa dikhao.
