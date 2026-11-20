@@ -5,7 +5,7 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "./env";
 
 // Ye pages bina login ke nahi khulte. Visitor seedha Login/Signup page par jata hai (login ke baad wapas yahin aata hai).
 // Home, About, Contact, Privacy, Terms, Login, Signup khule rehte hain. Koi page khula rakhna ho to use is list se hata do.
-const PROTECTED = ["/tasks", "/books", "/courses", "/mock-tests", "/results", "/profile", "/admin"];
+const PROTECTED = ["/tasks", "/books", "/courses", "/free-course", "/mock-tests", "/results", "/profile", "/admin"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });

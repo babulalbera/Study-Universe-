@@ -54,7 +54,7 @@ export const COMMUNITY = {
 };
 
 export const DEFAULT_FEATURE_CARDS: FeatureCardData[] = [
-  { key: "free", title: "Free Course", description: "Top quality free courses for you", href: null, color: "#3B82F6", bg1: "#1E293B", bg2: "#0F172A", icon: "/images/tools/free.webp" },
+  { key: "free", title: "Free Course", description: "Top quality free courses for you", href: "/free-course", color: "#3B82F6", bg1: "#1E293B", bg2: "#0F172A", icon: "/images/tools/free.webp" },
   { key: "books", title: "Books", description: "Best books & resources curated", href: "/books", color: "#F59E0B", bg1: "#422006", bg2: "#1C1917", icon: "/images/tools/books.webp" },
   { key: "mock", title: "Mock Test", description: "Practice with real exam pattern", href: "/mock-tests", color: "#A855F7", bg1: "#2E1065", bg2: "#1E1B4B", icon: "/images/tools/mock.webp" },
   { key: "task", title: "Task", description: "Daily tasks & streak tracker", href: "/tasks", color: "#10B981", bg1: "#022C22", bg2: "#020617", icon: "/images/tools/task.webp" },

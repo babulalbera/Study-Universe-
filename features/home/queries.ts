@@ -33,7 +33,7 @@ export async function getHomeCards(): Promise<FeatureCardData[]> {
   const rows = await loadCards();
   if (!rows) return DEFAULT_FEATURE_CARDS;
   return rows.map((c) => ({
-    key: c.key, title: c.title, description: c.description, href: c.href || null,
+    key: c.key, title: c.title, description: c.description, href: c.href || (c.key === "free" ? "/free-course" : null),
     color: c.color, bg1: c.bg1, bg2: c.bg2, icon: c.icon_url || FALLBACK_ICON,
   }));
 }
