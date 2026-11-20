@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
+import PlatformsHub from "@/components/courses/PlatformsHub";
 import CourseProgress from "@/components/courses/CourseProgress";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -65,6 +66,7 @@ export default async function CoursesPage() {
   return (
     <>
       <PageHeader title="🎓 Courses" subtitle="Free Courses और Playlists, एक ही जगह।" />
+      <PlatformsHub />
       {courses.length === 0 ? (
         <EmptyState icon="🎓" title="अभी कोई Course नहीं है" text="Admin Panel से Course जुड़ते ही यहाँ दिखेंगे।" />
       ) : (
