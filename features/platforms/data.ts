@@ -1,5 +1,5 @@
 // Free Course Platforms ka data. Naya platform ya link jodna ho to yahin add karo.
-// logo: asli logo ka link (optional). Na chale to /public/platform-logos/<id>.png khud dikhta hai.
+// logo: asli logo ka link (optional). Na ho to rangin initials badge dikhta hai.
 export type PlatformLink = { title: string; url: string };
 export type Platform = { id: string; name: string; desc: string; color: string; logo?: string; links: PlatformLink[] };
 
