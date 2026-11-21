@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent } from "react";
-import { PLATFORMS, type Platform } from "@/features/platforms/data";
+import type { Platform } from "@/features/platforms/data";
 import { useToast } from "@/components/ui/Toast";
 import "./platforms-hub.css";
 
@@ -59,7 +59,7 @@ function Count({ to }: { to: number }) {
 
 type Filter = "all" | "top" | "pin";
 
-export default function PlatformsHub() {
+export default function PlatformsHub({ platforms }: { platforms: Platform[] }) {
   const toast = useToast();
   const root = useRef<HTMLElement>(null);
   const [q, setQ] = useState("");
@@ -74,31 +74,31 @@ export default function PlatformsHub() {
     setRec(load(KEY_REC));
     const sync = () => {
       const id = decodeURIComponent(window.location.hash.slice(1));
-      setOpenId(PLATFORMS.some((p) => p.id === id) ? id : null);
+      setOpenId(platforms.some((p) => p.id === id) ? id : null);
       setLq("");
     };
     sync();
     window.addEventListener("hashchange", sync);
     return () => window.removeEventListener("hashchange", sync);
-  }, []);
+  }, [platforms]);
 
   useEffect(() => {
     if (openId) root.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [openId]);
 
-  const total = useMemo(() => PLATFORMS.reduce((s, p) => s + p.links.length, 0), []);
+  const total = useMemo(() => platforms.reduce((s, p) => s + p.links.length, 0), [platforms]);
   const index = useMemo(
-    () => PLATFORMS.flatMap((p) => p.links.map((l) => ({ p, l, s: `${l.title} ${host(l.url)}`.toLowerCase() }))),
-    [],
+    () => platforms.flatMap((p) => p.links.map((l) => ({ p, l, s: `${l.title} ${host(l.url)}`.toLowerCase() }))),
+    [platforms],
   );
-  const reversed = useMemo(() => [...PLATFORMS].reverse(), []);
-  const cur = PLATFORMS.find((p) => p.id === openId) ?? null;
+  const reversed = useMemo(() => [...platforms].reverse(), [platforms]);
+  const cur = platforms.find((p) => p.id === openId) ?? null;
   const ql = q.trim().toLowerCase();
-  const cards = PLATFORMS.filter((p) => (!ql || `${p.name} ${p.desc}`.toLowerCase().includes(ql)) && (f === "all" || (f === "top" ? p.links.length >= 10 : pins.includes(p.id))));
+  const cards = platforms.filter((p) => (!ql || `${p.name} ${p.desc}`.toLowerCase().includes(ql)) && (f === "all" || (f === "top" ? p.links.length >= 10 : pins.includes(p.id))));
   const hits = ql.length > 1 ? index.filter((x) => x.s.includes(ql)).slice(0, 6) : [];
   const shelf = Array.from(new Set([...pins, ...rec]))
     .slice(0, 8)
-    .map((id) => PLATFORMS.find((p) => p.id === id))
+    .map((id) => platforms.find((p) => p.id === id))
     .filter((p): p is Platform => !!p);
 
   const open = (id: string) => {
@@ -206,7 +206,7 @@ export default function PlatformsHub() {
           <h2 className="ph-title">Free Course Platforms</h2>
           <p className="ph-sub">Logo dabao, us platform ki saari links khul jayengi. Sab free, bina kisi fees ke.</p>
           <div className="ph-stats">
-            <div><b><Count to={PLATFORMS.length} /></b><small>Platforms</small></div>
+            <div><b><Count to={platforms.length} /></b><small>Platforms</small></div>
             <div><b><Count to={total} />+</b><small>Links</small></div>
             <div><b>100%</b><small>Free</small></div>
           </div>
@@ -237,7 +237,7 @@ export default function PlatformsHub() {
         </div>
       )}
 
-      {reel(PLATFORMS, false)}
+      {reel(platforms, false)}
       {reel(reversed, true)}
 
       {shelf.length > 0 && (

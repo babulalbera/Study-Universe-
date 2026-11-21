@@ -7,6 +7,7 @@ export const ADMIN_LINKS = [
   { href: "/admin/users", label: "👥 Users", desc: "Users और Roles" },
   { href: "/admin/announcements", label: "📢 Announcements", desc: "Notices" },
   { href: "/admin/courses", label: "🎓 Courses", desc: "Courses जोड़ें" },
+  { href: "/admin/platforms", label: "🌐 Free Platforms", desc: "Platforms, Links और Logos" },
   { href: "/admin/reports", label: "🛟 Reports", desc: "Users की Reports" },
   { href: "/admin/settings", label: "⚙️ Settings", desc: "Site Settings" },
 ] as const;
